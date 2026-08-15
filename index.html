@@ -3,13 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-  <title>Quran Musaffah · Email Verification</title>
-  <link rel="manifest" href="data:application/json,{}">
+  <title>Quran Musaffah</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
     body { background: #f2f6f5; padding-bottom: 80px; transition: background 0.2s, color 0.2s; }
@@ -37,10 +35,6 @@
     button.outline.danger { color: #b91c1c; border-color: #b91c1c; }
     .hidden { display: none !important; }
 
-    .stats-mini { display: flex; gap: 6px; flex-wrap: wrap; }
-    .stat-mini { background: #eaf9f7; padding: 4px 12px; border-radius: 30px; font-size: 0.7rem; }
-    .dark .stat-mini { background: #1d3a38; color: #d4f4f0; }
-
     .juz-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 6px; }
     .juz-item { background: white; border: 1px solid #dde3e2; border-radius: 10px; padding: 8px 0; text-align: center; font-weight: 600; cursor: pointer; transition: all 0.1s; font-size: 0.8rem; }
     .juz-item.completed { background: #0f766e; color: white; border-color: #0f766e; }
@@ -55,7 +49,6 @@
 
     .dark { background: #121212; color: #eee; }
     .dark .card { background: #1e1e1e; }
-    .dark .stat-mini { background: #1d3a38; color: #d4f4f0; }
     .dark .juz-item { background: #2a2a2a; border-color: #3a3a3a; color: #ddd; }
     .dark .juz-item.completed { background: #0f766e; color: white; }
     .dark input, .dark select, .dark textarea { background: #2c2c2c; color: #eee; border-color: #444; }
@@ -66,31 +59,7 @@
     .dark nav button.active i { color: #7acfc5; }
 
     .notification-toast { position: fixed; top: 60px; right: 12px; background: #0f766e; color: white; padding: 8px 16px; border-radius: 30px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); z-index: 99; max-width: 240px; font-weight: 500; animation: slideIn 0.3s ease; font-size: 0.8rem; }
-    .notification-toast.attention { background: #dc2626; animation: pulse 0.5s ease 3; }
     @keyframes slideIn { 0% { transform: translateX(100px); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } }
-    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
-
-    .chat-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #eef3f2; cursor: pointer; transition: background 0.1s; }
-    .dark .chat-item { border-bottom-color: #2a3a38; }
-    .chat-item:hover { background: #f0f6f5; }
-    .dark .chat-item:hover { background: #1a2e2c; }
-    .chat-avatar { width: 38px; height: 38px; border-radius: 50%; background: #0f766e; color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.8rem; flex-shrink: 0; }
-    .chat-info { flex: 1; }
-    .chat-name { font-weight: 600; font-size: 0.85rem; }
-    .chat-last { font-size: 0.7rem; opacity: 0.6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .chat-time { font-size: 0.6rem; opacity: 0.4; flex-shrink: 0; }
-
-    .chat-window { max-height: 400px; overflow-y: auto; background: #f8fafc; border-radius: 14px; padding: 10px; margin-top: 6px; display: flex; flex-direction: column; }
-    .dark .chat-window { background: #1a2625; }
-    .msg { padding: 6px 12px; border-radius: 16px; max-width: 80%; word-wrap: break-word; margin-bottom: 3px; font-size: 0.85rem; }
-    .msg.mine { background: #0f766e; color: white; align-self: flex-end; }
-    .msg.other { background: #e5e7eb; color: #1f2937; align-self: flex-start; }
-    .dark .msg.other { background: #2c3a38; color: #eee; }
-    .msg .time { font-size: 0.5rem; opacity: 0.5; margin-left: 4px; }
-
-    .partner-card { background: #e0f2fe; border-radius: 14px; padding: 12px; text-align: center; }
-    .dark .partner-card { background: #1a3340; }
-    .partner-avatar { width: 56px; height: 56px; border-radius: 50%; background: #0f766e; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; font-weight: 600; margin: 0 auto 6px; }
 
     .auth-toggle { text-align: center; margin-top: 4px; color: #0f766e; cursor: pointer; font-weight: 500; font-size: 0.8rem; }
     .dark .auth-toggle { color: #7acfc5; }
@@ -109,29 +78,9 @@
     .onboarding-step { display: none; }
     .onboarding-step.active { display: block; }
 
-    .chat-type-tabs { display: flex; gap: 8px; margin-bottom: 10px; }
-    .chat-type-tabs button { flex: 1; padding: 6px; font-size: 0.75rem; border-radius: 30px; background: #eef3f2; color: #5b7a76; border: none; cursor: pointer; }
-    .chat-type-tabs button.active { background: #0f766e; color: white; }
-
-    .empty-state { text-align: center; padding: 30px 10px; opacity: 0.6; }
-    .empty-state i { font-size: 2.5rem; margin-bottom: 10px; display: block; }
-    .empty-state p { font-size: 0.85rem; }
-
-    .attention-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(220, 38, 38, 0.2); z-index: 50; display: none; justify-content: center; align-items: center; pointer-events: none; }
-    .attention-overlay.show { display: flex; animation: fadeInOut 1.5s ease; }
-    @keyframes fadeInOut { 0% { opacity: 0; } 20% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; } }
-    .attention-overlay .content { background: white; padding: 30px 40px; border-radius: 20px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.3); pointer-events: auto; }
-    .dark .attention-overlay .content { background: #1e1e1e; }
-    .attention-overlay h2 { color: #dc2626; font-size: 1.5rem; }
-    .attention-overlay .close-btn { margin-top: 10px; width: auto; padding: 8px 24px; }
-
-    .request-item { background: #f0fdf4; border-radius: 12px; padding: 12px; margin-bottom: 8px; border-left: 4px solid #16a34a; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
-    .dark .request-item { background: #052e16; border-left-color: #16a34a; }
-    .request-item .info { flex: 1; }
-    .request-item .info .name { font-weight: 600; font-size: 0.9rem; }
-    .request-item .info .detail { font-size: 0.75rem; opacity: 0.6; }
-    .request-item .actions { display: flex; gap: 6px; }
-    .request-item .actions button { width: auto; padding: 6px 16px; margin: 0; font-size: 0.75rem; }
+    .partner-card { background: #e0f2fe; border-radius: 14px; padding: 12px; text-align: center; }
+    .dark .partner-card { background: #1a3340; }
+    .partner-avatar { width: 56px; height: 56px; border-radius: 50%; background: #0f766e; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; font-weight: 600; margin: 0 auto 6px; }
 
     .search-item { background: #f0fdf4; border-radius: 12px; padding: 12px; margin-bottom: 8px; border-left: 4px solid #7c3aed; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
     .dark .search-item { background: #052e16; border-left-color: #7c3aed; }
@@ -146,14 +95,51 @@
     .dark .search-item .status-badge.online { background: #064e3b; color: #a7f3d0; }
     .dark .search-item .status-badge.offline { background: #78350f; color: #fde68a; }
 
-    .permission-banner { background: #e0f2fe; border-radius: 12px; padding: 10px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-    .dark .permission-banner { background: #1a3340; }
-    .permission-banner p { font-size: 0.8rem; flex: 1; }
-    .permission-banner button { width: auto; padding: 4px 16px; margin: 0; font-size: 0.75rem; }
+    .request-item { background: #fef3c7; border-radius: 12px; padding: 10px; margin-bottom: 8px; border-left: 4px solid #d97706; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+    .dark .request-item { background: #78350f; border-left-color: #d97706; }
+    .request-item .info { flex: 1; }
+    .request-item .info .name { font-weight: 600; font-size: 0.9rem; }
+    .request-item .actions { display: flex; gap: 6px; }
+    .request-item .actions button { width: auto; padding: 4px 12px; margin: 0; font-size: 0.7rem; }
 
-    .fcm-status { font-size: 0.7rem; opacity: 0.6; margin-top: 4px; }
+    .search-box { display: flex; gap: 6px; margin-bottom: 8px; align-items: center; }
+    .search-box input { flex: 1; margin: 0; padding: 8px 12px; font-size: 0.85rem; }
+    .search-box button { width: auto; padding: 8px 16px; margin: 0; font-size: 0.8rem; }
 
-    /* Video Call Full Screen */
+    .search-filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+    .search-filters button { width: auto; padding: 4px 14px; margin: 0; font-size: 0.7rem; border-radius: 30px; background: #eef3f2; color: #5b7a76; border: none; cursor: pointer; }
+    .search-filters button.active { background: #0f766e; color: white; }
+    .dark .search-filters button { background: #2a2a2a; color: #aaa; }
+    .dark .search-filters button.active { background: #0f766e; color: white; }
+
+    .mode-selection { display: flex; gap: 10px; margin: 10px 0; }
+    .mode-selection button { flex: 1; padding: 12px; border-radius: 12px; border: 2px solid #dde3e2; background: white; cursor: pointer; transition: all 0.3s; font-size: 0.85rem; }
+    .mode-selection button.active { border-color: #0f766e; background: #eaf9f7; }
+    .mode-selection button i { display: block; font-size: 1.5rem; margin-bottom: 4px; }
+    .dark .mode-selection button { background: #1e1e1e; border-color: #444; }
+    .dark .mode-selection button.active { border-color: #0f766e; background: #1d3a38; }
+
+    .empty-state { text-align: center; padding: 30px 10px; opacity: 0.6; }
+    .empty-state i { font-size: 2.5rem; margin-bottom: 10px; display: block; }
+    .empty-state p { font-size: 0.85rem; }
+
+    .recitation-status { padding: 10px; border-radius: 14px; text-align: center; margin-top: 6px; }
+    .recitation-status.active { background: #d1fae5; color: #065f46; }
+    .recitation-status.inactive { background: #fef3c7; color: #92400e; }
+    .dark .recitation-status.active { background: #064e3b; color: #a7f3d0; }
+    .dark .recitation-status.inactive { background: #78350f; color: #fde68a; }
+
+    .dashboard-info .row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #eef3f2; }
+    .dark .dashboard-info .row { border-bottom-color: #2a3a38; }
+    .dashboard-info .row .label { opacity: 0.6; font-size: 0.8rem; }
+    .dashboard-info .row .value { font-weight: 500; font-size: 0.85rem; }
+
+    .profile-header { display: flex; align-items: center; gap: 10px; }
+    .profile-header .toggle-icon { transition: transform 0.3s ease; }
+    .profile-header .toggle-icon.open { transform: rotate(180deg); }
+    .dashboard-info { display: flex; flex-direction: column; gap: 4px; max-height: 0; overflow: hidden; transition: max-height 0.3s ease, padding 0.3s ease; padding: 0 0; }
+    .dashboard-info.open { max-height: 400px; padding: 10px 0 0 0; }
+
     .call-fullscreen {
       position: fixed;
       top: 0;
@@ -180,10 +166,10 @@
       border-radius: 8px;
       overflow: hidden;
       min-height: 200px;
-      cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
+      cursor: pointer;
     }
     .call-fullscreen .video-grid .video-wrapper.dominant {
       grid-column: 1 / -1;
@@ -199,19 +185,12 @@
       border-radius: 12px;
       border: 2px solid #0f766e;
       z-index: 10;
-      cursor: pointer;
-    }
-    .call-fullscreen .video-grid .video-wrapper.dominant ~ .video-wrapper .video-label {
-      font-size: 0.5rem;
     }
     .call-fullscreen video {
       width: 100%;
       height: 100%;
       object-fit: cover;
       background: #1a1a1a;
-      transform: scaleX(-1);
-    }
-    .call-fullscreen .video-grid .video-wrapper.dominant video {
       transform: scaleX(-1);
     }
     .call-fullscreen .video-label {
@@ -247,7 +226,6 @@
     .call-fullscreen .call-controls button.cam-off { background: #6b7280; }
     .call-fullscreen .call-controls button.correction { background: #dc2626; animation: pulseCorrection 1s ease infinite; }
     @keyframes pulseCorrection { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
-
     .call-fullscreen .correction-flash {
       position: fixed;
       top: 0;
@@ -263,81 +241,13 @@
     .call-fullscreen .correction-flash.active { display: block; }
     @keyframes flashRed { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-    .call-fullscreen .audio-mode-indicator {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      color: white;
-      font-size: 3rem;
-      opacity: 0.5;
-      pointer-events: none;
-    }
-
-    /* Dashboard Styles */
-    .dashboard-stats { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0; }
-    .dashboard-stat { background: #f0fdf4; border-radius: 12px; padding: 12px 16px; flex: 1; min-width: 80px; text-align: center; }
-    .dark .dashboard-stat { background: #052e16; }
-    .dashboard-stat .number { font-size: 1.5rem; font-weight: 700; color: #0f766e; }
-    .dark .dashboard-stat .number { color: #7acfc5; }
-    .dashboard-stat .label { font-size: 0.65rem; opacity: 0.6; margin-top: 2px; }
-    .dashboard-info { display: flex; flex-direction: column; gap: 4px; max-height: 0; overflow: hidden; transition: max-height 0.3s ease, padding 0.3s ease; padding: 0 0; }
-    .dashboard-info.open { max-height: 400px; padding: 10px 0 0 0; }
-    .dashboard-info .row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #eef3f2; }
-    .dark .dashboard-info .row { border-bottom-color: #2a3a38; }
-    .dashboard-info .row .label { opacity: 0.6; font-size: 0.8rem; }
-    .dashboard-info .row .value { font-weight: 500; font-size: 0.85rem; }
-    .profile-header { cursor: pointer; display: flex; align-items: center; gap: 10px; }
-    .profile-header .toggle-icon { transition: transform 0.3s ease; }
-    .profile-header .toggle-icon.open { transform: rotate(180deg); }
-
-    /* Chat Actions */
-    .chat-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
-    .chat-actions button { flex: 1; min-width: 80px; padding: 8px 12px; font-size: 0.75rem; border-radius: 30px; }
-
-    .friend-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #eef3f2; }
-    .dark .friend-item { border-bottom-color: #2a3a38; }
-    .friend-item .friend-avatar { width: 32px; height: 32px; border-radius: 50%; background: #7c3aed; color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.7rem; flex-shrink: 0; }
-    .friend-item .friend-name { flex: 1; font-size: 0.85rem; }
-    .friend-item .friend-status { font-size: 0.6rem; opacity: 0.5; }
-    .friend-item button { width: auto; padding: 4px 12px; margin: 0; font-size: 0.7rem; }
-
-    /* User List for Add Friend */
-    .user-list { max-height: 300px; overflow-y: auto; }
-    .user-list .user-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #eef3f2; }
-    .dark .user-list .user-item { border-bottom-color: #2a3a38; }
-    .user-list .user-item .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: #0f766e; color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.7rem; flex-shrink: 0; }
-    .user-list .user-item .user-name { flex: 1; font-size: 0.85rem; }
-    .user-list .user-item .user-status { font-size: 0.6rem; opacity: 0.5; }
-    .user-list .user-item button { width: auto; padding: 4px 12px; margin: 0; font-size: 0.7rem; }
-
-    .search-box { display: flex; gap: 6px; margin-bottom: 8px; align-items: center; }
-    .search-box input { flex: 1; margin: 0; padding: 8px 12px; font-size: 0.85rem; }
-    .search-box button { width: auto; padding: 8px 16px; margin: 0; font-size: 0.8rem; }
-
-    .media-permission-banner { background: #fef3c7; border: 1px solid #d97706; border-radius: 12px; padding: 10px; margin-bottom: 8px; text-align: center; }
-    .dark .media-permission-banner { background: #78350f; border-color: #d97706; color: #fde68a; }
-    .media-permission-banner button { width: auto; padding: 4px 16px; margin: 4px auto 0; font-size: 0.75rem; }
-
-    .media-error { color: #dc2626; font-size: 0.75rem; margin-top: 4px; display: none; }
-
-    .mode-selection { display: flex; gap: 10px; margin: 10px 0; }
-    .mode-selection button { flex: 1; padding: 12px; border-radius: 12px; border: 2px solid #dde3e2; background: white; cursor: pointer; transition: all 0.3s; font-size: 0.85rem; }
-    .mode-selection button.active { border-color: #0f766e; background: #eaf9f7; }
-    .mode-selection button i { display: block; font-size: 1.5rem; margin-bottom: 4px; }
-    .dark .mode-selection button { background: #1e1e1e; border-color: #444; }
-    .dark .mode-selection button.active { border-color: #0f766e; background: #1d3a38; }
-
-    /* Shuffle animation */
-    .shuffling { animation: shuffleAnim 0.5s ease; }
-    @keyframes shuffleAnim { 0% { opacity: 0.3; transform: scale(0.95); } 100% { opacity: 1; transform: scale(1); } }
-
-    .friend-request-item { background: #fef3c7; border-radius: 12px; padding: 10px; margin-bottom: 8px; border-left: 4px solid #d97706; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
-    .dark .friend-request-item { background: #78350f; border-left-color: #d97706; }
-    .friend-request-item .info { flex: 1; }
-    .friend-request-item .info .name { font-weight: 600; font-size: 0.9rem; }
-    .friend-request-item .actions { display: flex; gap: 6px; }
-    .friend-request-item .actions button { width: auto; padding: 4px 12px; margin: 0; font-size: 0.7rem; }
+    .attention-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 300; display: none; justify-content: center; align-items: center; }
+    .attention-overlay.show { display: flex; }
+    .attention-overlay .content { background: white; padding: 30px 40px; border-radius: 20px; text-align: center; max-width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+    .dark .attention-overlay .content { background: #1e1e1e; }
+    .attention-overlay .content h2 { color: #dc2626; font-size: 1.5rem; }
+    .attention-overlay .content .icon { font-size: 3rem; display: block; margin-bottom: 10px; }
+    .attention-overlay .content .close-btn { margin-top: 10px; width: auto; padding: 8px 24px; }
   </style>
 </head>
 <body>
@@ -346,7 +256,7 @@
     <p><span id="langLabel">English</span> · <span id="headerMode">🔐 Email Verification</span></p>
   </header>
 
-  <div class="container">
+  <div class="container" id="container">
     <!-- AUTH CARD -->
     <div id="authCard" class="card">
       <h2><i class="fas fa-envelope"></i> <span id="authTitle">Sign Up</span></h2>
@@ -354,13 +264,13 @@
       <div id="authStep1" class="onboarding-step active">
         <div id="authError" class="verification-banner hidden" style="background:#fee2e2;border-color:#dc2626;color:#991b1b;"></div>
         
-        <input id="authEmail" type="email" placeholder="Email">
+        <input id="authEmail" type="email" placeholder="Email" value="test@example.com">
         <div class="password-wrapper">
-          <input id="authPassword" type="password" placeholder="Password">
+          <input id="authPassword" type="password" placeholder="Password" value="password123">
           <button class="toggle-password" onclick="togglePasswordVisibility('authPassword', this)"><i class="fas fa-eye"></i></button>
         </div>
         <div class="password-wrapper" id="confirmPasswordWrapper">
-          <input id="confirmPassword" type="password" placeholder="Re-enter Password">
+          <input id="confirmPassword" type="password" placeholder="Re-enter Password" value="password123">
           <button class="toggle-password" onclick="togglePasswordVisibility('confirmPassword', this)"><i class="fas fa-eye"></i></button>
         </div>
         <button id="authButton" onclick="handleAuth()"><i class="fas fa-user-plus"></i> Sign Up</button>
@@ -426,7 +336,7 @@
 
     <!-- MAIN APP -->
     <div id="appMain" class="hidden">
-      <!-- HOME - DASHBOARD -->
+      <!-- HOME -->
       <div id="pageHome" class="page active">
         <div class="card">
           <div class="profile-header" onclick="toggleProfileDetails()">
@@ -467,18 +377,18 @@
 
         <div class="card">
           <h2><i class="fas fa-chart-simple"></i> Statistics</h2>
-          <div class="dashboard-stats">
-            <div class="dashboard-stat">
-              <div class="number" id="statJuz">0</div>
-              <div class="label">Juz Completed</div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <div style="background:#f0fdf4; border-radius:12px; padding:12px 16px; flex:1; min-width:80px; text-align:center;">
+              <div style="font-size:1.5rem; font-weight:700; color:#0f766e;" id="statJuz">0</div>
+              <div style="font-size:0.65rem; opacity:0.6;">Juz Completed</div>
             </div>
-            <div class="dashboard-stat">
-              <div class="number" id="statKhatm">0</div>
-              <div class="label">Khatm</div>
+            <div style="background:#f0fdf4; border-radius:12px; padding:12px 16px; flex:1; min-width:80px; text-align:center;">
+              <div style="font-size:1.5rem; font-weight:700; color:#0f766e;" id="statKhatm">0</div>
+              <div style="font-size:0.65rem; opacity:0.6;">Khatm</div>
             </div>
-            <div class="dashboard-stat">
-              <div class="number" id="statStreak">0</div>
-              <div class="label">Day Streak</div>
+            <div style="background:#f0fdf4; border-radius:12px; padding:12px 16px; flex:1; min-width:80px; text-align:center;">
+              <div style="font-size:1.5rem; font-weight:700; color:#0f766e;" id="statStreak">0</div>
+              <div style="font-size:0.65rem; opacity:0.6;">Day Streak</div>
             </div>
           </div>
         </div>
@@ -496,7 +406,6 @@
           <p style="font-size:0.75rem; opacity:0.6;">Recite together · Live Video/Audio · Correct each other</p>
         </div>
 
-        <!-- Mode Selection -->
         <div class="card">
           <h3><i class="fas fa-sliders-h"></i> Select Mode</h3>
           <div class="mode-selection">
@@ -516,7 +425,7 @@
           <div id="partnerDisplay" class="partner-card">
             <div class="partner-avatar">?</div>
             <h3 style="font-size:0.9rem;" id="partnerNameDisplay">No partner yet</h3>
-            <p style="font-size:0.7rem; opacity:0.6;" id="partnerPlanDisplay">Search for a partner below to start Musaffah</p>
+            <p style="font-size:0.7rem; opacity:0.6;" id="partnerPlanDisplay">Search for a partner below</p>
           </div>
         </div>
 
@@ -534,7 +443,7 @@
           </div>
           <div id="searchResults">
             <div class="empty-state" style="padding:15px;">
-              <p style="font-size:0.8rem;">🔍 Search for a Quran partner by name</p>
+              <p style="font-size:0.8rem;">🔍 Search for a Quran partner</p>
             </div>
           </div>
         </div>
@@ -548,49 +457,9 @@
           </div>
         </div>
 
-        <!-- Media Permission Banner -->
-        <div id="mediaPermissionBanner" class="media-permission-banner hidden">
-          <p>🎥 Allow camera and microphone access for video calls.</p>
-          <button onclick="requestMediaPermissions()" class="success"><i class="fas fa-video"></i> Grant Access</button>
-        </div>
-        <div id="mediaError" class="media-error"></div>
-      </div>
-
-      <!-- CHATS -->
-      <div id="pageChats" class="page">
-        <div class="card">
-          <h2><i class="fas fa-comment-dots"></i> Chats</h2>
-          
-          <!-- Chat Action Buttons -->
-          <div class="chat-actions">
-            <button onclick="openAddFriend()" class="success"><i class="fas fa-user-plus"></i> Add Friend</button>
-            <button onclick="showFriendRequests()" class="warning"><i class="fas fa-bell"></i> Requests</button>
-          </div>
-
-          <div class="chat-type-tabs">
-            <button class="active" onclick="switchChatTab('chats', event)"><i class="fas fa-comments"></i> Chats</button>
-            <button onclick="switchChatTab('friends', event)"><i class="fas fa-user-friends"></i> Friends</button>
-          </div>
-
-          <div id="chatList">
-            <div class="empty-state">
-              <i class="fas fa-comments"></i>
-              <p>No chats yet. Add friends and start chatting!</p>
-            </div>
-          </div>
-        </div>
-
-        <div id="chatPanel" class="card hidden">
-          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
-            <div class="chat-avatar" id="chatAvatar" style="width:32px;height:32px;font-size:0.7rem;">👤</div>
-            <h2 style="font-size:0.9rem; flex:1;" id="chatPartnerName">Chat</h2>
-            <span onclick="closeChatPanel()" style="cursor:pointer;font-size:1.2rem;opacity:0.5;">✕</span>
-          </div>
-          <div class="chat-window" id="chatMessages"></div>
-          <div style="display:flex; gap:4px; margin-top:4px;">
-            <input id="chatInput" placeholder="Type a message..." style="flex:3; margin:0; font-size:0.8rem;">
-            <button onclick="sendChatMessage()" style="flex:1; margin:0; font-size:0.8rem;"><i class="fas fa-paper-plane"></i></button>
-          </div>
+        <div id="mediaPermissionBanner" class="card" style="background:#fef3c7; border:1px solid #d97706; display:none; text-align:center;">
+          <p>🎥 Allow camera and microphone access for calls.</p>
+          <button onclick="requestMediaPermissions()" class="success" style="width:auto; padding:4px 16px; margin:4px auto 0; font-size:0.75rem;"><i class="fas fa-video"></i> Grant Access</button>
         </div>
       </div>
     </div>
@@ -607,7 +476,7 @@
         <video id="localVideoCall" autoplay muted playsinline></video>
         <span class="video-label">You</span>
       </div>
-      <div id="audioModeIndicator" class="audio-mode-indicator" style="display:none;">🎙️</div>
+      <div id="audioModeIndicator" style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:white; font-size:3rem; opacity:0.5;">🎙️</div>
     </div>
     <div class="correction-flash" id="correctionFlash"></div>
     <div class="call-controls">
@@ -618,27 +487,12 @@
     </div>
   </div>
 
-  <!-- ADD FRIEND MODAL -->
-  <div id="addFriendModal" class="card" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:60; width:90%; max-width:400px; max-height:80vh; overflow-y:auto;">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-      <h2><i class="fas fa-user-plus"></i> Add Friend</h2>
-      <span onclick="closeAddFriend()" style="cursor:pointer;font-size:1.5rem;opacity:0.5;">✕</span>
-    </div>
-    <div class="search-box">
-      <input id="friendSearchInput" placeholder="Search by name..." onkeyup="searchUsers()">
-      <button onclick="searchUsers()" class="purple"><i class="fas fa-search"></i></button>
-    </div>
-    <button onclick="shuffleUserList()" class="outline" style="margin-bottom:8px; padding:4px 12px; font-size:0.7rem; width:auto;"><i class="fas fa-random"></i> Shuffle</button>
-    <div id="userListContainer" class="user-list"></div>
-  </div>
-  <div id="addFriendOverlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:55;" onclick="closeAddFriend()"></div>
-
   <!-- ATTENTION OVERLAY -->
   <div id="attentionOverlay" class="attention-overlay">
     <div class="content">
-      <i class="fas fa-exclamation-triangle" style="font-size:3rem;color:#dc2626;display:block;margin-bottom:10px;"></i>
-      <h2>⚠️ Attention!</h2>
-      <p style="margin:10px 0;font-size:1rem;"><span id="attentionPartnerName">Your partner</span> called your attention during recitation.</p>
+      <span class="icon">⚠️</span>
+      <h2>Attention!</h2>
+      <p style="margin:10px 0;font-size:1rem;"><span id="attentionPartnerName">Your partner</span> called your attention!</p>
       <p style="font-size:0.85rem;opacity:0.6;">Please correct your recitation.</p>
       <button onclick="dismissAttention()" class="close-btn" style="background:#0f766e;color:white;border:none;padding:8px 24px;border-radius:30px;cursor:pointer;font-size:0.9rem;">✓ Got it</button>
     </div>
@@ -648,7 +502,6 @@
   <nav id="bottomNav">
     <button class="active" data-page="pageHome"><i class="fas fa-home"></i><span>Home</span></button>
     <button data-page="pageMusaffah"><i class="fas fa-handshake"></i><span>Musaffah</span></button>
-    <button data-page="pageChats"><i class="fas fa-comment-dots"></i><span>Chats</span></button>
   </nav>
 
   <script>
@@ -664,49 +517,37 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
-    const messaging = firebase.messaging();
 
     // ============ STATE ============
     let user = null;
     let currentUserId = null;
     let currentLang = 'en';
     let isSignUp = true;
-    let currentChatId = null;
-    let currentChatType = 'private';
-    let unsubscribeChat = null;
     let pendingUserData = null;
-    let activeChatTab = 'chats';
-    let attentionTimeout = null;
-    let unsubscribeRequests = null;
-    let fcmToken = null;
     let authStateChecked = false;
     let allUsers = [];
     let currentFilter = 'all';
     let searchQuery = '';
     let selectedMode = 'video';
-    let allUsersList = [];
-    let friendRequestsListener = null;
+    let isCallActive = false;
+    let isMicOn = true;
+    let isCameraOn = true;
+    let partnerOnline = false;
 
-    // ============ WEBRTC STATE ============
+    // WebRTC
     let peerConnection = null;
     let localStream = null;
     let remoteStream = null;
-    let isCallActive = false;
-    let isCameraOn = true;
-    let isMicOn = true;
-    let isScreenSharing = false;
-    let callStartTime = null;
-    let callTimer = null;
-    let iceCandidatesQueue = [];
     let signalingUnsubscribe = null;
+    let partnerStatusUnsubscribe = null;
     let hasMediaPermissions = false;
     let permissionRequested = false;
-    let partnerOnline = false;
-    let partnerStatusUnsubscribe = null;
     let isGettingMedia = false;
-    let dominantVideo = 'remote'; // 'remote' or 'local'
-    let callPartnerId = null;
-    let callPartnerName = 'Partner';
+    let dominantVideo = 'remote';
+    let callTimer = null;
+    let callStartTime = null;
+    let iceCandidatesQueue = [];
+    let attentionTimeout = null;
 
     // ============ UI HELPERS ============
     function showStep(stepId) {
@@ -745,6 +586,16 @@
       errorEl.classList.remove('hidden');
     }
 
+    function showNotification(msg) {
+      const existing = document.querySelector('.notification-toast');
+      if (existing) existing.remove();
+      const div = document.createElement('div');
+      div.className = 'notification-toast';
+      div.innerText = msg;
+      document.body.appendChild(div);
+      setTimeout(() => div.remove(), 3000);
+    }
+
     // ============ PROFILE TOGGLE ============
     let profileOpen = false;
 
@@ -761,12 +612,401 @@
       }
     }
 
-    // ============ MUSYAFFAH MODE SELECTION ============
+    // ============ MODE SELECTION ============
     function selectMode(mode) {
       selectedMode = mode;
       document.getElementById('modeVideo').classList.toggle('active', mode === 'video');
       document.getElementById('modeAudio').classList.toggle('active', mode === 'audio');
       showNotification('Switched to ' + (mode === 'video' ? 'Video' : 'Audio') + ' mode');
+    }
+
+    // ============ AUTH ============
+    async function handleAuth() {
+      const email = document.getElementById('authEmail').value.trim();
+      const password = document.getElementById('authPassword').value;
+      const confirm = document.getElementById('confirmPassword').value;
+      
+      document.getElementById('authError').classList.add('hidden');
+
+      if (!email || !password) {
+        showAuthError('Please fill all fields');
+        return;
+      }
+
+      if (isSignUp && password !== confirm) {
+        showAuthError('Passwords do not match');
+        return;
+      }
+
+      if (isSignUp && password.length < 6) {
+        showAuthError('Password must be at least 6 characters');
+        return;
+      }
+
+      const btn = document.getElementById('authButton');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+
+      try {
+        if (isSignUp) {
+          const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+          await userCredential.user.sendEmailVerification();
+          pendingUserData = { uid: userCredential.user.uid, email: email };
+          document.getElementById('verifyEmailDisplay').innerText = email;
+          showStep('authStep2');
+          showNotification('📧 Verification email sent!');
+        } else {
+          const userCredential = await auth.signInWithEmailAndPassword(email, password);
+          const firebaseUser = userCredential.user;
+          
+          if (!firebaseUser.emailVerified) {
+            showAuthError('⚠️ Please verify your email first.');
+            await auth.signOut();
+            btn.disabled = false;
+            btn.innerHTML = isSignUp ? '<i class="fas fa-user-plus"></i> Sign Up' : '<i class="fas fa-sign-in-alt"></i> Sign In';
+            return;
+          }
+          
+          currentUserId = firebaseUser.uid;
+          const doc = await db.collection('users').doc(currentUserId).get();
+          
+          if (doc.exists) {
+            user = doc.data();
+            user.id = currentUserId;
+            localStorage.setItem('musaffahUser', JSON.stringify(user));
+            await db.collection('users').doc(currentUserId).update({ online: true });
+            loadApp();
+          } else {
+            pendingUserData = { uid: currentUserId, email: firebaseUser.email };
+            showStep('authStep3');
+            showNotification('📝 Complete your profile.');
+          }
+        }
+      } catch (e) {
+        console.error('Auth Error:', e);
+        if (e.code === 'auth/email-already-in-use') {
+          showAuthError('Email already registered. Please sign in.');
+        } else if (e.code === 'auth/user-not-found') {
+          showAuthError('No account found. Please sign up.');
+        } else if (e.code === 'auth/wrong-password') {
+          showAuthError('Incorrect password.');
+        } else if (e.code === 'auth/too-many-requests') {
+          showAuthError('Too many attempts. Try again later.');
+        } else {
+          showAuthError(e.message || 'Authentication failed.');
+        }
+      }
+
+      btn.disabled = false;
+      btn.innerHTML = isSignUp ? '<i class="fas fa-user-plus"></i> Sign Up' : '<i class="fas fa-sign-in-alt"></i> Sign In';
+    }
+
+    async function resendVerification() {
+      try {
+        const firebaseUser = auth.currentUser;
+        if (firebaseUser) {
+          await firebaseUser.sendEmailVerification();
+          showNotification('📧 Verification email resent!');
+        }
+      } catch (e) {
+        showNotification('Error: ' + e.message);
+      }
+    }
+
+    async function checkVerification() {
+      try {
+        const firebaseUser = auth.currentUser;
+        if (!firebaseUser) {
+          showNotification('Please sign in again');
+          goBackToAuth();
+          return;
+        }
+        await firebaseUser.reload();
+        if (firebaseUser.emailVerified) {
+          showNotification('✅ Email verified!');
+          const doc = await db.collection('users').doc(firebaseUser.uid).get();
+          if (doc.exists) {
+            user = doc.data();
+            user.id = firebaseUser.uid;
+            localStorage.setItem('musaffahUser', JSON.stringify(user));
+            await db.collection('users').doc(firebaseUser.uid).update({ online: true });
+            loadApp();
+          } else {
+            pendingUserData = { uid: firebaseUser.uid, email: firebaseUser.email };
+            showStep('authStep3');
+          }
+        } else {
+          showNotification('⚠️ Email not verified yet.');
+        }
+      } catch (e) {
+        showNotification('Error: ' + e.message);
+      }
+    }
+
+    // ============ ONBOARDING ============
+    async function completeOnboarding() {
+      if (!pendingUserData) {
+        showNotification('Please sign up first');
+        return;
+      }
+
+      const name = document.getElementById('onboardingName').value.trim() || 'Reader';
+      const lang = document.getElementById('onboardingLang').value;
+      const region = document.getElementById('onboardingRegion').value;
+      const plan = document.getElementById('onboardingPlan').value;
+
+      const regionNames = {
+        mecca: 'Makkah', medina: 'Madinah', cairo: 'Cairo',
+        london: 'London', newyork: 'New York', lagos: 'Lagos',
+        jakarta: 'Jakarta', karachi: 'Karachi', istanbul: 'Istanbul',
+        riyadh: 'Riyadh'
+      };
+
+      try {
+        const userData = {
+          name: name,
+          plan: plan,
+          lang: lang,
+          region: region,
+          regionName: regionNames[region] || region,
+          partner: '',
+          partnerId: '',
+          juz: [],
+          khatm: 0,
+          streak: 0,
+          theme: 'light',
+          online: true,
+          pendingRequests: [],
+          sentRequests: [],
+          isReciting: false,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        await db.collection('users').doc(pendingUserData.uid).set(userData);
+        user = { ...userData, id: pendingUserData.uid };
+        currentUserId = pendingUserData.uid;
+        currentLang = lang;
+        localStorage.setItem('musaffahUser', JSON.stringify(user));
+        await db.collection('users').doc(user.id).update({ online: true });
+        updateLanguage();
+        loadApp();
+        showNotification('🎉 Welcome ' + name + '!');
+      } catch (e) {
+        showNotification('Error: ' + e.message);
+      }
+    }
+
+    // ============ SIGN OUT ============
+    async function signOut() {
+      if (isCallActive) endCall();
+      if (partnerStatusUnsubscribe) {
+        partnerStatusUnsubscribe();
+        partnerStatusUnsubscribe = null;
+      }
+      if (signalingUnsubscribe) {
+        signalingUnsubscribe();
+        signalingUnsubscribe = null;
+      }
+      
+      if (user && user.id) {
+        try {
+          await db.collection('users').doc(user.id).update({ online: false });
+        } catch (e) {}
+      }
+      
+      auth.signOut();
+      localStorage.removeItem('musaffahUser');
+      user = null;
+      
+      document.getElementById('authCard').classList.remove('hidden');
+      document.getElementById('appMain').classList.add('hidden');
+      showStep('authStep1');
+      showNotification('👋 Signed out');
+    }
+
+    // ============ LOAD APP ============
+    async function loadApp() {
+      if (!user) {
+        const stored = localStorage.getItem('musaffahUser');
+        if (stored) { 
+          try { 
+            user = JSON.parse(stored); 
+            const doc = await db.collection('users').doc(user.id).get();
+            if (doc.exists) {
+              const data = doc.data();
+              user = { ...data, id: user.id };
+              localStorage.setItem('musaffahUser', JSON.stringify(user));
+            } else {
+              user = null;
+              localStorage.removeItem('musaffahUser');
+              return;
+            }
+          } catch(e) { 
+            user = null; 
+            localStorage.removeItem('musaffahUser');
+          }
+        }
+      }
+      
+      if (!user || !user.id) {
+        document.getElementById('authCard').classList.remove('hidden');
+        document.getElementById('appMain').classList.add('hidden');
+        showStep('authStep1');
+        return;
+      }
+
+      try {
+        const doc = await db.collection('users').doc(user.id).get();
+        if (doc.exists) {
+          const data = doc.data();
+          user = { ...data, id: user.id };
+          localStorage.setItem('musaffahUser', JSON.stringify(user));
+        }
+      } catch (e) { 
+        console.warn('Firestore fetch failed', e);
+      }
+
+      document.getElementById('authCard').classList.add('hidden');
+      document.getElementById('appMain').classList.remove('hidden');
+
+      const initial = (user.name || 'Reader')[0].toUpperCase();
+      document.getElementById('avatarDisplay').innerText = initial;
+      document.getElementById('welcomeName').innerText = 'Assalamu Alaikum, ' + (user.name || 'Reader');
+      document.getElementById('userEmailDisplay').innerText = auth.currentUser?.email || '';
+      
+      document.getElementById('profileName').innerText = user.name || 'Reader';
+      document.getElementById('profileEmail').innerText = auth.currentUser?.email || '';
+      document.getElementById('profilePlan').innerText = (user.plan || '7') + ' days';
+      document.getElementById('profileRegion').innerText = user.regionName || 'Mecca';
+      
+      const langNames = {
+        en: 'English', ar: 'العربية', ha: 'Hausa', ur: 'اردو', tr: 'Türkçe', fr: 'Français', id: 'Bahasa Indonesia'
+      };
+      document.getElementById('profileLanguage').innerText = langNames[user.lang] || 'English';
+
+      document.getElementById('statJuz').innerText = user.juz ? user.juz.length : 0;
+      document.getElementById('statKhatm').innerText = user.khatm || 0;
+      document.getElementById('statStreak').innerText = user.streak || 0;
+
+      if (user.theme === 'dark') document.body.classList.add('dark');
+      else document.body.classList.remove('dark');
+
+      currentLang = user.lang || 'en';
+      updateLanguage();
+
+      renderJuz();
+      updatePartnerDisplay();
+      listenForConnectionRequests();
+      loadAllUsers();
+      
+      if (user.partner) {
+        listenPartnerStatus();
+      }
+    }
+
+    // ============ AUTH STATE LISTENER ============
+    auth.onAuthStateChanged(async (firebaseUser) => {
+      if (authStateChecked) return;
+      
+      if (firebaseUser) {
+        if (!firebaseUser.emailVerified) {
+          document.getElementById('authCard').classList.remove('hidden');
+          document.getElementById('appMain').classList.add('hidden');
+          document.getElementById('verifyEmailDisplay').innerText = firebaseUser.email;
+          showStep('authStep2');
+          authStateChecked = true;
+          return;
+        }
+        
+        const stored = localStorage.getItem('musaffahUser');
+        if (stored) {
+          try { 
+            user = JSON.parse(stored); 
+            if (user && user.id === firebaseUser.uid) {
+              const doc = await db.collection('users').doc(user.id).get();
+              if (doc.exists) {
+                const data = doc.data();
+                user = { ...data, id: user.id };
+                localStorage.setItem('musaffahUser', JSON.stringify(user));
+                await db.collection('users').doc(user.id).update({ online: true });
+                authStateChecked = true;
+                loadApp();
+                return;
+              }
+            }
+          } catch(e) { 
+            user = null; 
+            localStorage.removeItem('musaffahUser');
+          }
+        }
+        
+        try {
+          const doc = await db.collection('users').doc(firebaseUser.uid).get();
+          if (doc.exists) {
+            user = doc.data();
+            user.id = firebaseUser.uid;
+            localStorage.setItem('musaffahUser', JSON.stringify(user));
+            await db.collection('users').doc(user.id).update({ online: true });
+            authStateChecked = true;
+            loadApp();
+          } else {
+            pendingUserData = { uid: firebaseUser.uid, email: firebaseUser.email };
+            document.getElementById('authCard').classList.remove('hidden');
+            document.getElementById('appMain').classList.add('hidden');
+            showStep('authStep3');
+            authStateChecked = true;
+          }
+        } catch (e) {
+          console.warn('Error loading user data:', e);
+          authStateChecked = true;
+        }
+      } else {
+        document.getElementById('authCard').classList.remove('hidden');
+        document.getElementById('appMain').classList.add('hidden');
+        showStep('authStep1');
+        authStateChecked = true;
+      }
+    });
+
+    // ============ INIT ============
+    document.getElementById('confirmPasswordWrapper').style.display = 'block';
+    showStep('authStep1');
+
+    // ============ JUZ ============
+    function renderJuz() {
+      const grid = document.getElementById('juzGrid');
+      grid.innerHTML = '';
+      const juzList = user.juz || [];
+      for (let i = 1; i <= 30; i++) {
+        const el = document.createElement('div');
+        el.className = 'juz-item' + (juzList.includes(i) ? ' completed' : '');
+        el.innerText = i;
+        el.onclick = () => toggleJuz(i);
+        grid.appendChild(el);
+      }
+    }
+
+    async function toggleJuz(i) {
+      if (!user) return;
+      const juzList = user.juz || [];
+      const idx = juzList.indexOf(i);
+      if (idx > -1) juzList.splice(idx, 1);
+      else juzList.push(i);
+
+      if (juzList.length === 30) {
+        user.khatm = (user.khatm || 0) + 1;
+        user.streak = (user.streak || 0) + 1;
+        showNotification('🎉 Masha\'Allah! Full Khatm completed!');
+      }
+      user.juz = juzList;
+      if (user.id && user.id !== 'local') {
+        try { await db.collection('users').doc(user.id).update({ juz: user.juz, khatm: user.khatm, streak: user.streak }); } catch (e) {}
+      }
+      localStorage.setItem('musaffahUser', JSON.stringify(user));
+      renderJuz();
+      document.getElementById('statJuz').innerText = user.juz.length;
+      document.getElementById('statKhatm').innerText = user.khatm;
+      document.getElementById('statStreak').innerText = user.streak;
     }
 
     // ============ PARTNER SEARCH ============
@@ -876,1019 +1116,7 @@
       container.innerHTML = html;
     }
 
-    // ============ AUTH ============
-    async function handleAuth() {
-      const email = document.getElementById('authEmail').value.trim();
-      const password = document.getElementById('authPassword').value;
-      const confirm = document.getElementById('confirmPassword').value;
-      
-      document.getElementById('authError').classList.add('hidden');
-
-      if (!email || !password) {
-        showAuthError('Please fill all fields');
-        return;
-      }
-
-      if (isSignUp && password !== confirm) {
-        showAuthError('Passwords do not match');
-        return;
-      }
-
-      if (isSignUp && password.length < 6) {
-        showAuthError('Password must be at least 6 characters');
-        return;
-      }
-
-      const btn = document.getElementById('authButton');
-      btn.disabled = true;
-      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-
-      try {
-        if (isSignUp) {
-          const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-          await userCredential.user.sendEmailVerification();
-          
-          pendingUserData = { uid: userCredential.user.uid, email: email };
-          document.getElementById('verifyEmailDisplay').innerText = email;
-          showStep('authStep2');
-          showNotification('📧 Verification email sent! Please check your inbox.');
-        } else {
-          const userCredential = await auth.signInWithEmailAndPassword(email, password);
-          const firebaseUser = userCredential.user;
-          
-          if (!firebaseUser.emailVerified) {
-            showAuthError('⚠️ Please verify your email first. Check your inbox for the verification link.');
-            await auth.signOut();
-            btn.disabled = false;
-            btn.innerHTML = isSignUp ? '<i class="fas fa-user-plus"></i> Sign Up' : '<i class="fas fa-sign-in-alt"></i> Sign In';
-            return;
-          }
-          
-          currentUserId = firebaseUser.uid;
-          const doc = await db.collection('users').doc(currentUserId).get();
-          
-          if (doc.exists) {
-            user = doc.data();
-            user.id = currentUserId;
-            localStorage.setItem('musaffahUser', JSON.stringify(user));
-            await db.collection('users').doc(currentUserId).update({ online: true });
-            loadApp();
-          } else {
-            pendingUserData = { uid: currentUserId, email: firebaseUser.email };
-            showStep('authStep3');
-            showNotification('📝 Please complete your profile setup.');
-          }
-        }
-      } catch (e) {
-        console.error('Auth Error:', e);
-        if (e.code === 'auth/email-already-in-use') {
-          showAuthError('Email already registered. Please sign in instead.');
-        } else if (e.code === 'auth/user-not-found') {
-          showAuthError('No account found with this email. Please sign up.');
-        } else if (e.code === 'auth/wrong-password') {
-          showAuthError('Incorrect password. Please try again.');
-        } else if (e.code === 'auth/too-many-requests') {
-          showAuthError('Too many failed attempts. Please try again later.');
-        } else if (e.code === 'auth/network-request-failed') {
-          showAuthError('Network error. Please check your internet connection.');
-        } else {
-          showAuthError(e.message || 'Authentication failed. Please try again.');
-        }
-      }
-
-      btn.disabled = false;
-      btn.innerHTML = isSignUp ? '<i class="fas fa-user-plus"></i> Sign Up' : '<i class="fas fa-sign-in-alt"></i> Sign In';
-    }
-
-    async function resendVerification() {
-      try {
-        const firebaseUser = auth.currentUser;
-        if (firebaseUser) {
-          await firebaseUser.sendEmailVerification();
-          showNotification('📧 Verification email resent!');
-        } else {
-          showNotification('Please sign in again to resend verification.');
-          goBackToAuth();
-        }
-      } catch (e) {
-        showNotification('Error: ' + e.message);
-      }
-    }
-
-    async function checkVerification() {
-      try {
-        const firebaseUser = auth.currentUser;
-        if (!firebaseUser) {
-          showNotification('Please sign in again');
-          goBackToAuth();
-          return;
-        }
-        
-        await firebaseUser.reload();
-        
-        if (firebaseUser.emailVerified) {
-          showNotification('✅ Email verified! Setting up your account...');
-          
-          const doc = await db.collection('users').doc(firebaseUser.uid).get();
-          if (doc.exists) {
-            user = doc.data();
-            user.id = firebaseUser.uid;
-            localStorage.setItem('musaffahUser', JSON.stringify(user));
-            await db.collection('users').doc(firebaseUser.uid).update({ online: true });
-            loadApp();
-          } else {
-            pendingUserData = { uid: firebaseUser.uid, email: firebaseUser.email };
-            showStep('authStep3');
-            showNotification('📝 Please complete your profile setup.');
-          }
-        } else {
-          showNotification('⚠️ Email not verified yet. Please check your inbox or click "Resend Email".');
-        }
-      } catch (e) {
-        showNotification('Error: ' + e.message);
-      }
-    }
-
-    // ============ ONBOARDING ============
-    async function completeOnboarding() {
-      if (!pendingUserData) {
-        showNotification('Please sign up first');
-        return;
-      }
-
-      const name = document.getElementById('onboardingName').value.trim() || 'Reader';
-      const lang = document.getElementById('onboardingLang').value;
-      const region = document.getElementById('onboardingRegion').value;
-      const plan = document.getElementById('onboardingPlan').value;
-
-      const regionNames = {
-        mecca: 'Makkah', medina: 'Madinah', cairo: 'Cairo',
-        london: 'London', newyork: 'New York', lagos: 'Lagos',
-        jakarta: 'Jakarta', karachi: 'Karachi', istanbul: 'Istanbul',
-        riyadh: 'Riyadh'
-      };
-
-      try {
-        const userData = {
-          name: name,
-          plan: plan,
-          lang: lang,
-          region: region,
-          regionName: regionNames[region] || region,
-          partner: '',
-          partnerId: '',
-          juz: [],
-          khatm: 0,
-          streak: 0,
-          theme: 'light',
-          badges: [],
-          online: true,
-          pendingRequests: [],
-          sentRequests: [],
-          friendRequests: [],
-          friends: [],
-          chats: [],
-          isReciting: false,
-          fcmToken: '',
-          notificationsEnabled: false,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        };
-
-        await db.collection('users').doc(pendingUserData.uid).set(userData);
-        user = { ...userData, id: pendingUserData.uid };
-        currentUserId = pendingUserData.uid;
-        currentLang = lang;
-        localStorage.setItem('musaffahUser', JSON.stringify(user));
-        
-        await db.collection('users').doc(user.id).update({ online: true });
-        
-        updateLanguage();
-        loadApp();
-        showNotification('🎉 Welcome ' + name + '! Your account is ready.');
-      } catch (e) {
-        showNotification('Error saving preferences: ' + e.message);
-      }
-    }
-
-    // ============ SIGN OUT ============
-    async function signOut() {
-      if (isCallActive) endCall();
-      if (partnerStatusUnsubscribe) {
-        partnerStatusUnsubscribe();
-        partnerStatusUnsubscribe = null;
-      }
-      if (friendRequestsListener) {
-        friendRequestsListener();
-        friendRequestsListener = null;
-      }
-      
-      if (user && user.id) {
-        try {
-          await db.collection('users').doc(user.id).update({ online: false });
-        } catch (e) {}
-      }
-      
-      auth.signOut();
-      localStorage.removeItem('musaffahUser');
-      user = null;
-      if (unsubscribeChat) unsubscribeChat();
-      if (unsubscribeRequests) unsubscribeRequests();
-      if (signalingUnsubscribe) signalingUnsubscribe();
-      
-      document.getElementById('authCard').classList.remove('hidden');
-      document.getElementById('appMain').classList.add('hidden');
-      showStep('authStep1');
-      showNotification('👋 Signed out successfully');
-    }
-
-    // ============ LOAD APP ============
-    async function loadApp() {
-      if (!user) {
-        const stored = localStorage.getItem('musaffahUser');
-        if (stored) { 
-          try { 
-            user = JSON.parse(stored); 
-            const doc = await db.collection('users').doc(user.id).get();
-            if (doc.exists) {
-              const data = doc.data();
-              user = { ...data, id: user.id };
-              localStorage.setItem('musaffahUser', JSON.stringify(user));
-            } else {
-              user = null;
-              localStorage.removeItem('musaffahUser');
-              return;
-            }
-          } catch(e) { 
-            user = null; 
-            localStorage.removeItem('musaffahUser');
-          }
-        }
-      }
-      
-      if (!user || !user.id) {
-        document.getElementById('authCard').classList.remove('hidden');
-        document.getElementById('appMain').classList.add('hidden');
-        showStep('authStep1');
-        return;
-      }
-
-      try {
-        const doc = await db.collection('users').doc(user.id).get();
-        if (doc.exists) {
-          const data = doc.data();
-          user = { ...data, id: user.id };
-          localStorage.setItem('musaffahUser', JSON.stringify(user));
-        }
-      } catch (e) { 
-        console.warn('Firestore fetch failed, using cached data', e);
-      }
-
-      document.getElementById('authCard').classList.add('hidden');
-      document.getElementById('appMain').classList.remove('hidden');
-
-      // Update Dashboard
-      const initial = (user.name || 'Reader')[0].toUpperCase();
-      document.getElementById('avatarDisplay').innerText = initial;
-      document.getElementById('welcomeName').innerText = 'Assalamu Alaikum, ' + (user.name || 'Reader');
-      document.getElementById('userEmailDisplay').innerText = auth.currentUser?.email || '';
-      
-      // Update Profile
-      document.getElementById('profileName').innerText = user.name || 'Reader';
-      document.getElementById('profileEmail').innerText = auth.currentUser?.email || '';
-      document.getElementById('profilePlan').innerText = (user.plan || '7') + ' days';
-      document.getElementById('profileRegion').innerText = user.regionName || 'Mecca';
-      
-      const langNames = {
-        en: 'English', ar: 'العربية', ha: 'Hausa', ur: 'اردو', tr: 'Türkçe', fr: 'Français', id: 'Bahasa Indonesia'
-      };
-      document.getElementById('profileLanguage').innerText = langNames[user.lang] || 'English';
-
-      // Update Stats
-      document.getElementById('statJuz').innerText = user.juz ? user.juz.length : 0;
-      document.getElementById('statKhatm').innerText = user.khatm || 0;
-      document.getElementById('statStreak').innerText = user.streak || 0;
-
-      if (user.theme === 'dark') document.body.classList.add('dark');
-      else document.body.classList.remove('dark');
-
-      currentLang = user.lang || 'en';
-      updateLanguage();
-
-      renderJuz();
-      updatePartnerDisplay();
-      listenForConnectionRequests();
-      listenForFriendRequests();
-      renderChats();
-      switchPage('pageHome');
-      
-      checkFCMPermission();
-      loadAllUsers();
-      
-      if (user.partner) {
-        listenPartnerStatus();
-      }
-    }
-
-    // ============ AUTH STATE LISTENER ============
-    auth.onAuthStateChanged(async (firebaseUser) => {
-      if (authStateChecked) return;
-      
-      if (firebaseUser) {
-        if (!firebaseUser.emailVerified) {
-          document.getElementById('authCard').classList.remove('hidden');
-          document.getElementById('appMain').classList.add('hidden');
-          document.getElementById('verifyEmailDisplay').innerText = firebaseUser.email;
-          showStep('authStep2');
-          authStateChecked = true;
-          return;
-        }
-        
-        const stored = localStorage.getItem('musaffahUser');
-        if (stored) {
-          try { 
-            user = JSON.parse(stored); 
-            if (user && user.id === firebaseUser.uid) {
-              const doc = await db.collection('users').doc(user.id).get();
-              if (doc.exists) {
-                const data = doc.data();
-                user = { ...data, id: user.id };
-                localStorage.setItem('musaffahUser', JSON.stringify(user));
-                await db.collection('users').doc(user.id).update({ online: true });
-                authStateChecked = true;
-                loadApp();
-                checkFCMPermission();
-                return;
-              }
-            }
-          } catch(e) { 
-            user = null; 
-            localStorage.removeItem('musaffahUser');
-          }
-        }
-        
-        try {
-          const doc = await db.collection('users').doc(firebaseUser.uid).get();
-          if (doc.exists) {
-            user = doc.data();
-            user.id = firebaseUser.uid;
-            localStorage.setItem('musaffahUser', JSON.stringify(user));
-            await db.collection('users').doc(user.id).update({ online: true });
-            authStateChecked = true;
-            loadApp();
-            checkFCMPermission();
-          } else {
-            pendingUserData = { uid: firebaseUser.uid, email: firebaseUser.email };
-            document.getElementById('authCard').classList.remove('hidden');
-            document.getElementById('appMain').classList.add('hidden');
-            showStep('authStep3');
-            authStateChecked = true;
-          }
-        } catch (e) {
-          console.warn('Error loading user data:', e);
-          authStateChecked = true;
-        }
-      } else {
-        document.getElementById('authCard').classList.remove('hidden');
-        document.getElementById('appMain').classList.add('hidden');
-        showStep('authStep1');
-        authStateChecked = true;
-      }
-    });
-
-    // ============ INIT ============
-    document.getElementById('confirmPasswordWrapper').style.display = 'block';
-    showStep('authStep1');
-
-    document.getElementById('chatInput')?.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') sendChatMessage();
-    });
-
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('firebase-messaging-sw.js')
-        .then((registration) => {
-          console.log('Service Worker registered for FCM');
-        })
-        .catch((err) => {
-          console.log('Service Worker registration failed:', err);
-        });
-    }
-
-    // Default mode: video
-    selectMode('video');
-
-    // ============ PARTNER ONLINE STATUS ============
-    function listenPartnerStatus() {
-      if (partnerStatusUnsubscribe) {
-        partnerStatusUnsubscribe();
-        partnerStatusUnsubscribe = null;
-      }
-      
-      if (!user || !user.partnerId) return;
-      
-      partnerStatusUnsubscribe = db.collection('users').doc(user.partnerId)
-        .onSnapshot((doc) => {
-          if (doc.exists) {
-            const data = doc.data();
-            partnerOnline = data.online === true;
-          }
-        });
-    }
-
-    // ============ MEDIA PERMISSIONS ============
-    async function requestMediaPermissions() {
-      if (hasMediaPermissions) return true;
-      if (permissionRequested) {
-        showNotification('📹 Access already requested. Please check browser settings.');
-        return false;
-      }
-      if (isGettingMedia) {
-        showNotification('⏳ Already requesting access...');
-        return false;
-      }
-      
-      try {
-        isGettingMedia = true;
-        document.getElementById('mediaError').style.display = 'none';
-        
-        const constraints = { audio: true };
-        if (selectedMode === 'video') {
-          constraints.video = { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } };
-        }
-        
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        stream.getTracks().forEach(track => track.stop());
-        
-        hasMediaPermissions = true;
-        permissionRequested = true;
-        document.getElementById('mediaPermissionBanner').classList.add('hidden');
-        document.getElementById('mediaError').style.display = 'none';
-        
-        showNotification('✅ Camera and microphone access granted!');
-        isGettingMedia = false;
-        return true;
-      } catch (e) {
-        console.error('Media permission error:', e);
-        isGettingMedia = false;
-        
-        let errorMsg = '';
-        if (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError') {
-          errorMsg = 'Camera and microphone access denied. Please enable in browser settings.';
-          document.getElementById('mediaPermissionBanner').classList.remove('hidden');
-          document.getElementById('mediaPermissionBanner').innerHTML = `
-            <p>🎥 Camera and microphone access denied. Please enable in browser settings.</p>
-            <button onclick="requestMediaPermissions()" class="success"><i class="fas fa-sync"></i> Try Again</button>
-          `;
-        } else if (e.name === 'NotFoundError' || e.name === 'DevicesNotFoundError') {
-          errorMsg = 'No camera or microphone found on your device.';
-          document.getElementById('mediaPermissionBanner').classList.remove('hidden');
-          document.getElementById('mediaPermissionBanner').innerHTML = `
-            <p>📹 No camera or microphone detected. Please connect a device.</p>
-            <button onclick="requestMediaPermissions()" class="success"><i class="fas fa-sync"></i> Try Again</button>
-          `;
-        } else {
-          errorMsg = 'Could not access camera/microphone: ' + e.message;
-        }
-        
-        document.getElementById('mediaError').textContent = '❌ ' + errorMsg;
-        document.getElementById('mediaError').style.display = 'block';
-        showNotification('❌ ' + errorMsg);
-        return false;
-      }
-    }
-
-    // ============ WEBRTC FUNCTIONS ============
-    async function getLocalStream() {
-      if (isGettingMedia) {
-        showNotification('⏳ Please wait...');
-        return null;
-      }
-      
-      if (!hasMediaPermissions) {
-        const granted = await requestMediaPermissions();
-        if (!granted) return null;
-      }
-
-      try {
-        isGettingMedia = true;
-        const constraints = { audio: true };
-        if (selectedMode === 'video') {
-          constraints.video = { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } };
-        }
-        
-        localStream = await navigator.mediaDevices.getUserMedia(constraints);
-        document.getElementById('mediaError').style.display = 'none';
-        isGettingMedia = false;
-        return localStream;
-      } catch (e) {
-        console.error('Error getting local stream:', e);
-        isGettingMedia = false;
-        showNotification('❌ Could not access camera/microphone: ' + e.message);
-        return null;
-      }
-    }
-
-    function createPeerConnection() {
-      const configuration = {
-        iceServers: [
-          { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:stun1.l.google.com:19302' },
-          { urls: 'stun:stun2.l.google.com:19302' },
-          { urls: 'stun:stun3.l.google.com:19302' },
-          { urls: 'stun:stun4.l.google.com:19302' }
-        ]
-      };
-      
-      peerConnection = new RTCPeerConnection(configuration);
-      
-      if (localStream) {
-        localStream.getTracks().forEach(track => {
-          peerConnection.addTrack(track, localStream);
-        });
-      }
-      
-      peerConnection.ontrack = (event) => {
-        remoteStream = event.streams[0];
-        const remoteVideo = document.getElementById('remoteVideoCall');
-        remoteVideo.srcObject = remoteStream;
-        updateCallStatus('connected');
-        showNotification('📹 Call connected!');
-      };
-      
-      peerConnection.onicecandidate = (event) => {
-        if (event.candidate) {
-          sendSignalingData({ type: 'ice-candidate', candidate: event.candidate });
-        }
-      };
-      
-      peerConnection.onconnectionstatechange = () => {
-        const state = peerConnection.connectionState;
-        console.log('Connection state:', state);
-        if (state === 'connected') {
-          isCallActive = true;
-          startCallTimer();
-        } else if (state === 'disconnected' || state === 'failed' || state === 'closed') {
-          endCall();
-        }
-      };
-      
-      return peerConnection;
-    }
-
-    async function startCall() {
-      if (!user || !user.partnerId) {
-        showNotification('Please connect with a partner first');
-        return;
-      }
-      
-      if (!partnerOnline) {
-        showNotification(`📡 ${user.partner} is currently offline.`);
-        return;
-      }
-      
-      if (isCallActive) {
-        endCall();
-        return;
-      }
-      
-      if (isGettingMedia) {
-        showNotification('⏳ Please wait for media access...');
-        return;
-      }
-      
-      try {
-        if (!hasMediaPermissions) {
-          const granted = await requestMediaPermissions();
-          if (!granted) return;
-        }
-        
-        if (!localStream) {
-          const stream = await getLocalStream();
-          if (!stream) return;
-        }
-        
-        // Setup fullscreen call UI
-        document.getElementById('callFullscreen').classList.add('active');
-        document.getElementById('container').style.display = 'none';
-        document.getElementById('bottomNav').style.display = 'none';
-        document.getElementById('header').style.display = 'none';
-        
-        // Show/hide video based on mode
-        if (selectedMode === 'audio') {
-          document.getElementById('localVideoWrapper').style.display = 'none';
-          document.getElementById('remoteVideoWrapper').style.display = 'none';
-          document.getElementById('audioModeIndicator').style.display = 'block';
-          document.getElementById('callCamToggle').style.display = 'none';
-        } else {
-          document.getElementById('localVideoWrapper').style.display = 'block';
-          document.getElementById('remoteVideoWrapper').style.display = 'block';
-          document.getElementById('audioModeIndicator').style.display = 'none';
-          document.getElementById('callCamToggle').style.display = 'inline-block';
-        }
-        
-        // Set local video
-        const localVideo = document.getElementById('localVideoCall');
-        localVideo.srcObject = localStream;
-        
-        callPartnerId = user.partnerId;
-        callPartnerName = user.partner;
-        document.getElementById('remoteCallLabel').textContent = callPartnerName;
-        
-        createPeerConnection();
-        
-        const offer = await peerConnection.createOffer();
-        await peerConnection.setLocalDescription(offer);
-        
-        sendSignalingData({ type: 'offer', offer: offer });
-        
-        updateCallStatus('connecting');
-        showNotification(`📞 Calling ${callPartnerName}...`);
-        
-      } catch (e) {
-        console.error('Error starting call:', e);
-        showNotification('❌ Failed to start call: ' + e.message);
-        endCall();
-      }
-    }
-
-    async function handleSignalingData(data) {
-      if (!peerConnection) {
-        if (data.type === 'offer') {
-          await handleIncomingCall(data.offer);
-        }
-        return;
-      }
-      
-      try {
-        if (data.type === 'offer') {
-          await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
-          const answer = await peerConnection.createAnswer();
-          await peerConnection.setLocalDescription(answer);
-          sendSignalingData({ type: 'answer', answer: answer });
-          
-        } else if (data.type === 'answer') {
-          await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
-          
-        } else if (data.type === 'ice-candidate') {
-          if (data.candidate) {
-            try {
-              await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
-            } catch (e) {
-              iceCandidatesQueue.push(data.candidate);
-            }
-          }
-        }
-      } catch (e) {
-        console.error('Error handling signaling:', e);
-      }
-    }
-
-    async function handleIncomingCall(offer) {
-      if (isGettingMedia) {
-        sendSignalingData({ type: 'reject', reason: 'busy' });
-        return;
-      }
-      
-      try {
-        if (!partnerOnline) {
-          sendSignalingData({ type: 'reject', reason: 'offline' });
-          showNotification(`📡 ${user.partner} is offline`);
-          return;
-        }
-        
-        if (!hasMediaPermissions) {
-          const granted = await requestMediaPermissions();
-          if (!granted) {
-            sendSignalingData({ type: 'reject' });
-            return;
-          }
-        }
-        
-        if (!localStream) {
-          const stream = await getLocalStream();
-          if (!stream) {
-            sendSignalingData({ type: 'reject' });
-            return;
-          }
-        }
-        
-        // Setup fullscreen call UI
-        document.getElementById('callFullscreen').classList.add('active');
-        document.getElementById('container').style.display = 'none';
-        document.getElementById('bottomNav').style.display = 'none';
-        document.getElementById('header').style.display = 'none';
-        
-        if (selectedMode === 'audio') {
-          document.getElementById('localVideoWrapper').style.display = 'none';
-          document.getElementById('remoteVideoWrapper').style.display = 'none';
-          document.getElementById('audioModeIndicator').style.display = 'block';
-          document.getElementById('callCamToggle').style.display = 'none';
-        } else {
-          document.getElementById('localVideoWrapper').style.display = 'block';
-          document.getElementById('remoteVideoWrapper').style.display = 'block';
-          document.getElementById('audioModeIndicator').style.display = 'none';
-          document.getElementById('callCamToggle').style.display = 'inline-block';
-        }
-        
-        const localVideo = document.getElementById('localVideoCall');
-        localVideo.srcObject = localStream;
-        
-        callPartnerId = user.partnerId;
-        callPartnerName = user.partner;
-        document.getElementById('remoteCallLabel').textContent = callPartnerName;
-        
-        createPeerConnection();
-        
-        await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
-        const answer = await peerConnection.createAnswer();
-        await peerConnection.setLocalDescription(answer);
-        sendSignalingData({ type: 'answer', answer: answer });
-        
-        updateCallStatus('connected');
-        isCallActive = true;
-        startCallTimer();
-        
-        showNotification('📹 Call connected!');
-        
-        if (iceCandidatesQueue.length > 0) {
-          iceCandidatesQueue.forEach(candidate => {
-            peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-          });
-          iceCandidatesQueue = [];
-        }
-        
-      } catch (e) {
-        console.error('Error handling incoming call:', e);
-        showNotification('❌ Failed to answer call: ' + e.message);
-        endCall();
-      }
-    }
-
-    function sendSignalingData(data) {
-      if (!user || !user.partnerId) return;
-      
-      data.from = user.id;
-      data.to = user.partnerId;
-      data.timestamp = firebase.firestore.FieldValue.serverTimestamp();
-      
-      db.collection('signaling').add(data).catch(e => {
-        console.warn('Failed to send signaling data:', e);
-      });
-    }
-
-    function listenForSignaling() {
-      if (signalingUnsubscribe) {
-        signalingUnsubscribe();
-        signalingUnsubscribe = null;
-      }
-      
-      if (!user || !user.partnerId) return;
-      
-      signalingUnsubscribe = db.collection('signaling')
-        .where('to', '==', user.id)
-        .orderBy('timestamp', 'asc')
-        .onSnapshot((snapshot) => {
-          snapshot.docChanges().forEach(change => {
-            if (change.type === 'added') {
-              const data = change.doc.data();
-              if (data.from === user.id) return;
-              
-              if (data.type === 'reject') {
-                const reason = data.reason || '';
-                if (reason === 'offline') {
-                  showNotification(`📡 ${user.partner} is offline`);
-                } else if (reason === 'busy') {
-                  showNotification(`📞 ${user.partner} is busy`);
-                } else {
-                  showNotification('📞 Call rejected by partner');
-                }
-                endCall();
-                change.doc.ref.delete().catch(() => {});
-                return;
-              }
-              
-              handleSignalingData(data);
-              change.doc.ref.delete().catch(() => {});
-            }
-          });
-        });
-    }
-
-    function endCall() {
-      isCallActive = false;
-      if (callTimer) {
-        clearInterval(callTimer);
-        callTimer = null;
-      }
-      
-      if (peerConnection) {
-        peerConnection.close();
-        peerConnection = null;
-      }
-      
-      remoteStream = null;
-      document.getElementById('remoteVideoCall').srcObject = null;
-      document.getElementById('localVideoCall').srcObject = null;
-      
-      document.getElementById('callFullscreen').classList.remove('active');
-      document.getElementById('container').style.display = 'block';
-      document.getElementById('bottomNav').style.display = 'flex';
-      document.getElementById('header').style.display = 'block';
-      
-      if (signalingUnsubscribe) {
-        signalingUnsubscribe();
-        signalingUnsubscribe = null;
-      }
-      
-      if (user && user.partnerId) {
-        sendSignalingData({ type: 'hangup' });
-      }
-      
-      iceCandidatesQueue = [];
-      
-      // Reset audio mode
-      document.getElementById('audioModeIndicator').style.display = 'none';
-      document.getElementById('localVideoWrapper').style.display = 'block';
-      document.getElementById('remoteVideoWrapper').style.display = 'block';
-      document.getElementById('callCamToggle').style.display = 'inline-block';
-      document.getElementById('correctionFlash').classList.remove('active');
-      
-      showNotification('📴 Call ended');
-    }
-
-    function updateCallStatus(status) {
-      // Status is shown in the call UI via the video labels
-      if (status === 'connected') {
-        document.getElementById('remoteCallLabel').textContent = callPartnerName + ' (Live)';
-      } else if (status === 'connecting') {
-        document.getElementById('remoteCallLabel').textContent = 'Connecting...';
-      }
-    }
-
-    function startCallTimer() {
-      callStartTime = Date.now();
-      if (callTimer) clearInterval(callTimer);
-      callTimer = setInterval(() => {
-        const elapsed = Math.floor((Date.now() - callStartTime) / 1000);
-        const mins = Math.floor(elapsed / 60);
-        const secs = elapsed % 60;
-        // Update call duration in the UI
-        const duration = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
-        document.getElementById('remoteCallLabel').textContent = callPartnerName + ' · ' + duration;
-      }, 1000);
-    }
-
-    // ============ CALL CONTROLS ============
-    function toggleCallMic() {
-      if (!localStream) return;
-      isMicOn = !isMicOn;
-      const audioTracks = localStream.getAudioTracks();
-      audioTracks.forEach(track => track.enabled = isMicOn);
-      document.getElementById('callMicToggle').innerHTML = isMicOn ? '<i class="fas fa-microphone"></i> Mic' : '<i class="fas fa-microphone-slash"></i> Mic';
-      document.getElementById('callMicToggle').className = isMicOn ? 'outline' : 'mic-off';
-    }
-
-    function toggleCallCam() {
-      if (selectedMode === 'audio' || !localStream) return;
-      isCameraOn = !isCameraOn;
-      const videoTracks = localStream.getVideoTracks();
-      videoTracks.forEach(track => track.enabled = isCameraOn);
-      document.getElementById('callCamToggle').innerHTML = isCameraOn ? '<i class="fas fa-video"></i> Cam' : '<i class="fas fa-video-slash"></i> Cam';
-      document.getElementById('callCamToggle').className = isCameraOn ? 'outline' : 'cam-off';
-    }
-
-    function sendCorrectionAlert() {
-      if (!isCallActive || !user || !user.partnerId) {
-        showNotification('No active call');
-        return;
-      }
-      
-      // Send correction alert to partner
-      db.collection('attentionAlerts').add({
-        fromId: user.id,
-        fromName: user.name || 'Reader',
-        toId: user.partnerId,
-        dismissed: false,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-      
-      // Flash local screen
-      const flash = document.getElementById('correctionFlash');
-      flash.classList.add('active');
-      setTimeout(() => flash.classList.remove('active'), 1500);
-      
-      showNotification('🔔 Correction alert sent to ' + user.partner);
-    }
-
-    // Listen for correction alerts
-    function listenForCorrectionAlerts() {
-      if (!user) return;
-      
-      db.collection('attentionAlerts')
-        .where('toId', '==', user.id)
-        .where('dismissed', '==', false)
-        .onSnapshot((snapshot) => {
-          snapshot.forEach(doc => {
-            const alert = doc.data();
-            
-            // Flash screen red
-            const flash = document.getElementById('correctionFlash');
-            flash.classList.add('active');
-            setTimeout(() => flash.classList.remove('active'), 1500);
-            
-            // Show overlay
-            document.getElementById('attentionPartnerName').innerText = alert.fromName || 'Your partner';
-            document.getElementById('attentionOverlay').classList.add('show');
-            
-            if (navigator.vibrate) {
-              navigator.vibrate([200, 100, 200]);
-            }
-            
-            doc.ref.update({ dismissed: true }).catch(() => {});
-          });
-        });
-    }
-
-    function dismissAttention() {
-      document.getElementById('attentionOverlay').classList.remove('show');
-      if (attentionTimeout) {
-        clearTimeout(attentionTimeout);
-        attentionTimeout = null;
-      }
-    }
-
-    // ============ VIDEO DOMINANT TOGGLE ============
-    function toggleDominantVideo() {
-      const remoteWrapper = document.getElementById('remoteVideoWrapper');
-      const localWrapper = document.getElementById('localVideoWrapper');
-      
-      if (dominantVideo === 'remote') {
-        remoteWrapper.classList.remove('dominant');
-        localWrapper.classList.add('dominant');
-        dominantVideo = 'local';
-      } else {
-        localWrapper.classList.remove('dominant');
-        remoteWrapper.classList.add('dominant');
-        dominantVideo = 'remote';
-      }
-    }
-
-    // ============ JUZ ============
-    function renderJuz() {
-      const grid = document.getElementById('juzGrid');
-      grid.innerHTML = '';
-      const juzList = user.juz || [];
-      for (let i = 1; i <= 30; i++) {
-        const el = document.createElement('div');
-        el.className = 'juz-item' + (juzList.includes(i) ? ' completed' : '');
-        el.innerText = i;
-        el.onclick = () => toggleJuz(i);
-        grid.appendChild(el);
-      }
-    }
-
-    async function toggleJuz(i) {
-      if (!user) return;
-      const juzList = user.juz || [];
-      const idx = juzList.indexOf(i);
-      if (idx > -1) juzList.splice(idx, 1);
-      else juzList.push(i);
-
-      if (juzList.length === 30) {
-        user.khatm = (user.khatm || 0) + 1;
-        user.streak = (user.streak || 0) + 1;
-        showNotification('🎉 Masha\'Allah! Full Khatm completed!');
-      }
-      user.juz = juzList;
-      if (user.id && user.id !== 'local') {
-        try { await db.collection('users').doc(user.id).update({ juz: user.juz, khatm: user.khatm, streak: user.streak }); } catch (e) {}
-      }
-      localStorage.setItem('musaffahUser', JSON.stringify(user));
-      renderJuz();
-      document.getElementById('statJuz').innerText = user.juz.length;
-      document.getElementById('statKhatm').innerText = user.khatm;
-      document.getElementById('statStreak').innerText = user.streak;
-    }
-
-    // ============ PARTNER FUNCTIONS ============
-    function updatePartnerDisplay() {
-      const display = document.getElementById('partnerDisplay');
-      if (user.partner && user.partnerId) {
-        display.innerHTML = `
-          <div class="partner-avatar">${user.partner[0].toUpperCase()}</div>
-          <h3 style="font-size:0.9rem;" id="partnerNameDisplay">${user.partner}</h3>
-          <p style="font-size:0.7rem; opacity:0.6;" id="partnerPlanDisplay">🤝 Connected · ${user.plan} day plan</p>
-          <button onclick="disconnectPartner()" class="danger" style="margin-top:6px; font-size:0.8rem;"><i class="fas fa-unlink"></i> Disconnect</button>
-          <button onclick="startCall()" class="success" style="margin-top:6px; font-size:0.8rem;"><i class="fas fa-phone"></i> Start Call</button>
-        `;
-      } else {
-        display.innerHTML = `
-          <div class="partner-avatar">?</div>
-          <h3 style="font-size:0.9rem;" id="partnerNameDisplay">No partner yet</h3>
-          <p style="font-size:0.7rem; opacity:0.6;" id="partnerPlanDisplay">Search for a partner below to start Musaffah</p>
-        `;
-      }
-    }
-
+    // ============ PARTNER REQUESTS ============
     async function sendPartnerRequest(toId) {
       if (!user) return;
       
@@ -1904,18 +1132,16 @@
         
         const existingRequest = currentPending.find(req => req.fromId === user.id);
         if (existingRequest) {
-          showNotification('Request already sent to this user');
+          showNotification('Request already sent');
           return;
         }
         
-        const newRequest = {
+        currentPending.push({
           fromId: user.id,
           fromName: user.name || 'Reader',
           fromPlan: user.plan || '7',
           timestamp: new Date().toISOString()
-        };
-        
-        currentPending.push(newRequest);
+        });
         
         await db.collection('users').doc(toId).update({
           pendingRequests: currentPending
@@ -1931,21 +1157,19 @@
           localStorage.setItem('musaffahUser', JSON.stringify(user));
         }
         
-        showNotification('✅ Request sent to ' + (targetData.name || 'Reader') + '!');
+        showNotification('✅ Request sent!');
         loadAllUsers();
         
       } catch (e) {
         console.error('Error sending request:', e);
-        showNotification('Error sending request: ' + e.message);
+        showNotification('Error: ' + e.message);
       }
     }
 
     function listenForConnectionRequests() {
-      if (unsubscribeRequests) unsubscribeRequests();
-      
       if (!user) return;
       
-      unsubscribeRequests = db.collection('users').doc(user.id)
+      db.collection('users').doc(user.id)
         .onSnapshot((doc) => {
           if (!doc.exists) return;
           const data = doc.data();
@@ -1964,10 +1188,10 @@
           let html = '';
           requests.forEach((req, index) => {
             html += `
-              <div class="request-item" style="border-left-color: #d97706; background: #fef3c7;">
+              <div class="request-item">
                 <div class="info">
                   <div class="name"><i class="fas fa-user-circle"></i> ${req.fromName || 'Reader'}</div>
-                  <div class="detail">📖 ${req.fromPlan || '7'} day plan wants to connect</div>
+                  <div class="detail">📖 ${req.fromPlan || '7'} day plan</div>
                 </div>
                 <div class="actions">
                   <button onclick="handlePartnerRequest('${req.fromId}', 'accept', ${index})" class="success"><i class="fas fa-check"></i> Accept</button>
@@ -1992,11 +1216,10 @@
         const fromData = fromDoc.data();
         
         const currentPending = user.pendingRequests || [];
-        const requestToRemove = currentPending[index];
         
         if (action === 'accept') {
           if (user.partner && user.partnerId) {
-            showNotification('You already have a partner. Disconnect first.');
+            showNotification('You already have a partner.');
             return;
           }
           
@@ -2043,7 +1266,7 @@
           
           localStorage.setItem('musaffahUser', JSON.stringify(user));
           
-          showNotification('🎉 You are now connected with ' + partnerName + '!');
+          showNotification('🎉 Connected with ' + partnerName + '!');
           
           updatePartnerDisplay();
           loadAllUsers();
@@ -2066,6 +1289,26 @@
       } catch (e) {
         console.error('Error handling request:', e);
         showNotification('Error: ' + e.message);
+      }
+    }
+
+    // ============ PARTNER DISPLAY ============
+    function updatePartnerDisplay() {
+      const display = document.getElementById('partnerDisplay');
+      if (user.partner && user.partnerId) {
+        display.innerHTML = `
+          <div class="partner-avatar">${user.partner[0].toUpperCase()}</div>
+          <h3 style="font-size:0.9rem;" id="partnerNameDisplay">${user.partner}</h3>
+          <p style="font-size:0.7rem; opacity:0.6;" id="partnerPlanDisplay">🤝 Connected · ${user.plan} day plan</p>
+          <button onclick="disconnectPartner()" class="danger" style="margin-top:6px; font-size:0.8rem;"><i class="fas fa-unlink"></i> Disconnect</button>
+          <button onclick="startCall()" class="success" style="margin-top:6px; font-size:0.8rem;"><i class="fas fa-phone"></i> Start Call</button>
+        `;
+      } else {
+        display.innerHTML = `
+          <div class="partner-avatar">?</div>
+          <h3 style="font-size:0.9rem;" id="partnerNameDisplay">No partner yet</h3>
+          <p style="font-size:0.7rem; opacity:0.6;" id="partnerPlanDisplay">Search for a partner below</p>
+        `;
       }
     }
 
@@ -2109,505 +1352,529 @@
         
       } catch (e) {
         console.error('Error disconnecting:', e);
-        showNotification('Error disconnecting: ' + e.message);
-      }
-    }
-
-    // ============ FRIEND SYSTEM ============
-    function openAddFriend() {
-      const modal = document.getElementById('addFriendModal');
-      const overlay = document.getElementById('addFriendOverlay');
-      modal.style.display = 'block';
-      overlay.style.display = 'block';
-      loadUserList();
-    }
-
-    function closeAddFriend() {
-      document.getElementById('addFriendModal').style.display = 'none';
-      document.getElementById('addFriendOverlay').style.display = 'none';
-    }
-
-    function loadUserList() {
-      db.collection('users').get().then((snapshot) => {
-        allUsersList = [];
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          if (doc.id !== user.id && data.name) {
-            const isFriend = (user.friends || []).includes(doc.id);
-            const isRequested = (user.sentRequests || []).includes(doc.id);
-            allUsersList.push({
-              id: doc.id,
-              name: data.name || 'Reader',
-              online: data.online === true,
-              isFriend: isFriend,
-              isRequested: isRequested
-            });
-          }
-        });
-        // Shuffle initially
-        shuffleArray(allUsersList);
-        renderUserList();
-      });
-    }
-
-    function shuffleArray(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-      return array;
-    }
-
-    function shuffleUserList() {
-      shuffleArray(allUsersList);
-      renderUserList();
-      document.getElementById('userListContainer').classList.add('shuffling');
-      setTimeout(() => {
-        document.getElementById('userListContainer').classList.remove('shuffling');
-      }, 500);
-    }
-
-    function searchUsers() {
-      const query = document.getElementById('friendSearchInput').value.toLowerCase().trim();
-      if (!query) {
-        renderUserList();
-        return;
-      }
-      const filtered = allUsersList.filter(u => u.name.toLowerCase().includes(query));
-      renderUserList(filtered);
-    }
-
-    function renderUserList(list) {
-      const container = document.getElementById('userListContainer');
-      const users = list || allUsersList;
-      
-      if (users.length === 0) {
-        container.innerHTML = `
-          <div class="empty-state" style="padding:20px;">
-            <p style="font-size:0.8rem;">No users found</p>
-          </div>
-        `;
-        return;
-      }
-
-      let html = '';
-      users.forEach(u => {
-        const status = u.online ? '🟢 Online' : '⚪ Offline';
-        let actionButton = '';
-        if (u.isFriend) {
-          actionButton = '<button disabled style="opacity:0.5;">✓ Friends</button>';
-        } else if (u.isRequested) {
-          actionButton = '<button disabled style="opacity:0.5;">⏳ Pending</button>';
-        } else {
-          actionButton = `<button onclick="sendFriendRequest('${u.id}')" class="success"><i class="fas fa-user-plus"></i> Add</button>`;
-        }
-        html += `
-          <div class="user-item">
-            <div class="user-avatar">${u.name[0].toUpperCase()}</div>
-            <div class="user-name">${u.name}</div>
-            <div class="user-status">${status}</div>
-            ${actionButton}
-          </div>
-        `;
-      });
-      container.innerHTML = html;
-    }
-
-    async function sendFriendRequest(toId) {
-      if (!user) return;
-      
-      try {
-        const targetDoc = await db.collection('users').doc(toId).get();
-        if (!targetDoc.exists) {
-          showNotification('User not found');
-          return;
-        }
-        
-        const targetData = targetDoc.data();
-        const friendRequests = targetData.friendRequests || [];
-        
-        const existingRequest = friendRequests.find(req => req.fromId === user.id);
-        if (existingRequest) {
-          showNotification('Friend request already sent');
-          return;
-        }
-        
-        friendRequests.push({
-          fromId: user.id,
-          fromName: user.name || 'Reader',
-          timestamp: new Date().toISOString()
-        });
-        
-        await db.collection('users').doc(toId).update({
-          friendRequests: friendRequests
-        });
-        
-        const sentRequests = user.sentRequests || [];
-        if (!sentRequests.includes(toId)) {
-          sentRequests.push(toId);
-          await db.collection('users').doc(user.id).update({
-            sentRequests: sentRequests
-          });
-          user.sentRequests = sentRequests;
-          localStorage.setItem('musaffahUser', JSON.stringify(user));
-        }
-        
-        showNotification('✅ Friend request sent!');
-        loadUserList();
-        
-      } catch (e) {
-        console.error('Error sending friend request:', e);
         showNotification('Error: ' + e.message);
       }
     }
 
-    function listenForFriendRequests() {
-      if (friendRequestsListener) {
-        friendRequestsListener();
-        friendRequestsListener = null;
+    // ============ PARTNER ONLINE STATUS ============
+    function listenPartnerStatus() {
+      if (partnerStatusUnsubscribe) {
+        partnerStatusUnsubscribe();
+        partnerStatusUnsubscribe = null;
       }
       
-      if (!user) return;
+      if (!user || !user.partnerId) return;
       
-      friendRequestsListener = db.collection('users').doc(user.id)
+      partnerStatusUnsubscribe = db.collection('users').doc(user.partnerId)
         .onSnapshot((doc) => {
           if (doc.exists) {
             const data = doc.data();
-            const requests = data.friendRequests || [];
-            // Update the friend requests count in UI
-            const requestBtn = document.querySelector('.chat-actions .warning');
-            if (requestBtn) {
-              if (requests.length > 0) {
-                requestBtn.innerHTML = `<i class="fas fa-bell"></i> Requests (${requests.length})`;
-              } else {
-                requestBtn.innerHTML = `<i class="fas fa-bell"></i> Requests`;
-              }
-            }
+            partnerOnline = data.online === true;
           }
         });
     }
 
-    function showFriendRequests() {
-      if (!user) return;
-      
-      db.collection('users').doc(user.id).get().then(doc => {
-        if (!doc.exists) return;
-        const data = doc.data();
-        const requests = data.friendRequests || [];
-        
-        if (requests.length === 0) {
-          showNotification('No pending friend requests');
-          return;
-        }
-        
-        let html = '<div style="padding:10px 0;">';
-        requests.forEach((req, index) => {
-          html += `
-            <div class="friend-request-item">
-              <div class="info">
-                <div class="name"><i class="fas fa-user"></i> ${req.fromName || 'Unknown'}</div>
-              </div>
-              <div class="actions">
-                <button onclick="handleFriendRequest('${req.fromId}', 'accept', ${index})" class="success"><i class="fas fa-check"></i> Accept</button>
-                <button onclick="handleFriendRequest('${req.fromId}', 'reject', ${index})" class="danger"><i class="fas fa-times"></i> Reject</button>
-              </div>
-            </div>
-          `;
-        });
-        html += '</div>';
-        
-        // Show in a modal-like way
-        const container = document.getElementById('chatList');
-        const originalContent = container.innerHTML;
-        container.innerHTML = html + `<button onclick="renderChats()" class="outline" style="margin-top:8px;">← Back</button>`;
-      });
-    }
-
-    async function handleFriendRequest(fromId, action, index) {
-      if (!user) return;
+    // ============ MEDIA PERMISSIONS ============
+    async function requestMediaPermissions() {
+      if (hasMediaPermissions) return true;
+      if (permissionRequested) {
+        showNotification('Access already requested.');
+        return false;
+      }
+      if (isGettingMedia) {
+        showNotification('Already requesting...');
+        return false;
+      }
       
       try {
-        const fromDoc = await db.collection('users').doc(fromId).get();
-        if (!fromDoc.exists) {
-          showNotification('User no longer exists');
-          return;
+        isGettingMedia = true;
+        document.getElementById('mediaPermissionBanner').style.display = 'none';
+        
+        const constraints = { audio: true };
+        if (selectedMode === 'video') {
+          constraints.video = { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } };
         }
-        const fromData = fromDoc.data();
         
-        const currentRequests = user.friendRequests || [];
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        stream.getTracks().forEach(track => track.stop());
         
-        if (action === 'accept') {
-          // Add to friends list for both users
-          const userFriends = user.friends || [];
-          if (!userFriends.includes(fromId)) {
-            userFriends.push(fromId);
-            await db.collection('users').doc(user.id).update({
-              friends: userFriends,
-              friendRequests: currentRequests.filter((_, i) => i !== index)
-            });
-            user.friends = userFriends;
-          }
-          
-          const fromFriends = fromData.friends || [];
-          if (!fromFriends.includes(user.id)) {
-            fromFriends.push(user.id);
-            await db.collection('users').doc(fromId).update({
-              friends: fromFriends,
-              sentRequests: (fromData.sentRequests || []).filter(id => id !== user.id)
-            });
-          }
-          
-          showNotification('✅ Friend added!');
+        hasMediaPermissions = true;
+        permissionRequested = true;
+        document.getElementById('mediaPermissionBanner').style.display = 'none';
+        showNotification('✅ Camera and microphone access granted!');
+        isGettingMedia = false;
+        return true;
+      } catch (e) {
+        console.error('Media permission error:', e);
+        isGettingMedia = false;
+        
+        let errorMsg = '';
+        if (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError') {
+          errorMsg = 'Camera/microphone access denied. Please enable in browser settings.';
+          document.getElementById('mediaPermissionBanner').style.display = 'block';
+          document.getElementById('mediaPermissionBanner').innerHTML = `
+            <p>🎥 Access denied. Please enable in browser settings.</p>
+            <button onclick="requestMediaPermissions()" class="success" style="width:auto; padding:4px 16px; margin:4px auto 0; font-size:0.75rem;"><i class="fas fa-sync"></i> Try Again</button>
+          `;
+        } else if (e.name === 'NotFoundError') {
+          errorMsg = 'No camera or microphone found.';
+          document.getElementById('mediaPermissionBanner').style.display = 'block';
+          document.getElementById('mediaPermissionBanner').innerHTML = `
+            <p>📹 No camera or microphone detected. Please connect a device.</p>
+            <button onclick="requestMediaPermissions()" class="success" style="width:auto; padding:4px 16px; margin:4px auto 0; font-size:0.75rem;"><i class="fas fa-sync"></i> Try Again</button>
+          `;
         } else {
-          // Reject
-          await db.collection('users').doc(user.id).update({
-            friendRequests: currentRequests.filter((_, i) => i !== index)
-          });
-          user.friendRequests = currentRequests.filter((_, i) => i !== index);
-          showNotification('Request rejected');
+          errorMsg = 'Could not access camera/microphone.';
+        }
+        showNotification('❌ ' + errorMsg);
+        return false;
+      }
+    }
+
+    // ============ WEBRTC FUNCTIONS ============
+    async function getLocalStream() {
+      if (isGettingMedia) {
+        showNotification('⏳ Please wait...');
+        return null;
+      }
+      
+      if (!hasMediaPermissions) {
+        const granted = await requestMediaPermissions();
+        if (!granted) return null;
+      }
+
+      try {
+        isGettingMedia = true;
+        const constraints = { audio: true };
+        if (selectedMode === 'video') {
+          constraints.video = { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } };
         }
         
-        localStorage.setItem('musaffahUser', JSON.stringify(user));
-        renderChats();
-        loadUserList();
+        localStream = await navigator.mediaDevices.getUserMedia(constraints);
+        isGettingMedia = false;
+        return localStream;
+      } catch (e) {
+        console.error('Error getting local stream:', e);
+        isGettingMedia = false;
+        showNotification('❌ Could not access camera/microphone');
+        return null;
+      }
+    }
+
+    function createPeerConnection() {
+      const configuration = {
+        iceServers: [
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:stun1.l.google.com:19302' },
+          { urls: 'stun:stun2.l.google.com:19302' },
+          { urls: 'stun:stun3.l.google.com:19302' },
+          { urls: 'stun:stun4.l.google.com:19302' }
+        ]
+      };
+      
+      peerConnection = new RTCPeerConnection(configuration);
+      
+      if (localStream) {
+        localStream.getTracks().forEach(track => {
+          peerConnection.addTrack(track, localStream);
+        });
+      }
+      
+      peerConnection.ontrack = (event) => {
+        remoteStream = event.streams[0];
+        const remoteVideo = document.getElementById('remoteVideoCall');
+        remoteVideo.srcObject = remoteStream;
+        showNotification('📹 Call connected!');
+      };
+      
+      peerConnection.onicecandidate = (event) => {
+        if (event.candidate) {
+          sendSignalingData({ type: 'ice-candidate', candidate: event.candidate });
+        }
+      };
+      
+      peerConnection.onconnectionstatechange = () => {
+        const state = peerConnection.connectionState;
+        if (state === 'connected') {
+          isCallActive = true;
+          startCallTimer();
+        } else if (state === 'disconnected' || state === 'failed' || state === 'closed') {
+          endCall();
+        }
+      };
+      
+      return peerConnection;
+    }
+
+    async function startCall() {
+      if (!user || !user.partnerId) {
+        showNotification('Please connect with a partner first');
+        return;
+      }
+      
+      if (!partnerOnline) {
+        showNotification(`📡 ${user.partner} is offline`);
+        return;
+      }
+      
+      if (isCallActive) {
+        endCall();
+        return;
+      }
+      
+      if (isGettingMedia) {
+        showNotification('⏳ Please wait...');
+        return;
+      }
+      
+      try {
+        if (!hasMediaPermissions) {
+          const granted = await requestMediaPermissions();
+          if (!granted) return;
+        }
+        
+        if (!localStream) {
+          const stream = await getLocalStream();
+          if (!stream) return;
+        }
+        
+        // Setup fullscreen
+        document.getElementById('callFullscreen').classList.add('active');
+        document.getElementById('container').style.display = 'none';
+        document.getElementById('bottomNav').style.display = 'none';
+        document.getElementById('header').style.display = 'none';
+        
+        if (selectedMode === 'audio') {
+          document.getElementById('localVideoWrapper').style.display = 'none';
+          document.getElementById('remoteVideoWrapper').style.display = 'none';
+          document.getElementById('audioModeIndicator').style.display = 'block';
+          document.getElementById('callCamToggle').style.display = 'none';
+        } else {
+          document.getElementById('localVideoWrapper').style.display = 'block';
+          document.getElementById('remoteVideoWrapper').style.display = 'block';
+          document.getElementById('audioModeIndicator').style.display = 'none';
+          document.getElementById('callCamToggle').style.display = 'inline-block';
+        }
+        
+        const localVideo = document.getElementById('localVideoCall');
+        localVideo.srcObject = localStream;
+        
+        document.getElementById('remoteCallLabel').textContent = user.partner;
+        
+        createPeerConnection();
+        
+        const offer = await peerConnection.createOffer();
+        await peerConnection.setLocalDescription(offer);
+        
+        sendSignalingData({ type: 'offer', offer: offer });
+        
+        showNotification(`📞 Calling ${user.partner}...`);
         
       } catch (e) {
-        console.error('Error handling friend request:', e);
-        showNotification('Error: ' + e.message);
+        console.error('Error starting call:', e);
+        showNotification('❌ Failed to start call');
+        endCall();
       }
     }
 
-    // ============ CHATS ============
-    function switchChatTab(tab, event) {
-      activeChatTab = tab;
-      document.querySelectorAll('.chat-type-tabs button').forEach(btn => btn.classList.remove('active'));
-      if (event && event.target) {
-        event.target.classList.add('active');
-      }
-      renderChats();
-    }
-
-    function renderChats() {
-      if (!user) return;
-      const container = document.getElementById('chatList');
+    function sendSignalingData(data) {
+      if (!user || !user.partnerId) return;
       
-      if (activeChatTab === 'friends') {
-        // Show friends list
-        const friends = user.friends || [];
-        if (friends.length === 0) {
-          container.innerHTML = `
-            <div class="empty-state">
-              <i class="fas fa-user-friends"></i>
-              <p>No friends yet. Use "Add Friend" to connect with others!</p>
-            </div>
-          `;
+      data.from = user.id;
+      data.to = user.partnerId;
+      data.timestamp = firebase.firestore.FieldValue.serverTimestamp();
+      
+      db.collection('signaling').add(data).catch(e => {
+        console.warn('Failed to send signaling data:', e);
+      });
+    }
+
+    function listenForSignaling() {
+      if (signalingUnsubscribe) {
+        signalingUnsubscribe();
+        signalingUnsubscribe = null;
+      }
+      
+      if (!user || !user.partnerId) return;
+      
+      signalingUnsubscribe = db.collection('signaling')
+        .where('to', '==', user.id)
+        .orderBy('timestamp', 'asc')
+        .onSnapshot((snapshot) => {
+          snapshot.docChanges().forEach(change => {
+            if (change.type === 'added') {
+              const data = change.doc.data();
+              if (data.from === user.id) return;
+              
+              if (data.type === 'reject') {
+                showNotification('Call rejected');
+                endCall();
+                change.doc.ref.delete().catch(() => {});
+                return;
+              }
+              
+              handleSignalingData(data);
+              change.doc.ref.delete().catch(() => {});
+            }
+          });
+        });
+    }
+
+    async function handleSignalingData(data) {
+      if (!peerConnection) {
+        if (data.type === 'offer') {
+          await handleIncomingCall(data.offer);
+        }
+        return;
+      }
+      
+      try {
+        if (data.type === 'offer') {
+          await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
+          const answer = await peerConnection.createAnswer();
+          await peerConnection.setLocalDescription(answer);
+          sendSignalingData({ type: 'answer', answer: answer });
+        } else if (data.type === 'answer') {
+          await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+        } else if (data.type === 'ice-candidate') {
+          if (data.candidate) {
+            try {
+              await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+            } catch (e) {
+              iceCandidatesQueue.push(data.candidate);
+            }
+          }
+        }
+      } catch (e) {
+        console.error('Error handling signaling:', e);
+      }
+    }
+
+    async function handleIncomingCall(offer) {
+      if (isGettingMedia) {
+        sendSignalingData({ type: 'reject', reason: 'busy' });
+        return;
+      }
+      
+      try {
+        if (!partnerOnline) {
+          sendSignalingData({ type: 'reject', reason: 'offline' });
+          showNotification('Partner offline');
           return;
         }
         
-        let html = '';
-        let loaded = 0;
-        friends.forEach(friendId => {
-          db.collection('users').doc(friendId).get().then(doc => {
-            if (doc.exists) {
-              const data = doc.data();
-              const friendName = data.name || 'Unknown';
-              const isOnline = data.online === true;
-              // Update the friend list dynamically
-              const friendItems = document.querySelectorAll('.friend-item');
-              friendItems.forEach(el => {
-                if (el.dataset.id === friendId) {
-                  el.querySelector('.friend-name').textContent = friendName;
-                  el.querySelector('.friend-status').textContent = isOnline ? '🟢 Online' : '⚪ Offline';
-                }
-              });
-            }
-            loaded++;
-            if (loaded === friends.length) {
-              // All loaded
-            }
-          });
-          
-          html += `
-            <div class="friend-item" data-id="${friendId}">
-              <div class="friend-avatar">${friendId.substring(0, 2).toUpperCase()}</div>
-              <div>
-                <div class="friend-name">Loading...</div>
-                <div class="friend-status">...</div>
-              </div>
-              <button onclick="startPrivateChat('${friendId}')" class="success" style="width:auto; padding:4px 12px; margin:0; font-size:0.65rem;">
-                <i class="fas fa-comment"></i> Chat
-              </button>
-            </div>
-          `;
-        });
-        container.innerHTML = html;
-        return;
-      }
-      
-      // Chats tab - show all chats
-      const chats = user.chats || [];
-      
-      if (chats.length === 0) {
-        container.innerHTML = `
-          <div class="empty-state">
-            <i class="fas fa-comments"></i>
-            <p>No chats yet. Add friends and start chatting!</p>
-          </div>
-        `;
-        return;
-      }
-
-      let html = '';
-      chats.forEach(chat => {
-        html += `
-          <div class="chat-item" onclick="openChat('${chat.id}','${chat.name}','${chat.type}')">
-            <div class="chat-avatar" style="${chat.type === 'group' ? 'background:#7c3aed;' : ''}">${chat.type === 'group' ? '👥' : chat.name[0].toUpperCase()}</div>
-            <div class="chat-info">
-              <div class="chat-name">${chat.name}</div>
-              <div class="chat-last">${chat.lastMessage || 'Tap to chat'}</div>
-            </div>
-            <div class="chat-time">${chat.time || 'Now'}</div>
-          </div>
-        `;
-      });
-      container.innerHTML = html;
-    }
-
-    function openChat(chatId, name, type) {
-      currentChatId = chatId;
-      currentChatType = type;
-      
-      document.getElementById('chatPanel').classList.remove('hidden');
-      document.getElementById('chatPartnerName').innerText = name;
-      
-      const avatarEl = document.getElementById('chatAvatar');
-      if (type === 'group') {
-        avatarEl.style.background = '#7c3aed';
-        avatarEl.innerText = '👥';
-      } else {
-        avatarEl.style.background = '#0f766e';
-        avatarEl.innerText = name[0].toUpperCase();
-      }
-      
-      loadChatMessages(chatId);
-    }
-
-    function loadChatMessages(chatId) {
-      const container = document.getElementById('chatMessages');
-      container.innerHTML = `
-        <div style="text-align:center;opacity:0.4;padding:20px;font-size:0.8rem;">
-          💬 Welcome to the chat!
-        </div>
-      `;
-      
-      if (unsubscribeChat) unsubscribeChat();
-      
-      try {
-        unsubscribeChat = db.collection('messages')
-          .where('chatId', '==', chatId)
-          .orderBy('createdAt', 'asc')
-          .onSnapshot((snapshot) => {
-            if (snapshot.empty) {
-              container.innerHTML = `
-                <div style="text-align:center;opacity:0.4;padding:20px;font-size:0.8rem;">
-                  💬 No messages yet. Start the conversation!
-                </div>
-              `;
-              return;
-            }
-            
-            let html = '';
-            snapshot.forEach(doc => {
-              const msg = doc.data();
-              const isMine = msg.fromId === user.id;
-              html += `
-                <div class="msg ${isMine ? 'mine' : 'other'}">
-                  ${msg.text}
-                  <span class="time">${msg.createdAt ? new Date(msg.createdAt.seconds * 1000).toLocaleTimeString() : 'Now'}</span>
-                </div>
-              `;
-            });
-            container.innerHTML = html;
-            container.scrollTop = container.scrollHeight;
-          });
-      } catch (e) {
-        setTimeout(() => {
-          container.innerHTML = `
-            <div class="msg other">Assalamu Alaikum! 👋<span class="time">Just now</span></div>
-            <div class="msg mine">Wa Alaikum Assalam! 📖<span class="time">Just now</span></div>
-          `;
-        }, 500);
-      }
-    }
-
-    function sendChatMessage() {
-      const input = document.getElementById('chatInput');
-      const text = input.value.trim();
-      if (!text || !currentChatId) return;
-      input.value = '';
-
-      try {
-        db.collection('messages').add({
-          chatId: currentChatId,
-          fromId: user.id,
-          fromName: user.name || 'Reader',
-          text: text,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-      } catch (e) {
-        const container = document.getElementById('chatMessages');
-        const div = document.createElement('div');
-        div.className = 'msg mine';
-        div.innerHTML = text + '<span class="time">Now</span>';
-        container.appendChild(div);
-        container.scrollTop = container.scrollHeight;
-      }
-    }
-
-    function closeChatPanel() {
-      document.getElementById('chatPanel').classList.add('hidden');
-      if (unsubscribeChat) {
-        unsubscribeChat();
-        unsubscribeChat = null;
-      }
-      currentChatId = null;
-    }
-
-    function startPrivateChat(friendId) {
-      db.collection('users').doc(friendId).get().then(doc => {
-        if (doc.exists) {
-          const friendData = doc.data();
-          const friendName = friendData.name || 'Friend';
-          const chatId = 'private_' + Date.now() + '_' + friendId;
-          
-          // Add to user's chats
-          const chats = user.chats || [];
-          // Check if chat already exists
-          const existing = chats.find(c => c.partnerId === friendId);
-          if (existing) {
-            openChat(existing.id, friendName, 'private');
+        if (!hasMediaPermissions) {
+          const granted = await requestMediaPermissions();
+          if (!granted) {
+            sendSignalingData({ type: 'reject' });
             return;
           }
-          
-          chats.push({
-            id: chatId,
-            name: friendName,
-            type: 'private',
-            partnerId: friendId,
-            lastMessage: 'Start chatting!',
-            time: 'Now'
-          });
-          
-          db.collection('users').doc(user.id).update({
-            chats: chats
-          }).then(() => {
-            user.chats = chats;
-            localStorage.setItem('musaffahUser', JSON.stringify(user));
-            renderChats();
-            openChat(chatId, friendName, 'private');
-          });
         }
+        
+        if (!localStream) {
+          const stream = await getLocalStream();
+          if (!stream) {
+            sendSignalingData({ type: 'reject' });
+            return;
+          }
+        }
+        
+        document.getElementById('callFullscreen').classList.add('active');
+        document.getElementById('container').style.display = 'none';
+        document.getElementById('bottomNav').style.display = 'none';
+        document.getElementById('header').style.display = 'none';
+        
+        if (selectedMode === 'audio') {
+          document.getElementById('localVideoWrapper').style.display = 'none';
+          document.getElementById('remoteVideoWrapper').style.display = 'none';
+          document.getElementById('audioModeIndicator').style.display = 'block';
+          document.getElementById('callCamToggle').style.display = 'none';
+        } else {
+          document.getElementById('localVideoWrapper').style.display = 'block';
+          document.getElementById('remoteVideoWrapper').style.display = 'block';
+          document.getElementById('audioModeIndicator').style.display = 'none';
+          document.getElementById('callCamToggle').style.display = 'inline-block';
+        }
+        
+        const localVideo = document.getElementById('localVideoCall');
+        localVideo.srcObject = localStream;
+        
+        document.getElementById('remoteCallLabel').textContent = user.partner;
+        
+        createPeerConnection();
+        
+        await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+        const answer = await peerConnection.createAnswer();
+        await peerConnection.setLocalDescription(answer);
+        sendSignalingData({ type: 'answer', answer: answer });
+        
+        isCallActive = true;
+        startCallTimer();
+        
+        showNotification('📹 Call connected!');
+        
+        if (iceCandidatesQueue.length > 0) {
+          iceCandidatesQueue.forEach(candidate => {
+            peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+          });
+          iceCandidatesQueue = [];
+        }
+        
+        listenForSignaling();
+        
+      } catch (e) {
+        console.error('Error handling incoming call:', e);
+        showNotification('❌ Failed to answer call');
+        endCall();
+      }
+    }
+
+    function endCall() {
+      isCallActive = false;
+      if (callTimer) {
+        clearInterval(callTimer);
+        callTimer = null;
+      }
+      
+      if (peerConnection) {
+        peerConnection.close();
+        peerConnection = null;
+      }
+      
+      remoteStream = null;
+      document.getElementById('remoteVideoCall').srcObject = null;
+      document.getElementById('localVideoCall').srcObject = null;
+      
+      document.getElementById('callFullscreen').classList.remove('active');
+      document.getElementById('container').style.display = 'block';
+      document.getElementById('bottomNav').style.display = 'flex';
+      document.getElementById('header').style.display = 'block';
+      
+      if (signalingUnsubscribe) {
+        signalingUnsubscribe();
+        signalingUnsubscribe = null;
+      }
+      
+      if (user && user.partnerId) {
+        sendSignalingData({ type: 'hangup' });
+      }
+      
+      iceCandidatesQueue = [];
+      
+      document.getElementById('audioModeIndicator').style.display = 'none';
+      document.getElementById('localVideoWrapper').style.display = 'block';
+      document.getElementById('remoteVideoWrapper').style.display = 'block';
+      document.getElementById('callCamToggle').style.display = 'inline-block';
+      document.getElementById('correctionFlash').classList.remove('active');
+      
+      showNotification('📴 Call ended');
+    }
+
+    function startCallTimer() {
+      callStartTime = Date.now();
+      if (callTimer) clearInterval(callTimer);
+      callTimer = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - callStartTime) / 1000);
+        const mins = Math.floor(elapsed / 60);
+        const secs = elapsed % 60;
+        document.getElementById('remoteCallLabel').textContent = user.partner + ' · ' + 
+          String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+      }, 1000);
+    }
+
+    // ============ CALL CONTROLS ============
+    function toggleCallMic() {
+      if (!localStream) return;
+      isMicOn = !isMicOn;
+      const audioTracks = localStream.getAudioTracks();
+      audioTracks.forEach(track => track.enabled = isMicOn);
+      document.getElementById('callMicToggle').innerHTML = isMicOn ? '<i class="fas fa-microphone"></i> Mic' : '<i class="fas fa-microphone-slash"></i> Mic';
+      document.getElementById('callMicToggle').className = isMicOn ? 'outline' : 'mic-off';
+    }
+
+    function toggleCallCam() {
+      if (selectedMode === 'audio' || !localStream) return;
+      isCameraOn = !isCameraOn;
+      const videoTracks = localStream.getVideoTracks();
+      videoTracks.forEach(track => track.enabled = isCameraOn);
+      document.getElementById('callCamToggle').innerHTML = isCameraOn ? '<i class="fas fa-video"></i> Cam' : '<i class="fas fa-video-slash"></i> Cam';
+      document.getElementById('callCamToggle').className = isCameraOn ? 'outline' : 'cam-off';
+    }
+
+    function sendCorrectionAlert() {
+      if (!isCallActive || !user || !user.partnerId) {
+        showNotification('No active call');
+        return;
+      }
+      
+      db.collection('attentionAlerts').add({
+        fromId: user.id,
+        fromName: user.name || 'Reader',
+        toId: user.partnerId,
+        dismissed: false,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
+      
+      const flash = document.getElementById('correctionFlash');
+      flash.classList.add('active');
+      setTimeout(() => flash.classList.remove('active'), 1500);
+      
+      showNotification('🔔 Correction alert sent to ' + user.partner);
+    }
+
+    function listenForCorrectionAlerts() {
+      if (!user) return;
+      
+      db.collection('attentionAlerts')
+        .where('toId', '==', user.id)
+        .where('dismissed', '==', false)
+        .onSnapshot((snapshot) => {
+          snapshot.forEach(doc => {
+            const alert = doc.data();
+            
+            const flash = document.getElementById('correctionFlash');
+            flash.classList.add('active');
+            setTimeout(() => flash.classList.remove('active'), 1500);
+            
+            document.getElementById('attentionPartnerName').innerText = alert.fromName || 'Your partner';
+            document.getElementById('attentionOverlay').classList.add('show');
+            
+            if (navigator.vibrate) {
+              navigator.vibrate([200, 100, 200]);
+            }
+            
+            if (attentionTimeout) clearTimeout(attentionTimeout);
+            attentionTimeout = setTimeout(() => {
+              dismissAttention();
+            }, 10000);
+            
+            doc.ref.update({ dismissed: true }).catch(() => {});
+          });
+        });
+    }
+
+    function dismissAttention() {
+      document.getElementById('attentionOverlay').classList.remove('show');
+      if (attentionTimeout) {
+        clearTimeout(attentionTimeout);
+        attentionTimeout = null;
+      }
+    }
+
+    // ============ VIDEO DOMINANT TOGGLE ============
+    function toggleDominantVideo() {
+      const remoteWrapper = document.getElementById('remoteVideoWrapper');
+      const localWrapper = document.getElementById('localVideoWrapper');
+      
+      if (dominantVideo === 'remote') {
+        remoteWrapper.classList.remove('dominant');
+        localWrapper.classList.add('dominant');
+        dominantVideo = 'local';
+      } else {
+        localWrapper.classList.remove('dominant');
+        remoteWrapper.classList.add('dominant');
+        dominantVideo = 'remote';
+      }
     }
 
     // ============ NAVIGATION ============
@@ -2618,12 +1885,8 @@
         btn.classList.toggle('active', btn.dataset.page === pageId);
       });
       
-      if (pageId === 'pageChats') {
-        renderChats();
-      }
       if (pageId === 'pageMusaffah') {
         loadAllUsers();
-        listenForConnectionRequests();
         if (user && user.partner) {
           listenPartnerStatus();
         }
@@ -2656,65 +1919,7 @@
       document.getElementById('langLabel').innerText = langNames[currentLang] || 'English';
     }
 
-    // ============ FCM ============
-    async function requestFCMToken() {
-      try {
-        const permission = await Notification.requestPermission();
-        if (permission !== 'granted') {
-          showNotification('⚠️ Please allow notifications in your browser settings.');
-          return;
-        }
-
-        const token = await messaging.getToken({
-          vapidKey: 'BMzi3gf0cee-mTdymxXFXbUlhBtu13odvdAPHXdjvpXDid1LmHEssJlz0qmfB6hmOcVWfBe09MKC_uD_-3hQHZU'
-        });
-
-        if (token) {
-          fcmToken = token;
-          if (user && user.id) {
-            await db.collection('users').doc(user.id).update({
-              fcmToken: token,
-              notificationsEnabled: true
-            });
-          }
-          document.getElementById('fcmPermissionBanner').classList.add('hidden');
-          showNotification('🔔 Push notifications enabled!');
-        }
-      } catch (e) {
-        console.error('FCM Error:', e);
-      }
-    }
-
-    messaging.onMessage((payload) => {
-      const notification = payload.notification;
-      if (notification) {
-        showNotification('🔔 ' + (notification.title || 'Quran Reminder') + ': ' + (notification.body || ''));
-      }
-    });
-
-    async function checkFCMPermission() {
-      if ('Notification' in window) {
-        if (Notification.permission === 'granted') {
-          document.getElementById('fcmPermissionBanner').classList.add('hidden');
-        } else if (Notification.permission === 'default') {
-          document.getElementById('fcmPermissionBanner').classList.remove('hidden');
-        }
-      }
-    }
-
-    // ============ NOTIFICATION ============
-    function showNotification(msg) {
-      const existing = document.querySelector('.notification-toast');
-      if (existing) existing.remove();
-      const div = document.createElement('div');
-      div.className = 'notification-toast';
-      div.innerText = msg;
-      document.body.appendChild(div);
-      setTimeout(() => div.remove(), 3000);
-    }
-
     // ============ EVENT LISTENERS ============
-    // Video dominant toggle
     document.addEventListener('click', function(e) {
       const remoteWrapper = document.getElementById('remoteVideoWrapper');
       const localWrapper = document.getElementById('localVideoWrapper');
@@ -2726,11 +1931,8 @@
       }
     });
 
-    // Listen for correction alerts
+    // ============ START ============
     listenForCorrectionAlerts();
-
-    // Listen for signaling (for WebRTC)
-    // This will be set up when a call starts
   </script>
 </body>
 </html>
