@@ -153,6 +153,7 @@
       gap: 4px;
       padding: 4px;
       background: #1a1a1a;
+      position: relative;
     }
     .call-fullscreen .video-grid .video-wrapper {
       position: relative;
@@ -179,6 +180,31 @@
       border-radius: 12px;
       border: 2px solid #0f766e;
       z-index: 10;
+      cursor: grab;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .call-fullscreen .video-grid .video-wrapper.dominant ~ .video-wrapper.dragging {
+      cursor: grabbing;
+      border-color: #dc2626;
+      box-shadow: 0 0 20px rgba(220, 38, 38, 0.5);
+      transition: none;
+    }
+    .call-fullscreen .video-grid .video-wrapper.dominant ~ .video-wrapper .drag-handle {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: rgba(0,0,0,0.6);
+      color: white;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.5rem;
+      pointer-events: none;
+      opacity: 0.7;
+    }
+    .call-fullscreen .video-grid .video-wrapper.dominant ~ .video-wrapper .video-label {
+      font-size: 0.5rem;
     }
     .call-fullscreen video {
       width: 100%;
@@ -456,7 +482,7 @@
 
   <!-- CALL FULLSCREEN -->
   <div id="callFullscreen" class="call-fullscreen">
-    <div class="video-grid">
+    <div class="video-grid" id="videoGrid">
       <div class="video-wrapper dominant" id="remoteVideoWrapper">
         <video id="remoteVideoCall" autoplay playsinline></video>
         <span class="video-label" id="remoteCallLabel">Partner</span>
@@ -464,6 +490,7 @@
       <div class="video-wrapper" id="localVideoWrapper">
         <video id="localVideoCall" autoplay muted playsinline></video>
         <span class="video-label">You</span>
+        <span class="drag-handle">↕ Drag</span>
       </div>
     </div>
     <div class="correction-flash" id="correctionFlash"></div>
@@ -523,7 +550,7 @@
     let partnerOnline = false;
 
     // WebRTC
-    let peerConnection = null;
+    let pc = null;
     let localStream = null;
     let remoteStream = null;
     let signalingUnsubscribe = null;
@@ -571,8 +598,10 @@
 
     function showAuthError(message) {
       const errorEl = document.getElementById('authError');
-      errorEl.textContent = message;
-      errorEl.classList.remove('hidden');
+      if (errorEl) {
+        errorEl.textContent = message;
+        errorEl.classList.remove('hidden');
+      }
     }
 
     function showNotification(msg) {
@@ -621,7 +650,8 @@
       const password = document.getElementById('authPassword').value;
       const confirm = document.getElementById('confirmPassword').value;
       
-      document.getElementById('authError').classList.add('hidden');
+      const errorEl = document.getElementById('authError');
+      if (errorEl) errorEl.classList.add('hidden');
 
       if (!email || !password) {
         showAuthError('Please fill all fields');
@@ -639,15 +669,18 @@
       }
 
       const btn = document.getElementById('authButton');
-      btn.disabled = true;
-      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+      }
 
       try {
         if (isSignUp) {
           const userCredential = await auth.createUserWithEmailAndPassword(email, password);
           await userCredential.user.sendEmailVerification();
           pendingUserData = { uid: userCredential.user.uid, email: email };
-          document.getElementById('verifyEmailDisplay').innerText = email;
+          const verifyDisplay = document.getElementById('verifyEmailDisplay');
+          if (verifyDisplay) verifyDisplay.innerText = email;
           showStep('authStep2');
           showNotification('📧 Verification email sent!');
         } else {
@@ -657,8 +690,10 @@
           if (!firebaseUser.emailVerified) {
             showAuthError('⚠️ Please verify your email first.');
             await auth.signOut();
-            btn.disabled = false;
-            btn.innerHTML = isSignUp ? '<i class="fas fa-user-plus"></i> Sign Up' : '<i class="fas fa-sign-in-alt"></i> Sign In';
+            if (btn) {
+              btn.disabled = false;
+              btn.innerHTML = isSignUp ? '<i class="fas fa-user-plus"></i> Sign Up' : '<i class="fas fa-sign-in-alt"></i> Sign In';
+            }
             return;
           }
           
@@ -692,8 +727,10 @@
         }
       }
 
-      btn.disabled = false;
-      btn.innerHTML = isSignUp ? '<i class="fas fa-user-plus"></i> Sign Up' : '<i class="fas fa-sign-in-alt"></i> Sign In';
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = isSignUp ? '<i class="fas fa-user-plus"></i> Sign Up' : '<i class="fas fa-sign-in-alt"></i> Sign In';
+      }
     }
 
     async function resendVerification() {
@@ -813,8 +850,10 @@
       localStorage.removeItem('musaffahUser');
       user = null;
       
-      document.getElementById('authCard').classList.remove('hidden');
-      document.getElementById('appMain').classList.add('hidden');
+      const authCard = document.getElementById('authCard');
+      const appMain = document.getElementById('appMain');
+      if (authCard) authCard.classList.remove('hidden');
+      if (appMain) appMain.classList.add('hidden');
       showStep('authStep1');
       showNotification('👋 Signed out');
     }
@@ -844,8 +883,10 @@
       }
       
       if (!user || !user.id) {
-        document.getElementById('authCard').classList.remove('hidden');
-        document.getElementById('appMain').classList.add('hidden');
+        const authCard = document.getElementById('authCard');
+        const appMain = document.getElementById('appMain');
+        if (authCard) authCard.classList.remove('hidden');
+        if (appMain) appMain.classList.add('hidden');
         showStep('authStep1');
         return;
       }
@@ -861,8 +902,10 @@
         console.warn('Firestore fetch failed', e);
       }
 
-      document.getElementById('authCard').classList.add('hidden');
-      document.getElementById('appMain').classList.remove('hidden');
+      const authCard = document.getElementById('authCard');
+      const appMain = document.getElementById('appMain');
+      if (authCard) authCard.classList.add('hidden');
+      if (appMain) appMain.classList.remove('hidden');
 
       const initial = (user.name || 'Reader')[0].toUpperCase();
       const avatarDisplay = document.getElementById('avatarDisplay');
@@ -923,9 +966,12 @@
       
       if (firebaseUser) {
         if (!firebaseUser.emailVerified) {
-          document.getElementById('authCard').classList.remove('hidden');
-          document.getElementById('appMain').classList.add('hidden');
-          document.getElementById('verifyEmailDisplay').innerText = firebaseUser.email;
+          const authCard = document.getElementById('authCard');
+          const appMain = document.getElementById('appMain');
+          const verifyDisplay = document.getElementById('verifyEmailDisplay');
+          if (authCard) authCard.classList.remove('hidden');
+          if (appMain) appMain.classList.add('hidden');
+          if (verifyDisplay) verifyDisplay.innerText = firebaseUser.email;
           showStep('authStep2');
           authStateChecked = true;
           return;
@@ -964,8 +1010,10 @@
             loadApp();
           } else {
             pendingUserData = { uid: firebaseUser.uid, email: firebaseUser.email };
-            document.getElementById('authCard').classList.remove('hidden');
-            document.getElementById('appMain').classList.add('hidden');
+            const authCard = document.getElementById('authCard');
+            const appMain = document.getElementById('appMain');
+            if (authCard) authCard.classList.remove('hidden');
+            if (appMain) appMain.classList.add('hidden');
             showStep('authStep3');
             authStateChecked = true;
           }
@@ -974,15 +1022,18 @@
           authStateChecked = true;
         }
       } else {
-        document.getElementById('authCard').classList.remove('hidden');
-        document.getElementById('appMain').classList.add('hidden');
+        const authCard = document.getElementById('authCard');
+        const appMain = document.getElementById('appMain');
+        if (authCard) authCard.classList.remove('hidden');
+        if (appMain) appMain.classList.add('hidden');
         showStep('authStep1');
         authStateChecked = true;
       }
     });
 
     // ============ INIT ============
-    document.getElementById('confirmPasswordWrapper').style.display = 'block';
+    const confirmWrapper = document.getElementById('confirmPasswordWrapper');
+    if (confirmWrapper) confirmWrapper.style.display = 'block';
     showStep('authStep1');
 
     // ============ JUZ ============
@@ -1434,21 +1485,12 @@
       } catch (e) {
         console.error('Media permission error:', e);
         isGettingMedia = false;
-        
-        let errorMsg = '';
-        if (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError') {
-          errorMsg = 'Camera/microphone access denied. Please enable in browser settings.';
-        } else if (e.name === 'NotFoundError') {
-          errorMsg = 'No camera or microphone found.';
-        } else {
-          errorMsg = 'Could not access camera/microphone.';
-        }
-        showNotification('❌ ' + errorMsg);
+        showNotification('❌ Could not access camera/microphone. Please check browser settings.');
         return false;
       }
     }
 
-    // ============ WEBRTC FUNCTIONS ============
+    // ============ WEBRTC ============
     async function getLocalStream() {
       if (isGettingMedia) {
         showNotification('⏳ Please wait...');
@@ -1489,15 +1531,15 @@
         ]
       };
       
-      peerConnection = new RTCPeerConnection(configuration);
+      pc = new RTCPeerConnection(configuration);
       
       if (localStream) {
         localStream.getTracks().forEach(track => {
-          peerConnection.addTrack(track, localStream);
+          pc.addTrack(track, localStream);
         });
       }
       
-      peerConnection.ontrack = (event) => {
+      pc.ontrack = (event) => {
         remoteStream = event.streams[0];
         const remoteVideo = document.getElementById('remoteVideoCall');
         if (remoteVideo) {
@@ -1506,14 +1548,14 @@
         showNotification('📹 Call connected!');
       };
       
-      peerConnection.onicecandidate = (event) => {
+      pc.onicecandidate = (event) => {
         if (event.candidate) {
           sendSignalingData({ type: 'ice-candidate', candidate: event.candidate });
         }
       };
       
-      peerConnection.onconnectionstatechange = () => {
-        const state = peerConnection.connectionState;
+      pc.onconnectionstatechange = () => {
+        const state = pc.connectionState;
         if (state === 'connected') {
           isCallActive = true;
           startCallTimer();
@@ -1522,7 +1564,7 @@
         }
       };
       
-      return peerConnection;
+      return pc;
     }
 
     function startSignalingListener() {
@@ -1607,25 +1649,15 @@
         if (callFullscreen) {
           callFullscreen.classList.add('active');
         }
-        document.getElementById('container').style.display = 'none';
-        document.getElementById('bottomNav').style.display = 'none';
-        document.getElementById('header').style.display = 'none';
+        const container = document.getElementById('container');
+        const bottomNav = document.getElementById('bottomNav');
+        const header = document.querySelector('header');
+        if (container) container.style.display = 'none';
+        if (bottomNav) bottomNav.style.display = 'none';
+        if (header) header.style.display = 'none';
         
-        if (selectedMode === 'audio') {
-          const localWrapper = document.getElementById('localVideoWrapper');
-          const remoteWrapper = document.getElementById('remoteVideoWrapper');
-          if (localWrapper) localWrapper.style.display = 'none';
-          if (remoteWrapper) remoteWrapper.style.display = 'none';
-          const camToggle = document.getElementById('callCamToggle');
-          if (camToggle) camToggle.style.display = 'none';
-        } else {
-          const localWrapper = document.getElementById('localVideoWrapper');
-          const remoteWrapper = document.getElementById('remoteVideoWrapper');
-          if (localWrapper) localWrapper.style.display = 'block';
-          if (remoteWrapper) remoteWrapper.style.display = 'block';
-          const camToggle = document.getElementById('callCamToggle');
-          if (camToggle) camToggle.style.display = 'inline-block';
-        }
+        // Setup video/audio mode
+        setupCallUI();
         
         const localVideo = document.getElementById('localVideoCall');
         if (localVideo) {
@@ -1639,8 +1671,8 @@
         
         createPeerConnection();
         
-        const offer = await peerConnection.createOffer();
-        await peerConnection.setLocalDescription(offer);
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
         
         sendSignalingData({ type: 'offer', offer: offer });
         
@@ -1651,6 +1683,51 @@
         console.error('Error starting call:', e);
         showNotification('❌ Failed to start call: ' + e.message);
         endCall();
+      }
+    }
+
+    function setupCallUI() {
+      if (selectedMode === 'audio') {
+        const localWrapper = document.getElementById('localVideoWrapper');
+        const remoteWrapper = document.getElementById('remoteVideoWrapper');
+        if (localWrapper) {
+          localWrapper.style.display = 'none';
+          localWrapper.classList.remove('dominant');
+        }
+        if (remoteWrapper) {
+          remoteWrapper.style.display = 'none';
+          remoteWrapper.classList.remove('dominant');
+        }
+        const camToggle = document.getElementById('callCamToggle');
+        if (camToggle) camToggle.style.display = 'none';
+      } else {
+        const localWrapper = document.getElementById('localVideoWrapper');
+        const remoteWrapper = document.getElementById('remoteVideoWrapper');
+        if (localWrapper) {
+          localWrapper.style.display = 'block';
+          localWrapper.classList.remove('dominant');
+        }
+        if (remoteWrapper) {
+          remoteWrapper.style.display = 'block';
+          remoteWrapper.classList.add('dominant');
+        }
+        const camToggle = document.getElementById('callCamToggle');
+        if (camToggle) camToggle.style.display = 'inline-block';
+        
+        // Reset local video position
+        const videoGrid = document.getElementById('videoGrid');
+        if (videoGrid) {
+          const localWrapper2 = document.getElementById('localVideoWrapper');
+          if (localWrapper2) {
+            localWrapper2.style.position = 'absolute';
+            localWrapper2.style.bottom = '20px';
+            localWrapper2.style.right = '20px';
+            localWrapper2.style.width = '180px';
+            localWrapper2.style.height = '120px';
+            localWrapper2.style.top = 'auto';
+            localWrapper2.style.left = 'auto';
+          }
+        }
       }
     }
 
@@ -1675,14 +1752,14 @@
           return;
         }
         
-        if (!peerConnection) return;
+        if (!pc) return;
         
         if (data.type === 'answer') {
-          await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+          await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
         } else if (data.type === 'ice-candidate') {
           if (data.candidate) {
             try {
-              await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+              await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
             } catch (e) {
               iceCandidatesQueue.push(data.candidate);
             }
@@ -1721,25 +1798,14 @@
         if (callFullscreen) {
           callFullscreen.classList.add('active');
         }
-        document.getElementById('container').style.display = 'none';
-        document.getElementById('bottomNav').style.display = 'none';
-        document.getElementById('header').style.display = 'none';
+        const container = document.getElementById('container');
+        const bottomNav = document.getElementById('bottomNav');
+        const header = document.querySelector('header');
+        if (container) container.style.display = 'none';
+        if (bottomNav) bottomNav.style.display = 'none';
+        if (header) header.style.display = 'none';
         
-        if (selectedMode === 'audio') {
-          const localWrapper = document.getElementById('localVideoWrapper');
-          const remoteWrapper = document.getElementById('remoteVideoWrapper');
-          if (localWrapper) localWrapper.style.display = 'none';
-          if (remoteWrapper) remoteWrapper.style.display = 'none';
-          const camToggle = document.getElementById('callCamToggle');
-          if (camToggle) camToggle.style.display = 'none';
-        } else {
-          const localWrapper = document.getElementById('localVideoWrapper');
-          const remoteWrapper = document.getElementById('remoteVideoWrapper');
-          if (localWrapper) localWrapper.style.display = 'block';
-          if (remoteWrapper) remoteWrapper.style.display = 'block';
-          const camToggle = document.getElementById('callCamToggle');
-          if (camToggle) camToggle.style.display = 'inline-block';
-        }
+        setupCallUI();
         
         const localVideo = document.getElementById('localVideoCall');
         if (localVideo) {
@@ -1753,9 +1819,9 @@
         
         createPeerConnection();
         
-        await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
-        const answer = await peerConnection.createAnswer();
-        await peerConnection.setLocalDescription(answer);
+        await pc.setRemoteDescription(new RTCSessionDescription(offer));
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
         sendSignalingData({ type: 'answer', answer: answer });
         
         isCallActive = true;
@@ -1766,7 +1832,7 @@
         
         if (iceCandidatesQueue.length > 0) {
           iceCandidatesQueue.forEach(candidate => {
-            peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+            pc.addIceCandidate(new RTCIceCandidate(candidate));
           });
           iceCandidatesQueue = [];
         }
@@ -1787,9 +1853,9 @@
         callTimer = null;
       }
       
-      if (peerConnection) {
-        peerConnection.close();
-        peerConnection = null;
+      if (pc) {
+        pc.close();
+        pc = null;
       }
       
       remoteStream = null;
@@ -1803,9 +1869,12 @@
       if (callFullscreen) {
         callFullscreen.classList.remove('active');
       }
-      document.getElementById('container').style.display = 'block';
-      document.getElementById('bottomNav').style.display = 'flex';
-      document.getElementById('header').style.display = 'block';
+      const container = document.getElementById('container');
+      const bottomNav = document.getElementById('bottomNav');
+      const header = document.querySelector('header');
+      if (container) container.style.display = 'block';
+      if (bottomNav) bottomNav.style.display = 'flex';
+      if (header) header.style.display = 'block';
       
       if (signalingUnsubscribe) {
         signalingUnsubscribe();
@@ -1954,11 +2023,123 @@
       if (dominantVideo === 'remote') {
         if (remoteWrapper) remoteWrapper.classList.remove('dominant');
         if (localWrapper) localWrapper.classList.add('dominant');
+        // Reset local video position when it becomes dominant
+        if (localWrapper) {
+          localWrapper.style.position = 'relative';
+          localWrapper.style.bottom = 'auto';
+          localWrapper.style.right = 'auto';
+          localWrapper.style.width = 'auto';
+          localWrapper.style.height = 'auto';
+        }
         dominantVideo = 'local';
       } else {
         if (localWrapper) localWrapper.classList.remove('dominant');
         if (remoteWrapper) remoteWrapper.classList.add('dominant');
+        // Restore local video as floating when remote is dominant
+        const localWrapper2 = document.getElementById('localVideoWrapper');
+        if (localWrapper2) {
+          localWrapper2.style.position = 'absolute';
+          localWrapper2.style.bottom = '20px';
+          localWrapper2.style.right = '20px';
+          localWrapper2.style.width = '180px';
+          localWrapper2.style.height = '120px';
+          localWrapper2.style.top = 'auto';
+          localWrapper2.style.left = 'auto';
+        }
         dominantVideo = 'remote';
+      }
+    }
+
+    // ============ DRAG FUNCTIONALITY ============
+    function setupDrag() {
+      const localWrapper = document.getElementById('localVideoWrapper');
+      if (!localWrapper) return;
+      
+      let isDragging = false;
+      let startX, startY, initialX, initialY;
+      
+      // Mouse events
+      localWrapper.addEventListener('mousedown', startDrag);
+      document.addEventListener('mousemove', drag);
+      document.addEventListener('mouseup', endDrag);
+      
+      // Touch events
+      localWrapper.addEventListener('touchstart', startDragTouch, { passive: false });
+      document.addEventListener('touchmove', dragTouch, { passive: false });
+      document.addEventListener('touchend', endDragTouch, { passive: false });
+      
+      function startDrag(e) {
+        if (localWrapper.classList.contains('dominant')) return;
+        isDragging = true;
+        localWrapper.classList.add('dragging');
+        const rect = localWrapper.getBoundingClientRect();
+        startX = e.clientX;
+        startY = e.clientY;
+        initialX = rect.left;
+        initialY = rect.top;
+        e.preventDefault();
+      }
+      
+      function startDragTouch(e) {
+        if (localWrapper.classList.contains('dominant')) return;
+        isDragging = true;
+        localWrapper.classList.add('dragging');
+        const touch = e.touches[0];
+        const rect = localWrapper.getBoundingClientRect();
+        startX = touch.clientX;
+        startY = touch.clientY;
+        initialX = rect.left;
+        initialY = rect.top;
+        e.preventDefault();
+      }
+      
+      function drag(e) {
+        if (!isDragging) return;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        moveElement(dx, dy);
+        e.preventDefault();
+      }
+      
+      function dragTouch(e) {
+        if (!isDragging) return;
+        const touch = e.touches[0];
+        const dx = touch.clientX - startX;
+        const dy = touch.clientY - startY;
+        moveElement(dx, dy);
+        e.preventDefault();
+      }
+      
+      function moveElement(dx, dy) {
+        const newX = initialX + dx;
+        const newY = initialY + dy;
+        
+        // Constrain to viewport
+        const rect = localWrapper.getBoundingClientRect();
+        const maxX = window.innerWidth - rect.width;
+        const maxY = window.innerHeight - rect.height;
+        
+        const clampedX = Math.max(0, Math.min(newX, maxX));
+        const clampedY = Math.max(0, Math.min(newY, maxY));
+        
+        localWrapper.style.left = clampedX + 'px';
+        localWrapper.style.top = clampedY + 'px';
+        localWrapper.style.right = 'auto';
+        localWrapper.style.bottom = 'auto';
+      }
+      
+      function endDrag() {
+        if (isDragging) {
+          isDragging = false;
+          localWrapper.classList.remove('dragging');
+        }
+      }
+      
+      function endDragTouch() {
+        if (isDragging) {
+          isDragging = false;
+          localWrapper.classList.remove('dragging');
+        }
       }
     }
 
@@ -1980,11 +2161,16 @@
       }
     }
 
-    document.getElementById('bottomNav').addEventListener('click', (e) => {
-      const btn = e.target.closest('button');
-      if (!btn) return;
-      const page = btn.dataset.page;
-      if (page) switchPage(page);
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('bottomNav').addEventListener('click', function(e) {
+        const btn = e.target.closest('button');
+        if (!btn) return;
+        const page = btn.dataset.page;
+        if (page) switchPage(page);
+      });
+      
+      // Setup drag after DOM is loaded
+      setupDrag();
     });
 
     // ============ THEME ============
@@ -2012,10 +2198,11 @@
       const remoteWrapper = document.getElementById('remoteVideoWrapper');
       const localWrapper = document.getElementById('localVideoWrapper');
       if (selectedMode === 'video') {
-        if (e.target.closest('#remoteVideoWrapper') && remoteWrapper) {
+        // Only toggle if clicking on the wrapper itself, not during drag
+        if (e.target.closest('#remoteVideoWrapper') && remoteWrapper && !localWrapper.classList.contains('dragging')) {
           toggleDominantVideo();
         }
-        if (e.target.closest('#localVideoWrapper') && localWrapper) {
+        if (e.target.closest('#localVideoWrapper') && localWrapper && !localWrapper.classList.contains('dragging')) {
           toggleDominantVideo();
         }
       }
