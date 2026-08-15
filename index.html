@@ -12,922 +12,8 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js">
   </script>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', system-ui, sans-serif;
-    }
-    body {
-      background: #f2f6f5;
-      padding-bottom: 80px;
-      transition: background 0.2s, color 0.2s;
-    }
-    header {
-      background: #0f766e;
-      color: white;
-      padding: 10px 16px 8px;
-      text-align: center;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-      position: sticky;
-      top: 0;
-      z-index: 20;
-    }
-    header h1 {
-      font-size: 1.3rem;
-      letter-spacing: -0.3px;
-    }
-    header p {
-      opacity: 0.9;
-      font-size: 0.7rem;
-      margin-top: 2px;
-    }
-    .container {
-      max-width: 700px;
-      margin: 0 auto;
-      padding: 10px 12px 20px;
-    }
-
-    .page {
-      display: none;
-      animation: fadeUp 0.2s ease;
-    }
-    .page.active {
-      display: block;
-    }
-    @keyframes fadeUp {
-      0% {
-        opacity: 0.4;
-        transform: translateY(6px);
-      }
-      100% {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .card {
-      background: white;
-      border-radius: 20px;
-      padding: 14px 12px;
-      margin-bottom: 14px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-      transition: background 0.2s;
-    }
-    .card h2 {
-      font-size: 1rem;
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .card h3 {
-      font-size: 0.9rem;
-      margin-bottom: 6px;
-    }
-    input,
-    select,
-    button,
-    textarea {
-      width: 100%;
-      padding: 9px 12px;
-      margin-top: 6px;
-      border-radius: 12px;
-      border: 1px solid #dde3e2;
-      font-size: 0.85rem;
-      background: white;
-      transition: 0.15s;
-    }
-    button {
-      background: #0f766e;
-      color: white;
-      font-weight: 600;
-      border: none;
-      cursor: pointer;
-    }
-    button:active {
-      transform: scale(0.97);
-    }
-    button.danger {
-      background: #b91c1c;
-    }
-    button.success {
-      background: #16a34a;
-    }
-    button.purple {
-      background: #7c3aed;
-    }
-    button.warning {
-      background: #d97706;
-    }
-    button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-    button.outline {
-      background: transparent;
-      color: #0f766e;
-      border: 2px solid #0f766e;
-    }
-    button.outline.danger {
-      color: #b91c1c;
-      border-color: #b91c1c;
-    }
-    .hidden {
-      display: none !important;
-    }
-
-    .juz-grid {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 6px;
-      margin-top: 6px;
-    }
-    .juz-item {
-      background: white;
-      border: 1px solid #dde3e2;
-      border-radius: 10px;
-      padding: 8px 0;
-      text-align: center;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.1s;
-      font-size: 0.8rem;
-    }
-    .juz-item.completed {
-      background: #0f766e;
-      color: white;
-      border-color: #0f766e;
-    }
-    .juz-item:active {
-      transform: scale(0.92);
-    }
-
-    nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: white;
-      display: flex;
-      justify-content: space-around;
-      padding: 4px 0 10px;
-      box-shadow: 0 -4px 14px rgba(0, 0, 0, 0.04);
-      border-top: 1px solid #eef3f2;
-      z-index: 40;
-    }
-    nav button {
-      width: auto;
-      padding: 2px 4px;
-      background: transparent;
-      color: #5b7a76;
-      border-radius: 40px;
-      margin: 0;
-      font-size: 0.6rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0px;
-      border: none;
-      font-weight: 500;
-    }
-    nav button i {
-      font-size: 1.4rem;
-      color: #5b7a76;
-    }
-    nav button.active i {
-      color: #0f766e;
-    }
-    nav button.active {
-      color: #0f766e;
-    }
-    nav button:active {
-      transform: scale(0.94);
-    }
-
-    .dark {
-      background: #121212;
-      color: #eee;
-    }
-    .dark .card {
-      background: #1e1e1e;
-    }
-    .dark .juz-item {
-      background: #2a2a2a;
-      border-color: #3a3a3a;
-      color: #ddd;
-    }
-    .dark .juz-item.completed {
-      background: #0f766e;
-      color: white;
-    }
-    .dark input,
-    .dark select,
-    .dark textarea {
-      background: #2c2c2c;
-      color: #eee;
-      border-color: #444;
-    }
-    .dark nav {
-      background: #1a1a1a;
-      border-top-color: #2a2a2a;
-    }
-    .dark nav button {
-      color: #8aa8a4;
-    }
-    .dark nav button i {
-      color: #8aa8a4;
-    }
-    .dark nav button.active {
-      color: #7acfc5;
-    }
-    .dark nav button.active i {
-      color: #7acfc5;
-    }
-
-    .notification-toast {
-      position: fixed;
-      top: 60px;
-      right: 12px;
-      background: #0f766e;
-      color: white;
-      padding: 8px 16px;
-      border-radius: 30px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-      z-index: 99;
-      max-width: 240px;
-      font-weight: 500;
-      animation: slideIn 0.3s ease;
-      font-size: 0.8rem;
-    }
-    @keyframes slideIn {
-      0% {
-        transform: translateX(100px);
-        opacity: 0;
-      }
-      100% {
-        transform: translateX(0);
-        opacity: 1;
-      }
-    }
-
-    .auth-toggle {
-      text-align: center;
-      margin-top: 4px;
-      color: #0f766e;
-      cursor: pointer;
-      font-weight: 500;
-      font-size: 0.8rem;
-    }
-    .dark .auth-toggle {
-      color: #7acfc5;
-    }
-
-    .profile-avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: #0f766e;
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.2rem;
-      font-weight: 600;
-      flex-shrink: 0;
-    }
-
-    .password-wrapper {
-      position: relative;
-      width: 100%;
-    }
-    .password-wrapper input {
-      padding-right: 40px;
-    }
-    .toggle-password {
-      position: absolute;
-      right: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      cursor: pointer;
-      color: #6b7280;
-      background: none;
-      border: none;
-      font-size: 1rem;
-      padding: 0;
-      margin: 0;
-      width: auto;
-    }
-    .toggle-password:hover {
-      color: #0f766e;
-    }
-
-    .verification-banner {
-      background: #fef3c7;
-      border: 1px solid #d97706;
-      border-radius: 12px;
-      padding: 10px;
-      margin: 8px 0;
-      text-align: center;
-      font-size: 0.85rem;
-      color: #92400e;
-    }
-    .dark .verification-banner {
-      background: #78350f;
-      border-color: #d97706;
-      color: #fde68a;
-    }
-    .verification-banner button {
-      background: #d97706;
-      color: white;
-      border: none;
-      padding: 4px 16px;
-      border-radius: 30px;
-      margin-top: 4px;
-      font-size: 0.8rem;
-      cursor: pointer;
-    }
-
-    .onboarding-step {
-      display: none;
-    }
-    .onboarding-step.active {
-      display: block;
-    }
-
-    .partner-card {
-      background: #e0f2fe;
-      border-radius: 14px;
-      padding: 12px;
-      text-align: center;
-    }
-    .dark .partner-card {
-      background: #1a3340;
-    }
-    .partner-avatar {
-      width: 56px;
-      height: 56px;
-      border-radius: 50%;
-      background: #0f766e;
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.6rem;
-      font-weight: 600;
-      margin: 0 auto 6px;
-    }
-
-    .search-item {
-      background: #f0fdf4;
-      border-radius: 12px;
-      padding: 12px;
-      margin-bottom: 8px;
-      border-left: 4px solid #7c3aed;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-    .dark .search-item {
-      background: #052e16;
-      border-left-color: #7c3aed;
-    }
-    .search-item .info {
-      flex: 1;
-    }
-    .search-item .info .name {
-      font-weight: 600;
-      font-size: 0.9rem;
-    }
-    .search-item .info .detail {
-      font-size: 0.75rem;
-      opacity: 0.6;
-    }
-    .search-item .actions {
-      display: flex;
-      gap: 6px;
-    }
-    .search-item .actions button {
-      width: auto;
-      padding: 6px 16px;
-      margin: 0;
-      font-size: 0.75rem;
-    }
-    .search-item .status-badge {
-      font-size: 0.65rem;
-      padding: 2px 10px;
-      border-radius: 30px;
-    }
-    .search-item .status-badge.online {
-      background: #d1fae5;
-      color: #065f46;
-    }
-    .search-item .status-badge.offline {
-      background: #fef3c7;
-      color: #92400e;
-    }
-    .dark .search-item .status-badge.online {
-      background: #064e3b;
-      color: #a7f3d0;
-    }
-    .dark .search-item .status-badge.offline {
-      background: #78350f;
-      color: #fde68a;
-    }
-
-    .request-item {
-      background: #fef3c7;
-      border-radius: 12px;
-      padding: 10px;
-      margin-bottom: 8px;
-      border-left: 4px solid #d97706;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-    .dark .request-item {
-      background: #78350f;
-      border-left-color: #d97706;
-    }
-    .request-item .info {
-      flex: 1;
-    }
-    .request-item .info .name {
-      font-weight: 600;
-      font-size: 0.9rem;
-    }
-    .request-item .actions {
-      display: flex;
-      gap: 6px;
-    }
-    .request-item .actions button {
-      width: auto;
-      padding: 4px 12px;
-      margin: 0;
-      font-size: 0.7rem;
-    }
-
-    .search-box {
-      display: flex;
-      gap: 6px;
-      margin-bottom: 8px;
-      align-items: center;
-    }
-    .search-box input {
-      flex: 1;
-      margin: 0;
-      padding: 8px 12px;
-      font-size: 0.85rem;
-    }
-    .search-box button {
-      width: auto;
-      padding: 8px 16px;
-      margin: 0;
-      font-size: 0.8rem;
-    }
-
-    .search-filters {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-      margin-bottom: 8px;
-    }
-    .search-filters button {
-      width: auto;
-      padding: 4px 14px;
-      margin: 0;
-      font-size: 0.7rem;
-      border-radius: 30px;
-      background: #eef3f2;
-      color: #5b7a76;
-      border: none;
-      cursor: pointer;
-    }
-    .search-filters button.active {
-      background: #0f766e;
-      color: white;
-    }
-    .dark .search-filters button {
-      background: #2a2a2a;
-      color: #aaa;
-    }
-    .dark .search-filters button.active {
-      background: #0f766e;
-      color: white;
-    }
-
-    .mode-selection {
-      display: flex;
-      gap: 10px;
-      margin: 10px 0;
-    }
-    .mode-selection button {
-      flex: 1;
-      padding: 12px;
-      border-radius: 12px;
-      border: 2px solid #dde3e2;
-      background: white;
-      cursor: pointer;
-      transition: all 0.3s;
-      font-size: 0.85rem;
-    }
-    .mode-selection button.active {
-      border-color: #0f766e;
-      background: #eaf9f7;
-    }
-    .mode-selection button i {
-      display: block;
-      font-size: 1.5rem;
-      margin-bottom: 4px;
-    }
-    .dark .mode-selection button {
-      background: #1e1e1e;
-      border-color: #444;
-    }
-    .dark .mode-selection button.active {
-      border-color: #0f766e;
-      background: #1d3a38;
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 30px 10px;
-      opacity: 0.6;
-    }
-    .empty-state i {
-      font-size: 2.5rem;
-      margin-bottom: 10px;
-      display: block;
-    }
-    .empty-state p {
-      font-size: 0.85rem;
-    }
-
-    .dashboard-info .row {
-      display: flex;
-      justify-content: space-between;
-      padding: 6px 0;
-      border-bottom: 1px solid #eef3f2;
-    }
-    .dark .dashboard-info .row {
-      border-bottom-color: #2a3a38;
-    }
-    .dashboard-info .row .label {
-      opacity: 0.6;
-      font-size: 0.8rem;
-    }
-    .dashboard-info .row .value {
-      font-weight: 500;
-      font-size: 0.85rem;
-    }
-
-    .profile-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      cursor: pointer;
-    }
-    .profile-header .toggle-icon {
-      transition: transform 0.3s ease;
-    }
-    .profile-header .toggle-icon.open {
-      transform: rotate(180deg);
-    }
-    .dashboard-info {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.3s ease, padding 0.3s ease;
-      padding: 0 0;
-    }
-    .dashboard-info.open {
-      max-height: 400px;
-      padding: 10px 0 0 0;
-    }
-
-    .call-fullscreen {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: #000;
-      z-index: 100;
-      display: none;
-      flex-direction: column;
-    }
-    .call-fullscreen.active {
-      display: flex;
-    }
-    .call-fullscreen .video-grid {
-      flex: 1;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 4px;
-      padding: 4px;
-      background: #1a1a1a;
-      position: relative;
-    }
-    .call-fullscreen .video-grid .video-wrapper {
-      position: relative;
-      background: #2a2a2a;
-      border-radius: 8px;
-      overflow: hidden;
-      min-height: 200px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-    }
-    .call-fullscreen .video-grid .video-wrapper.dominant {
-      grid-column: 1 / -1;
-      grid-row: 1 / -1;
-      min-height: 70vh;
-    }
-    .call-fullscreen .video-grid .video-wrapper.dominant~.video-wrapper {
-      position: absolute;
-      bottom: 20px;
-      right: 20px;
-      width: 180px;
-      height: 120px;
-      border-radius: 12px;
-      border: 2px solid #0f766e;
-      z-index: 10;
-      cursor: grab;
-      touch-action: none;
-      user-select: none;
-      -webkit-user-select: none;
-    }
-    .call-fullscreen .video-grid .video-wrapper.dominant~.video-wrapper.dragging {
-      cursor: grabbing;
-      border-color: #dc2626;
-      box-shadow: 0 0 20px rgba(220, 38, 38, 0.5);
-      transition: none;
-    }
-    .call-fullscreen .video-grid .video-wrapper.dominant~.video-wrapper .drag-handle {
-      position: absolute;
-      top: 4px;
-      right: 4px;
-      background: rgba(0, 0, 0, 0.6);
-      color: white;
-      padding: 2px 8px;
-      border-radius: 12px;
-      font-size: 0.5rem;
-      pointer-events: none;
-      opacity: 0.7;
-    }
-    .call-fullscreen video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      background: #1a1a1a;
-      transform: scaleX(-1);
-    }
-    .call-fullscreen .video-label {
-      position: absolute;
-      bottom: 10px;
-      left: 10px;
-      background: rgba(0, 0, 0, 0.7);
-      color: white;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 0.7rem;
-      font-weight: 500;
-      pointer-events: none;
-    }
-    .call-fullscreen .call-controls {
-      background: rgba(0, 0, 0, 0.8);
-      padding: 12px;
-      display: flex;
-      justify-content: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-    .call-fullscreen .call-controls button {
-      width: auto;
-      padding: 8px 16px;
-      margin: 0;
-      font-size: 0.75rem;
-      border-radius: 30px;
-      min-width: 60px;
-    }
-    .call-fullscreen .call-controls button.end-call {
-      background: #dc2626;
-    }
-    .call-fullscreen .call-controls button.mic-off {
-      background: #6b7280;
-    }
-    .call-fullscreen .call-controls button.cam-off {
-      background: #6b7280;
-    }
-    .call-fullscreen .call-controls button.correction {
-      background: #dc2626;
-      animation: pulseCorrection 1s ease infinite;
-    }
-    @keyframes pulseCorrection {
-      0%,
-      100% {
-        transform: scale(1);
-      }
-      50% {
-        transform: scale(1.05);
-      }
-    }
-    .call-fullscreen .correction-flash {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(220, 38, 38, 0.5);
-      z-index: 200;
-      display: none;
-      pointer-events: none;
-      animation: flashRed 0.5s ease 3;
-    }
-    .call-fullscreen .correction-flash.active {
-      display: block;
-    }
-    @keyframes flashRed {
-      0%,
-      100% {
-        opacity: 1;
-      }
-      50% {
-        opacity: 0.3;
-      }
-    }
-
-    .attention-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.7);
-      z-index: 300;
-      display: none;
-      justify-content: center;
-      align-items: center;
-    }
-    .attention-overlay.show {
-      display: flex;
-    }
-    .attention-overlay .content {
-      background: white;
-      padding: 30px 40px;
-      border-radius: 20px;
-      text-align: center;
-      max-width: 90%;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    }
-    .dark .attention-overlay .content {
-      background: #1e1e1e;
-    }
-    .attention-overlay .content h2 {
-      color: #dc2626;
-      font-size: 1.5rem;
-    }
-    .attention-overlay .content .icon {
-      font-size: 3rem;
-      display: block;
-      margin-bottom: 10px;
-    }
-    .attention-overlay .content .close-btn {
-      margin-top: 10px;
-      width: auto;
-      padding: 8px 24px;
-    }
-
-    .incoming-call-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.8);
-      z-index: 150;
-      display: none;
-      justify-content: center;
-      align-items: center;
-      animation: fadeIn 0.3s ease;
-    }
-    .incoming-call-overlay.show {
-      display: flex;
-    }
-    @keyframes fadeIn {
-      0% {
-        opacity: 0;
-        transform: scale(0.9);
-      }
-      100% {
-        opacity: 1;
-        transform: scale(1);
-      }
-    }
-    .incoming-call-overlay .content {
-      background: white;
-      padding: 40px 50px;
-      border-radius: 24px;
-      text-align: center;
-      max-width: 90%;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-      animation: bounceIn 0.5s ease;
-    }
-    @keyframes bounceIn {
-      0% {
-        transform: scale(0.5);
-        opacity: 0;
-      }
-      60% {
-        transform: scale(1.05);
-      }
-      100% {
-        transform: scale(1);
-        opacity: 1;
-      }
-    }
-    .dark .incoming-call-overlay .content {
-      background: #1e1e1e;
-    }
-    .incoming-call-overlay .content .caller-avatar {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      background: #0f766e;
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2.5rem;
-      font-weight: 700;
-      margin: 0 auto 15px;
-    }
-    .incoming-call-overlay .content .caller-name {
-      font-size: 1.5rem;
-      font-weight: 600;
-      margin-bottom: 4px;
-    }
-    .incoming-call-overlay .content .caller-mode {
-      font-size: 0.85rem;
-      opacity: 0.6;
-      margin-bottom: 20px;
-    }
-    .incoming-call-overlay .content .call-actions {
-      display: flex;
-      gap: 20px;
-      justify-content: center;
-    }
-    .incoming-call-overlay .content .call-actions button {
-      width: 70px;
-      height: 70px;
-      border-radius: 50%;
-      font-size: 1.8rem;
-      border: none;
-      cursor: pointer;
-      transition: transform 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .incoming-call-overlay .content .call-actions button:active {
-      transform: scale(0.9);
-    }
-    .incoming-call-overlay .content .call-actions .accept-btn {
-      background: #16a34a;
-      color: white;
-    }
-    .incoming-call-overlay .content .call-actions .reject-btn {
-      background: #dc2626;
-      color: white;
-    }
-    .incoming-call-overlay .content .call-actions .accept-btn:hover {
-      background: #15803d;
-    }
-    .incoming-call-overlay .content .call-actions .reject-btn:hover {
-      background: #b91c1c;
-    }
-    .incoming-call-overlay .ringing {
-      margin-top: 15px;
-      font-size: 0.85rem;
-      opacity: 0.5;
-      animation: pulseText 1s ease infinite;
-    }
-    @keyframes pulseText {
-      0%,
-      100% {
-        opacity: 0.5;
-      }
-      50% {
-        opacity: 1;
-      }
-    }
+    /* ... (keep all existing styles) ... */
+    *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif}body{background:#f2f6f5;padding-bottom:80px;transition:background .2s,color .2s}header{background:#0f766e;color:#fff;padding:10px 16px 8px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.06);position:sticky;top:0;z-index:20}header h1{font-size:1.3rem;letter-spacing:-.3px}header p{opacity:.9;font-size:.7rem;margin-top:2px}.container{max-width:700px;margin:0 auto;padding:10px 12px 20px}.page{display:none;animation:fadeUp .2s ease}.page.active{display:block}@keyframes fadeUp{0%{opacity:.4;transform:translateY(6px)}100%{opacity:1;transform:translateY(0)}}.card{background:#fff;border-radius:20px;padding:14px 12px;margin-bottom:14px;box-shadow:0 4px 12px rgba(0,0,0,.04);transition:background .2s}.card h2{font-size:1rem;margin-bottom:8px;display:flex;align-items:center;gap:6px}.card h3{font-size:.9rem;margin-bottom:6px}input,select,button,textarea{width:100%;padding:9px 12px;margin-top:6px;border-radius:12px;border:1px solid #dde3e2;font-size:.85rem;background:#fff;transition:.15s}button{background:#0f766e;color:#fff;font-weight:600;border:none;cursor:pointer}button:active{transform:scale(.97)}button.danger{background:#b91c1c}button.success{background:#16a34a}button.purple{background:#7c3aed}button.warning{background:#d97706}button:disabled{opacity:.5;cursor:not-allowed}button.outline{background:transparent;color:#0f766e;border:2px solid #0f766e}button.outline.danger{color:#b91c1c;border-color:#b91c1c}.hidden{display:none!important}.juz-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:6px}.juz-item{background:#fff;border:1px solid #dde3e2;border-radius:10px;padding:8px 0;text-align:center;font-weight:600;cursor:pointer;transition:all .1s;font-size:.8rem}.juz-item.completed{background:#0f766e;color:#fff;border-color:#0f766e}.juz-item:active{transform:scale(.92)}nav{position:fixed;bottom:0;left:0;right:0;background:#fff;display:flex;justify-content:space-around;padding:4px 0 10px;box-shadow:0 -4px 14px rgba(0,0,0,.04);border-top:1px solid #eef3f2;z-index:40}nav button{width:auto;padding:2px 4px;background:transparent;color:#5b7a76;border-radius:40px;margin:0;font-size:.6rem;display:flex;flex-direction:column;align-items:center;gap:0;border:none;font-weight:500}nav button i{font-size:1.4rem;color:#5b7a76}nav button.active i{color:#0f766e}nav button.active{color:#0f766e}nav button:active{transform:scale(.94)}.dark{background:#121212;color:#eee}.dark .card{background:#1e1e1e}.dark .juz-item{background:#2a2a2a;border-color:#3a3a3a;color:#ddd}.dark .juz-item.completed{background:#0f766e;color:#fff}.dark input,.dark select,.dark textarea{background:#2c2c2c;color:#eee;border-color:#444}.dark nav{background:#1a1a1a;border-top-color:#2a2a2a}.dark nav button{color:#8aa8a4}.dark nav button i{color:#8aa8a4}.dark nav button.active{color:#7acfc5}.dark nav button.active i{color:#7acfc5}.notification-toast{position:fixed;top:60px;right:12px;background:#0f766e;color:#fff;padding:8px 16px;border-radius:30px;box-shadow:0 8px 24px rgba(0,0,0,.2);z-index:99;max-width:240px;font-weight:500;animation:slideIn .3s ease;font-size:.8rem}@keyframes slideIn{0%{transform:translateX(100px);opacity:0}100%{transform:translateX(0);opacity:1}}.auth-toggle{text-align:center;margin-top:4px;color:#0f766e;cursor:pointer;font-weight:500;font-size:.8rem}.dark .auth-toggle{color:#7acfc5}.profile-avatar{width:40px;height:40px;border-radius:50%;background:#0f766e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:600;flex-shrink:0}.password-wrapper{position:relative;width:100%}.password-wrapper input{padding-right:40px}.toggle-password{position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:#6b7280;background:0 0;border:none;font-size:1rem;padding:0;margin:0;width:auto}.toggle-password:hover{color:#0f766e}.verification-banner{background:#fef3c7;border:1px solid #d97706;border-radius:12px;padding:10px;margin:8px 0;text-align:center;font-size:.85rem;color:#92400e}.dark .verification-banner{background:#78350f;border-color:#d97706;color:#fde68a}.verification-banner button{background:#d97706;color:#fff;border:none;padding:4px 16px;border-radius:30px;margin-top:4px;font-size:.8rem;cursor:pointer}.onboarding-step{display:none}.onboarding-step.active{display:block}.partner-card{background:#e0f2fe;border-radius:14px;padding:12px;text-align:center}.dark .partner-card{background:#1a3340}.partner-avatar{width:56px;height:56px;border-radius:50%;background:#0f766e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:600;margin:0 auto 6px}.search-item{background:#f0fdf4;border-radius:12px;padding:12px;margin-bottom:8px;border-left:4px solid #7c3aed;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}.dark .search-item{background:#052e16;border-left-color:#7c3aed}.search-item .info{flex:1}.search-item .info .name{font-weight:600;font-size:.9rem}.search-item .info .detail{font-size:.75rem;opacity:.6}.search-item .actions{display:flex;gap:6px}.search-item .actions button{width:auto;padding:6px 16px;margin:0;font-size:.75rem}.search-item .status-badge{font-size:.65rem;padding:2px 10px;border-radius:30px}.search-item .status-badge.online{background:#d1fae5;color:#065f46}.search-item .status-badge.offline{background:#fef3c7;color:#92400e}.dark .search-item .status-badge.online{background:#064e3b;color:#a7f3d0}.dark .search-item .status-badge.offline{background:#78350f;color:#fde68a}.request-item{background:#fef3c7;border-radius:12px;padding:10px;margin-bottom:8px;border-left:4px solid #d97706;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}.dark .request-item{background:#78350f;border-left-color:#d97706}.request-item .info{flex:1}.request-item .info .name{font-weight:600;font-size:.9rem}.request-item .actions{display:flex;gap:6px}.request-item .actions button{width:auto;padding:4px 12px;margin:0;font-size:.7rem}.search-box{display:flex;gap:6px;margin-bottom:8px;align-items:center}.search-box input{flex:1;margin:0;padding:8px 12px;font-size:.85rem}.search-box button{width:auto;padding:8px 16px;margin:0;font-size:.8rem}.search-filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}.search-filters button{width:auto;padding:4px 14px;margin:0;font-size:.7rem;border-radius:30px;background:#eef3f2;color:#5b7a76;border:none;cursor:pointer}.search-filters button.active{background:#0f766e;color:#fff}.dark .search-filters button{background:#2a2a2a;color:#aaa}.dark .search-filters button.active{background:#0f766e;color:#fff}.mode-selection{display:flex;gap:10px;margin:10px 0}.mode-selection button{flex:1;padding:12px;border-radius:12px;border:2px solid #dde3e2;background:#fff;cursor:pointer;transition:all .3s;font-size:.85rem}.mode-selection button.active{border-color:#0f766e;background:#eaf9f7}.mode-selection button i{display:block;font-size:1.5rem;margin-bottom:4px}.dark .mode-selection button{background:#1e1e1e;border-color:#444}.dark .mode-selection button.active{border-color:#0f766e;background:#1d3a38}.empty-state{text-align:center;padding:30px 10px;opacity:.6}.empty-state i{font-size:2.5rem;margin-bottom:10px;display:block}.empty-state p{font-size:.85rem}.dashboard-info .row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eef3f2}.dark .dashboard-info .row{border-bottom-color:#2a3a38}.dashboard-info .row .label{opacity:.6;font-size:.8rem}.dashboard-info .row .value{font-weight:500;font-size:.85rem}.profile-header{display:flex;align-items:center;gap:10px;cursor:pointer}.profile-header .toggle-icon{transition:transform .3s ease}.profile-header .toggle-icon.open{transform:rotate(180deg)}.dashboard-info{display:flex;flex-direction:column;gap:4px;max-height:0;overflow:hidden;transition:max-height .3s ease,padding .3s ease;padding:0}.dashboard-info.open{max-height:400px;padding:10px 0 0}.call-fullscreen{position:fixed;top:0;left:0;right:0;bottom:0;background:#000;z-index:100;display:none;flex-direction:column}.call-fullscreen.active{display:flex}.call-fullscreen .video-grid{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;background:#1a1a1a;position:relative}.call-fullscreen .video-grid .video-wrapper{position:relative;background:#2a2a2a;border-radius:8px;overflow:hidden;min-height:200px;display:flex;align-items:center;justify-content:center;cursor:pointer}.call-fullscreen .video-grid .video-wrapper.dominant{grid-column:1/-1;grid-row:1/-1;min-height:70vh}.call-fullscreen .video-grid .video-wrapper.dominant~.video-wrapper{position:absolute;bottom:20px;right:20px;width:180px;height:120px;border-radius:12px;border:2px solid #0f766e;z-index:10;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}.call-fullscreen .video-grid .video-wrapper.dominant~.video-wrapper.dragging{cursor:grabbing;border-color:#dc2626;box-shadow:0 0 20px rgba(220,38,38,.5);transition:none}.call-fullscreen .video-grid .video-wrapper.dominant~.video-wrapper .drag-handle{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.6);color:#fff;padding:2px 8px;border-radius:12px;font-size:.5rem;pointer-events:none;opacity:.7}.call-fullscreen video{width:100%;height:100%;object-fit:cover;background:#1a1a1a;transform:scaleX(-1)}.call-fullscreen .video-label{position:absolute;bottom:10px;left:10px;background:rgba(0,0,0,.7);color:#fff;padding:4px 12px;border-radius:20px;font-size:.7rem;font-weight:500;pointer-events:none}.call-fullscreen .call-controls{background:rgba(0,0,0,.8);padding:12px;display:flex;justify-content:center;gap:12px;flex-wrap:wrap}.call-fullscreen .call-controls button{width:auto;padding:8px 16px;margin:0;font-size:.75rem;border-radius:30px;min-width:60px}.call-fullscreen .call-controls button.end-call{background:#dc2626}.call-fullscreen .call-controls button.mic-off{background:#6b7280}.call-fullscreen .call-controls button.cam-off{background:#6b7280}.call-fullscreen .call-controls button.correction{background:#dc2626;animation:pulseCorrection 1s ease infinite}@keyframes pulseCorrection{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}.call-fullscreen .correction-flash{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(220,38,38,.5);z-index:200;display:none;pointer-events:none;animation:flashRed .5s ease 3}.call-fullscreen .correction-flash.active{display:block}@keyframes flashRed{0%,100%{opacity:1}50%{opacity:.3}}.attention-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);z-index:300;display:none;justify-content:center;align-items:center}.attention-overlay.show{display:flex}.attention-overlay .content{background:#fff;padding:30px 40px;border-radius:20px;text-align:center;max-width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3)}.dark .attention-overlay .content{background:#1e1e1e}.attention-overlay .content h2{color:#dc2626;font-size:1.5rem}.attention-overlay .content .icon{font-size:3rem;display:block;margin-bottom:10px}.attention-overlay .content .close-btn{margin-top:10px;width:auto;padding:8px 24px}.incoming-call-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.8);z-index:150;display:none;justify-content:center;align-items:center;animation:fadeIn .3s ease}.incoming-call-overlay.show{display:flex}@keyframes fadeIn{0%{opacity:0;transform:scale(.9)}100%{opacity:1;transform:scale(1)}}.incoming-call-overlay .content{background:#fff;padding:40px 50px;border-radius:24px;text-align:center;max-width:90%;box-shadow:0 20px 60px rgba(0,0,0,.5);animation:bounceIn .5s ease}@keyframes bounceIn{0%{transform:scale(.5);opacity:0}60%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}.dark .incoming-call-overlay .content{background:#1e1e1e}.incoming-call-overlay .content .caller-avatar{width:80px;height:80px;border-radius:50%;background:#0f766e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:2.5rem;font-weight:700;margin:0 auto 15px}.incoming-call-overlay .content .caller-name{font-size:1.5rem;font-weight:600;margin-bottom:4px}.incoming-call-overlay .content .caller-mode{font-size:.85rem;opacity:.6;margin-bottom:20px}.incoming-call-overlay .content .call-actions{display:flex;gap:20px;justify-content:center}.incoming-call-overlay .content .call-actions button{width:70px;height:70px;border-radius:50%;font-size:1.8rem;border:none;cursor:pointer;transition:transform .2s;display:flex;align-items:center;justify-content:center}.incoming-call-overlay .content .call-actions button:active{transform:scale(.9)}.incoming-call-overlay .content .call-actions .accept-btn{background:#16a34a;color:#fff}.incoming-call-overlay .content .call-actions .reject-btn{background:#dc2626;color:#fff}.incoming-call-overlay .content .call-actions .accept-btn:hover{background:#15803d}.incoming-call-overlay .content .call-actions .reject-btn:hover{background:#b91c1c}.incoming-call-overlay .ringing{margin-top:15px;font-size:.85rem;opacity:.5;animation:pulseText 1s ease infinite}@keyframes pulseText{0%,100%{opacity:.5}50%{opacity:1}}
   </style>
 </head>
 <body>
@@ -940,10 +26,8 @@
     <!-- AUTH CARD -->
     <div id="authCard" class="card">
       <h2><i class="fas fa-envelope"></i> <span id="authTitle">Sign Up</span></h2>
-
       <div id="authStep1" class="onboarding-step active">
         <div id="authError" class="verification-banner hidden" style="background:#fee2e2;border-color:#dc2626;color:#991b1b;"></div>
-
         <input id="authEmail" type="email" placeholder="Email">
         <div class="password-wrapper">
           <input id="authPassword" type="password" placeholder="Password">
@@ -956,7 +40,6 @@
         <button id="authButton" onclick="handleAuth()"><i class="fas fa-user-plus"></i> Sign Up</button>
         <div class="auth-toggle" onclick="toggleAuthMode()">Already have an account? <strong>Sign In</strong></div>
       </div>
-
       <div id="authStep2" class="onboarding-step">
         <div class="verification-banner">
           <i class="fas fa-envelope" style="font-size:1.5rem;"></i>
@@ -967,7 +50,6 @@
         </div>
         <div class="auth-toggle" onclick="goBackToAuth()">← Back to sign in</div>
       </div>
-
       <div id="authStep3" class="onboarding-step">
         <h3 style="text-align:center;">🌍 Welcome! Choose your preferences</h3>
         <div style="margin:8px 0;">
@@ -977,37 +59,26 @@
         <div style="margin:8px 0;">
           <label style="font-size:0.8rem; font-weight:500;">Language</label>
           <select id="onboardingLang" style="margin-top:2px;">
-            <option value="en">English</option>
-            <option value="ar">العربية</option>
-            <option value="ha">Hausa</option>
-            <option value="ur">اردو</option>
-            <option value="tr">Türkçe</option>
-            <option value="fr">Français</option>
+            <option value="en">English</option><option value="ar">العربية</option><option value="ha">Hausa</option>
+            <option value="ur">اردو</option><option value="tr">Türkçe</option><option value="fr">Français</option>
             <option value="id">Bahasa Indonesia</option>
           </select>
         </div>
         <div style="margin:8px 0;">
           <label style="font-size:0.8rem; font-weight:500;">Region / Timezone</label>
           <select id="onboardingRegion" style="margin-top:2px;">
-            <option value="mecca">Makkah (GMT+3)</option>
-            <option value="medina">Madinah (GMT+3)</option>
-            <option value="cairo">Cairo (GMT+2)</option>
-            <option value="london">London (GMT+0)</option>
-            <option value="newyork">New York (GMT-4)</option>
-            <option value="lagos">Lagos (GMT+1)</option>
-            <option value="jakarta">Jakarta (GMT+7)</option>
-            <option value="karachi">Karachi (GMT+5)</option>
-            <option value="istanbul">Istanbul (GMT+3)</option>
-            <option value="riyadh">Riyadh (GMT+3)</option>
+            <option value="mecca">Makkah (GMT+3)</option><option value="medina">Madinah (GMT+3)</option>
+            <option value="cairo">Cairo (GMT+2)</option><option value="london">London (GMT+0)</option>
+            <option value="newyork">New York (GMT-4)</option><option value="lagos">Lagos (GMT+1)</option>
+            <option value="jakarta">Jakarta (GMT+7)</option><option value="karachi">Karachi (GMT+5)</option>
+            <option value="istanbul">Istanbul (GMT+3)</option><option value="riyadh">Riyadh (GMT+3)</option>
           </select>
         </div>
         <div style="margin:8px 0;">
           <label style="font-size:0.8rem; font-weight:500;">Quran Completion Plan</label>
           <select id="onboardingPlan" style="margin-top:2px;">
-            <option value="30">30 days (1 Juz/day)</option>
-            <option value="15">15 days (2 Juz/day)</option>
-            <option value="7" selected>7 days (4 Juz/day)</option>
-            <option value="3">3 days (10 Juz/day)</option>
+            <option value="30">30 days (1 Juz/day)</option><option value="15">15 days (2 Juz/day)</option>
+            <option value="7" selected>7 days (4 Juz/day)</option><option value="3">3 days (10 Juz/day)</option>
           </select>
         </div>
         <button onclick="completeOnboarding()" class="success" style="margin-top:8px;"><i class="fas fa-check-circle"></i> Start Reading</button>
@@ -1016,15 +87,12 @@
 
     <!-- MAIN APP -->
     <div id="appMain" class="hidden">
-      <!-- HOME -->
       <div id="pageHome" class="page active">
         <div class="card">
           <div class="profile-header" onclick="toggleProfileDetails()">
             <div class="profile-avatar" id="avatarDisplay">A</div>
-            <div style="flex:1;">
-              <h2 id="welcomeName" style="font-size:0.95rem; margin:0;">Assalamu Alaikum</h2>
-              <p style="opacity:0.5; font-size:0.65rem; margin:0;" id="userEmailDisplay">user@example.com</p>
-            </div>
+            <div style="flex:1;"><h2 id="welcomeName" style="font-size:0.95rem; margin:0;">Assalamu Alaikum</h2>
+              <p style="opacity:0.5; font-size:0.65rem; margin:0;" id="userEmailDisplay">user@example.com</p></div>
             <div style="display:flex; align-items:center; gap:8px;">
               <i class="fas fa-chevron-down toggle-icon" id="profileToggleIcon"></i>
               <button onclick="event.stopPropagation(); toggleTheme()" style="width:auto; padding:4px 10px; margin:0; background:#2c7a7a; font-size:0.65rem;"><i class="fas fa-moon"></i></button>
@@ -1032,29 +100,13 @@
             </div>
           </div>
           <div class="dashboard-info" id="profileDetails">
-            <div class="row">
-              <span class="label"><i class="fas fa-user"></i> Name</span>
-              <span class="value" id="profileName">Reader</span>
-            </div>
-            <div class="row">
-              <span class="label"><i class="fas fa-envelope"></i> Email</span>
-              <span class="value" id="profileEmail">user@example.com</span>
-            </div>
-            <div class="row">
-              <span class="label"><i class="fas fa-calendar"></i> Plan</span>
-              <span class="value" id="profilePlan">7 days</span>
-            </div>
-            <div class="row">
-              <span class="label"><i class="fas fa-globe"></i> Region</span>
-              <span class="value" id="profileRegion">Makkah</span>
-            </div>
-            <div class="row">
-              <span class="label"><i class="fas fa-language"></i> Language</span>
-              <span class="value" id="profileLanguage">English</span>
-            </div>
+            <div class="row"><span class="label"><i class="fas fa-user"></i> Name</span><span class="value" id="profileName">Reader</span></div>
+            <div class="row"><span class="label"><i class="fas fa-envelope"></i> Email</span><span class="value" id="profileEmail">user@example.com</span></div>
+            <div class="row"><span class="label"><i class="fas fa-calendar"></i> Plan</span><span class="value" id="profilePlan">7 days</span></div>
+            <div class="row"><span class="label"><i class="fas fa-globe"></i> Region</span><span class="value" id="profileRegion">Makkah</span></div>
+            <div class="row"><span class="label"><i class="fas fa-language"></i> Language</span><span class="value" id="profileLanguage">English</span></div>
           </div>
         </div>
-
         <div class="card">
           <h2><i class="fas fa-chart-simple"></i> Statistics</h2>
           <div style="display:flex; gap:10px; flex-wrap:wrap;">
@@ -1072,34 +124,24 @@
             </div>
           </div>
         </div>
-
         <div class="card">
           <h2><i class="fas fa-flag"></i> Quran Progress</h2>
           <div class="juz-grid" id="juzGrid"></div>
         </div>
       </div>
 
-      <!-- MUSYAFAH -->
       <div id="pageMusaffah" class="page">
         <div class="card">
           <h2><i class="fas fa-handshake"></i> Musāfaḥ</h2>
           <p style="font-size:0.75rem; opacity:0.6;">Recite together · Live Video/Audio · Correct each other</p>
         </div>
-
         <div class="card">
           <h3><i class="fas fa-sliders-h"></i> Select Mode</h3>
           <div class="mode-selection">
-            <button onclick="selectMode('video')" id="modeVideo" class="active">
-              <i class="fas fa-video"></i>
-              Live Video
-            </button>
-            <button onclick="selectMode('audio')" id="modeAudio">
-              <i class="fas fa-microphone"></i>
-              Live Audio
-            </button>
+            <button onclick="selectMode('video')" id="modeVideo" class="active"><i class="fas fa-video"></i>Live Video</button>
+            <button onclick="selectMode('audio')" id="modeAudio"><i class="fas fa-microphone"></i>Live Audio</button>
           </div>
         </div>
-
         <div class="card">
           <h3><i class="fas fa-user-friends"></i> Your Partner</h3>
           <div id="partnerDisplay" class="partner-card">
@@ -1108,7 +150,6 @@
             <p style="font-size:0.7rem; opacity:0.6;" id="partnerPlanDisplay">Search for a partner below</p>
           </div>
         </div>
-
         <div class="card">
           <h3><i class="fas fa-search"></i> Find a Partner</h3>
           <div class="search-box">
@@ -1121,20 +162,11 @@
             <button onclick="filterPartners('same-plan', this)">Same Plan</button>
             <button onclick="filterPartners('different-plan', this)">Different Plan</button>
           </div>
-          <div id="searchResults">
-            <div class="empty-state" style="padding:15px;">
-              <p style="font-size:0.8rem;">🔍 Search for a Quran partner</p>
-            </div>
-          </div>
+          <div id="searchResults"><div class="empty-state" style="padding:15px;"><p style="font-size:0.8rem;">🔍 Search for a Quran partner</p></div></div>
         </div>
-
         <div class="card">
           <h3><i class="fas fa-bell"></i> Connection Requests</h3>
-          <div id="connectionRequests">
-            <div class="empty-state" style="padding:15px;">
-              <p style="font-size:0.8rem;">No pending requests.</p>
-            </div>
-          </div>
+          <div id="connectionRequests"><div class="empty-state" style="padding:15px;"><p style="font-size:0.8rem;">No pending requests.</p></div></div>
         </div>
       </div>
     </div>
@@ -1246,6 +278,7 @@
     let callDocumentId = null;
     let isEndingCall = false;
     let callStatusListener = null;
+    let isOfferProcessed = false;
 
     // ============ UI HELPERS ============
     function showStep(stepId) {
@@ -1255,37 +288,25 @@
 
     function togglePasswordVisibility(inputId, btn) {
       const input = document.getElementById(inputId);
-      if (input.type === 'password') {
-        input.type = 'text';
-        btn.innerHTML = '<i class="fas fa-eye-slash"></i>';
-      } else {
-        input.type = 'password';
-        btn.innerHTML = '<i class="fas fa-eye"></i>';
-      }
+      if (input.type === 'password') { input.type = 'text'; btn.innerHTML = '<i class="fas fa-eye-slash"></i>'; } 
+      else { input.type = 'password'; btn.innerHTML = '<i class="fas fa-eye"></i>'; }
     }
 
     function toggleAuthMode() {
       isSignUp = !isSignUp;
       document.getElementById('authTitle').innerText = isSignUp ? 'Sign Up' : 'Sign In';
-      document.getElementById('authButton').innerHTML = isSignUp ? '<i class="fas fa-user-plus"></i> Sign Up' :
-        '<i class="fas fa-sign-in-alt"></i> Sign In';
-      document.querySelector('.auth-toggle').innerHTML = isSignUp ? 'Already have an account? <strong>Sign In</strong>' :
-        "Don't have an account? <strong>Sign Up</strong>";
+      document.getElementById('authButton').innerHTML = isSignUp ? '<i class="fas fa-user-plus"></i> Sign Up' : '<i class="fas fa-sign-in-alt"></i> Sign In';
+      document.querySelector('.auth-toggle').innerHTML = isSignUp ? 'Already have an account? <strong>Sign In</strong>' : "Don't have an account? <strong>Sign Up</strong>";
       document.getElementById('confirmPasswordWrapper').style.display = isSignUp ? 'block' : 'none';
       document.getElementById('authError').classList.add('hidden');
       showStep('authStep1');
     }
 
-    function goBackToAuth() {
-      showStep('authStep1');
-    }
+    function goBackToAuth() { showStep('authStep1'); }
 
     function showAuthError(message) {
       const errorEl = document.getElementById('authError');
-      if (errorEl) {
-        errorEl.textContent = message;
-        errorEl.classList.remove('hidden');
-      }
+      if (errorEl) { errorEl.textContent = message; errorEl.classList.remove('hidden'); }
     }
 
     function showNotification(msg) {
@@ -1298,33 +319,21 @@
       setTimeout(() => div.remove(), 3000);
     }
 
-    // ============ PROFILE TOGGLE ============
     let profileOpen = false;
-
     function toggleProfileDetails() {
       profileOpen = !profileOpen;
       const details = document.getElementById('profileDetails');
       const icon = document.getElementById('profileToggleIcon');
       if (details && icon) {
-        if (profileOpen) {
-          details.classList.add('open');
-          icon.classList.add('open');
-        } else {
-          details.classList.remove('open');
-          icon.classList.remove('open');
-        }
+        if (profileOpen) { details.classList.add('open'); icon.classList.add('open'); } 
+        else { details.classList.remove('open'); icon.classList.remove('open'); }
       }
     }
 
-    // ============ MODE SELECTION ============
     function selectMode(mode) {
       selectedMode = mode;
-      const modeVideo = document.getElementById('modeVideo');
-      const modeAudio = document.getElementById('modeAudio');
-      if (modeVideo && modeAudio) {
-        modeVideo.classList.toggle('active', mode === 'video');
-        modeAudio.classList.toggle('active', mode === 'audio');
-      }
+      document.getElementById('modeVideo').classList.toggle('active', mode === 'video');
+      document.getElementById('modeAudio').classList.toggle('active', mode === 'audio');
       showNotification('Switched to ' + (mode === 'video' ? 'Video' : 'Audio') + ' mode');
     }
 
@@ -1333,61 +342,34 @@
       const email = document.getElementById('authEmail').value.trim();
       const password = document.getElementById('authPassword').value;
       const confirm = document.getElementById('confirmPassword').value;
-
       const errorEl = document.getElementById('authError');
       if (errorEl) errorEl.classList.add('hidden');
-
-      if (!email || !password) {
-        showAuthError('Please fill all fields');
-        return;
-      }
-
-      if (isSignUp && password !== confirm) {
-        showAuthError('Passwords do not match');
-        return;
-      }
-
-      if (isSignUp && password.length < 6) {
-        showAuthError('Password must be at least 6 characters');
-        return;
-      }
-
+      if (!email || !password) { showAuthError('Please fill all fields'); return; }
+      if (isSignUp && password !== confirm) { showAuthError('Passwords do not match'); return; }
+      if (isSignUp && password.length < 6) { showAuthError('Password must be at least 6 characters'); return; }
       const btn = document.getElementById('authButton');
-      if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-      }
-
+      if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...'; }
       try {
         if (isSignUp) {
           const userCredential = await auth.createUserWithEmailAndPassword(email, password);
           await userCredential.user.sendEmailVerification();
           pendingUserData = { uid: userCredential.user.uid, email: email };
-          const verifyDisplay = document.getElementById('verifyEmailDisplay');
-          if (verifyDisplay) verifyDisplay.innerText = email;
+          document.getElementById('verifyEmailDisplay').innerText = email;
           showStep('authStep2');
           showNotification('📧 Verification email sent!');
         } else {
           const userCredential = await auth.signInWithEmailAndPassword(email, password);
           const firebaseUser = userCredential.user;
-
           if (!firebaseUser.emailVerified) {
             showAuthError('⚠️ Please verify your email first.');
             await auth.signOut();
-            if (btn) {
-              btn.disabled = false;
-              btn.innerHTML = isSignUp ? '<i class="fas fa-user-plus"></i> Sign Up' :
-                '<i class="fas fa-sign-in-alt"></i> Sign In';
-            }
+            if (btn) { btn.disabled = false; btn.innerHTML = isSignUp ? '<i class="fas fa-user-plus"></i> Sign Up' : '<i class="fas fa-sign-in-alt"></i> Sign In'; }
             return;
           }
-
           currentUserId = firebaseUser.uid;
           const doc = await db.collection('users').doc(currentUserId).get();
-
           if (doc.exists) {
-            user = doc.data();
-            user.id = currentUserId;
+            user = doc.data(); user.id = currentUserId;
             localStorage.setItem('musaffahUser', JSON.stringify(user));
             await db.collection('users').doc(currentUserId).update({ online: true });
             loadApp();
@@ -1399,53 +381,30 @@
         }
       } catch (e) {
         console.error('Auth Error:', e);
-        if (e.code === 'auth/email-already-in-use') {
-          showAuthError('Email already registered. Please sign in.');
-        } else if (e.code === 'auth/user-not-found') {
-          showAuthError('No account found. Please sign up.');
-        } else if (e.code === 'auth/wrong-password') {
-          showAuthError('Incorrect password.');
-        } else if (e.code === 'auth/too-many-requests') {
-          showAuthError('Too many attempts. Try again later.');
-        } else {
-          showAuthError(e.message || 'Authentication failed.');
-        }
+        if (e.code === 'auth/email-already-in-use') showAuthError('Email already registered. Please sign in.');
+        else if (e.code === 'auth/user-not-found') showAuthError('No account found. Please sign up.');
+        else if (e.code === 'auth/wrong-password') showAuthError('Incorrect password.');
+        else if (e.code === 'auth/too-many-requests') showAuthError('Too many attempts. Try again later.');
+        else showAuthError(e.message || 'Authentication failed.');
       }
-
-      if (btn) {
-        btn.disabled = false;
-        btn.innerHTML = isSignUp ? '<i class="fas fa-user-plus"></i> Sign Up' :
-          '<i class="fas fa-sign-in-alt"></i> Sign In';
-      }
+      if (btn) { btn.disabled = false; btn.innerHTML = isSignUp ? '<i class="fas fa-user-plus"></i> Sign Up' : '<i class="fas fa-sign-in-alt"></i> Sign In'; }
     }
 
     async function resendVerification() {
-      try {
-        const firebaseUser = auth.currentUser;
-        if (firebaseUser) {
-          await firebaseUser.sendEmailVerification();
-          showNotification('📧 Verification email resent!');
-        }
-      } catch (e) {
-        showNotification('Error: ' + e.message);
-      }
+      try { const firebaseUser = auth.currentUser; if (firebaseUser) { await firebaseUser.sendEmailVerification(); showNotification('📧 Verification email resent!'); } } 
+      catch (e) { showNotification('Error: ' + e.message); }
     }
 
     async function checkVerification() {
       try {
         const firebaseUser = auth.currentUser;
-        if (!firebaseUser) {
-          showNotification('Please sign in again');
-          goBackToAuth();
-          return;
-        }
+        if (!firebaseUser) { showNotification('Please sign in again'); goBackToAuth(); return; }
         await firebaseUser.reload();
         if (firebaseUser.emailVerified) {
           showNotification('✅ Email verified!');
           const doc = await db.collection('users').doc(firebaseUser.uid).get();
           if (doc.exists) {
-            user = doc.data();
-            user.id = firebaseUser.uid;
+            user = doc.data(); user.id = firebaseUser.uid;
             localStorage.setItem('musaffahUser', JSON.stringify(user));
             await db.collection('users').doc(firebaseUser.uid).update({ online: true });
             loadApp();
@@ -1453,59 +412,24 @@
             pendingUserData = { uid: firebaseUser.uid, email: firebaseUser.email };
             showStep('authStep3');
           }
-        } else {
-          showNotification('⚠️ Email not verified yet.');
-        }
-      } catch (e) {
-        showNotification('Error: ' + e.message);
-      }
+        } else { showNotification('⚠️ Email not verified yet.'); }
+      } catch (e) { showNotification('Error: ' + e.message); }
     }
 
-    // ============ ONBOARDING ============
     async function completeOnboarding() {
-      if (!pendingUserData) {
-        showNotification('Please sign up first');
-        return;
-      }
-
+      if (!pendingUserData) { showNotification('Please sign up first'); return; }
       const name = document.getElementById('onboardingName').value.trim() || 'Reader';
       const lang = document.getElementById('onboardingLang').value;
       const region = document.getElementById('onboardingRegion').value;
       const plan = document.getElementById('onboardingPlan').value;
-
-      const regionNames = {
-        mecca: 'Makkah',
-        medina: 'Madinah',
-        cairo: 'Cairo',
-        london: 'London',
-        newyork: 'New York',
-        lagos: 'Lagos',
-        jakarta: 'Jakarta',
-        karachi: 'Karachi',
-        istanbul: 'Istanbul',
-        riyadh: 'Riyadh'
-      };
-
+      const regionNames = { mecca: 'Makkah', medina: 'Madinah', cairo: 'Cairo', london: 'London', newyork: 'New York', lagos: 'Lagos', jakarta: 'Jakarta', karachi: 'Karachi', istanbul: 'Istanbul', riyadh: 'Riyadh' };
       try {
         const userData = {
-          name: name,
-          plan: plan,
-          lang: lang,
-          region: region,
-          regionName: regionNames[region] || region,
-          partner: '',
-          partnerId: '',
-          juz: [],
-          khatm: 0,
-          streak: 0,
-          theme: 'light',
-          online: true,
-          pendingRequests: [],
-          sentRequests: [],
-          isReciting: false,
+          name, plan, lang, region, regionName: regionNames[region] || region,
+          partner: '', partnerId: '', juz: [], khatm: 0, streak: 0, theme: 'light', online: true,
+          pendingRequests: [], sentRequests: [], isReciting: false,
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         };
-
         await db.collection('users').doc(pendingUserData.uid).set(userData);
         user = { ...userData, id: pendingUserData.uid };
         currentUserId = pendingUserData.uid;
@@ -1515,87 +439,45 @@
         updateLanguage();
         loadApp();
         showNotification('🎉 Welcome ' + name + '!');
-      } catch (e) {
-        showNotification('Error: ' + e.message);
-      }
+      } catch (e) { showNotification('Error: ' + e.message); }
     }
 
-    // ============ SIGN OUT ============
     async function signOut() {
       if (isCallActive) endCall();
-
-      if (partnerStatusUnsubscribe) {
-        partnerStatusUnsubscribe();
-        partnerStatusUnsubscribe = null;
-      }
-      if (signalingUnsubscribe) {
-        signalingUnsubscribe();
-        signalingUnsubscribe = null;
-      }
-      if (incomingCallUnsubscribe) {
-        incomingCallUnsubscribe();
-        incomingCallUnsubscribe = null;
-      }
-      if (userListenerUnsubscribe) {
-        userListenerUnsubscribe();
-        userListenerUnsubscribe = null;
-      }
-      if (connectionRequestsUnsubscribe) {
-        connectionRequestsUnsubscribe();
-        connectionRequestsUnsubscribe = null;
-      }
-      if (callStatusListener) {
-        callStatusListener();
-        callStatusListener = null;
-      }
-
-      if (user && user.id) {
-        try {
-          await db.collection('users').doc(user.id).update({ online: false });
-        } catch (e) {}
-      }
-
+      if (partnerStatusUnsubscribe) { partnerStatusUnsubscribe(); partnerStatusUnsubscribe = null; }
+      if (signalingUnsubscribe) { signalingUnsubscribe(); signalingUnsubscribe = null; }
+      if (incomingCallUnsubscribe) { incomingCallUnsubscribe(); incomingCallUnsubscribe = null; }
+      if (userListenerUnsubscribe) { userListenerUnsubscribe(); userListenerUnsubscribe = null; }
+      if (connectionRequestsUnsubscribe) { connectionRequestsUnsubscribe(); connectionRequestsUnsubscribe = null; }
+      if (callStatusListener) { callStatusListener(); callStatusListener = null; }
+      if (user && user.id) { try { await db.collection('users').doc(user.id).update({ online: false }); } catch (e) {} }
       auth.signOut();
       localStorage.removeItem('musaffahUser');
       user = null;
-
-      const authCard = document.getElementById('authCard');
-      const appMain = document.getElementById('appMain');
-      if (authCard) authCard.classList.remove('hidden');
-      if (appMain) appMain.classList.add('hidden');
+      document.getElementById('authCard').classList.remove('hidden');
+      document.getElementById('appMain').classList.add('hidden');
       showStep('authStep1');
       showNotification('👋 Signed out');
     }
 
-    // ============ REAL-TIME USER LISTENER ============
+    // ============ LOAD APP ============
     function startUserListener() {
-      if (userListenerUnsubscribe) {
-        userListenerUnsubscribe();
-        userListenerUnsubscribe = null;
-      }
-
+      if (userListenerUnsubscribe) { userListenerUnsubscribe(); userListenerUnsubscribe = null; }
       if (!user || !user.id) return;
-
-      userListenerUnsubscribe = db.collection('users').doc(user.id)
-        .onSnapshot((doc) => {
-          if (doc.exists) {
-            const data = doc.data();
-            user.partner = data.partner || '';
-            user.partnerId = data.partnerId || '';
-            user.pendingRequests = data.pendingRequests || [];
-            user.sentRequests = data.sentRequests || [];
-
-            updatePartnerDisplay();
-            listenForConnectionRequests();
-
-            if (user.partnerId) {
-              listenPartnerStatus();
-            }
-          }
-        });
+      userListenerUnsubscribe = db.collection('users').doc(user.id).onSnapshot((doc) => {
+        if (doc.exists) {
+          const data = doc.data();
+          user.partner = data.partner || '';
+          user.partnerId = data.partnerId || '';
+          user.pendingRequests = data.pendingRequests || [];
+          user.sentRequests = data.sentRequests || [];
+          updatePartnerDisplay();
+          listenForConnectionRequests();
+          if (user.partnerId) listenPartnerStatus();
+        }
+      });
     }
 
-    // ============ LOAD APP ============
     async function loadApp() {
       if (!user) {
         const stored = localStorage.getItem('musaffahUser');
@@ -1603,186 +485,101 @@
           try {
             user = JSON.parse(stored);
             const doc = await db.collection('users').doc(user.id).get();
-            if (doc.exists) {
-              const data = doc.data();
-              user = { ...data, id: user.id };
-              localStorage.setItem('musaffahUser', JSON.stringify(user));
-            } else {
-              user = null;
-              localStorage.removeItem('musaffahUser');
-              return;
-            }
-          } catch (e) {
-            user = null;
-            localStorage.removeItem('musaffahUser');
-          }
+            if (doc.exists) { const data = doc.data(); user = { ...data, id: user.id }; localStorage.setItem('musaffahUser', JSON.stringify(user)); } 
+            else { user = null; localStorage.removeItem('musaffahUser'); return; }
+          } catch (e) { user = null; localStorage.removeItem('musaffahUser'); }
         }
       }
-
       if (!user || !user.id) {
-        const authCard = document.getElementById('authCard');
-        const appMain = document.getElementById('appMain');
-        if (authCard) authCard.classList.remove('hidden');
-        if (appMain) appMain.classList.add('hidden');
+        document.getElementById('authCard').classList.remove('hidden');
+        document.getElementById('appMain').classList.add('hidden');
         showStep('authStep1');
         return;
       }
-
       try {
         const doc = await db.collection('users').doc(user.id).get();
-        if (doc.exists) {
-          const data = doc.data();
-          user = { ...data, id: user.id };
-          localStorage.setItem('musaffahUser', JSON.stringify(user));
-        }
-      } catch (e) {
-        console.warn('Firestore fetch failed', e);
-      }
+        if (doc.exists) { const data = doc.data(); user = { ...data, id: user.id }; localStorage.setItem('musaffahUser', JSON.stringify(user)); }
+      } catch (e) { console.warn('Firestore fetch failed', e); }
 
-      const authCard = document.getElementById('authCard');
-      const appMain = document.getElementById('appMain');
-      if (authCard) authCard.classList.add('hidden');
-      if (appMain) appMain.classList.remove('hidden');
+      document.getElementById('authCard').classList.add('hidden');
+      document.getElementById('appMain').classList.remove('hidden');
 
       const initial = (user.name || 'Reader')[0].toUpperCase();
-      const avatarDisplay = document.getElementById('avatarDisplay');
-      if (avatarDisplay) avatarDisplay.innerText = initial;
-
-      const welcomeName = document.getElementById('welcomeName');
-      if (welcomeName) welcomeName.innerText = 'Assalamu Alaikum, ' + (user.name || 'Reader');
-
-      const userEmailDisplay = document.getElementById('userEmailDisplay');
-      if (userEmailDisplay) userEmailDisplay.innerText = auth.currentUser?.email || '';
-
-      const profileName = document.getElementById('profileName');
-      if (profileName) profileName.innerText = user.name || 'Reader';
-
-      const profileEmail = document.getElementById('profileEmail');
-      if (profileEmail) profileEmail.innerText = auth.currentUser?.email || '';
-
-      const profilePlan = document.getElementById('profilePlan');
-      if (profilePlan) profilePlan.innerText = (user.plan || '7') + ' days';
-
-      const profileRegion = document.getElementById('profileRegion');
-      if (profileRegion) profileRegion.innerText = user.regionName || 'Mecca';
-
-      const langNames = {
-        en: 'English',
-        ar: 'العربية',
-        ha: 'Hausa',
-        ur: 'اردو',
-        tr: 'Türkçe',
-        fr: 'Français',
-        id: 'Bahasa Indonesia'
-      };
-      const profileLanguage = document.getElementById('profileLanguage');
-      if (profileLanguage) profileLanguage.innerText = langNames[user.lang] || 'English';
-
-      const statJuz = document.getElementById('statJuz');
-      if (statJuz) statJuz.innerText = user.juz ? user.juz.length : 0;
-
-      const statKhatm = document.getElementById('statKhatm');
-      if (statKhatm) statKhatm.innerText = user.khatm || 0;
-
-      const statStreak = document.getElementById('statStreak');
-      if (statStreak) statStreak.innerText = user.streak || 0;
+      document.getElementById('avatarDisplay').innerText = initial;
+      document.getElementById('welcomeName').innerText = 'Assalamu Alaikum, ' + (user.name || 'Reader');
+      document.getElementById('userEmailDisplay').innerText = auth.currentUser?.email || '';
+      document.getElementById('profileName').innerText = user.name || 'Reader';
+      document.getElementById('profileEmail').innerText = auth.currentUser?.email || '';
+      document.getElementById('profilePlan').innerText = (user.plan || '7') + ' days';
+      document.getElementById('profileRegion').innerText = user.regionName || 'Mecca';
+      const langNames = { en: 'English', ar: 'العربية', ha: 'Hausa', ur: 'اردو', tr: 'Türkçe', fr: 'Français', id: 'Bahasa Indonesia' };
+      document.getElementById('profileLanguage').innerText = langNames[user.lang] || 'English';
+      document.getElementById('statJuz').innerText = user.juz ? user.juz.length : 0;
+      document.getElementById('statKhatm').innerText = user.khatm || 0;
+      document.getElementById('statStreak').innerText = user.streak || 0;
 
       if (user.theme === 'dark') document.body.classList.add('dark');
       else document.body.classList.remove('dark');
 
       currentLang = user.lang || 'en';
       updateLanguage();
-
       renderJuz();
       updatePartnerDisplay();
-
       startUserListener();
       listenForConnectionRequests();
       listenForIncomingCalls();
       loadAllUsers();
-
-      if (user.partner) {
-        listenPartnerStatus();
-      }
-
+      if (user.partner) listenPartnerStatus();
       initializeCallState();
       setupCallCleanup();
     }
 
-    // ============ AUTH STATE LISTENER ============
     auth.onAuthStateChanged(async (firebaseUser) => {
       if (authStateChecked) return;
-
       if (firebaseUser) {
         if (!firebaseUser.emailVerified) {
-          const authCard = document.getElementById('authCard');
-          const appMain = document.getElementById('appMain');
-          const verifyDisplay = document.getElementById('verifyEmailDisplay');
-          if (authCard) authCard.classList.remove('hidden');
-          if (appMain) appMain.classList.add('hidden');
-          if (verifyDisplay) verifyDisplay.innerText = firebaseUser.email;
+          document.getElementById('authCard').classList.remove('hidden');
+          document.getElementById('appMain').classList.add('hidden');
+          document.getElementById('verifyEmailDisplay').innerText = firebaseUser.email;
           showStep('authStep2');
           authStateChecked = true;
           return;
         }
-
         const stored = localStorage.getItem('musaffahUser');
         if (stored) {
           try {
             user = JSON.parse(stored);
             if (user && user.id === firebaseUser.uid) {
               const doc = await db.collection('users').doc(user.id).get();
-              if (doc.exists) {
-                const data = doc.data();
-                user = { ...data, id: user.id };
-                localStorage.setItem('musaffahUser', JSON.stringify(user));
-                await db.collection('users').doc(user.id).update({ online: true });
-                authStateChecked = true;
-                loadApp();
-                return;
-              }
+              if (doc.exists) { const data = doc.data(); user = { ...data, id: user.id }; localStorage.setItem('musaffahUser', JSON.stringify(user)); await db.collection('users').doc(user.id).update({ online: true }); authStateChecked = true; loadApp(); return; }
             }
-          } catch (e) {
-            user = null;
-            localStorage.removeItem('musaffahUser');
-          }
+          } catch (e) { user = null; localStorage.removeItem('musaffahUser'); }
         }
-
         try {
           const doc = await db.collection('users').doc(firebaseUser.uid).get();
           if (doc.exists) {
-            user = doc.data();
-            user.id = firebaseUser.uid;
+            user = doc.data(); user.id = firebaseUser.uid;
             localStorage.setItem('musaffahUser', JSON.stringify(user));
             await db.collection('users').doc(user.id).update({ online: true });
             authStateChecked = true;
             loadApp();
           } else {
             pendingUserData = { uid: firebaseUser.uid, email: firebaseUser.email };
-            const authCard = document.getElementById('authCard');
-            const appMain = document.getElementById('appMain');
-            if (authCard) authCard.classList.remove('hidden');
-            if (appMain) appMain.classList.add('hidden');
+            document.getElementById('authCard').classList.remove('hidden');
+            document.getElementById('appMain').classList.add('hidden');
             showStep('authStep3');
             authStateChecked = true;
           }
-        } catch (e) {
-          console.warn('Error loading user data:', e);
-          authStateChecked = true;
-        }
+        } catch (e) { console.warn('Error loading user data:', e); authStateChecked = true; }
       } else {
-        const authCard = document.getElementById('authCard');
-        const appMain = document.getElementById('appMain');
-        if (authCard) authCard.classList.remove('hidden');
-        if (appMain) appMain.classList.add('hidden');
+        document.getElementById('authCard').classList.remove('hidden');
+        document.getElementById('appMain').classList.add('hidden');
         showStep('authStep1');
         authStateChecked = true;
       }
     });
 
-    // ============ INIT ============
-    const confirmWrapper = document.getElementById('confirmPasswordWrapper');
-    if (confirmWrapper) confirmWrapper.style.display = 'block';
+    document.getElementById('confirmPasswordWrapper').style.display = 'block';
     showStep('authStep1');
 
     // ============ JUZ ============
@@ -1806,7 +603,6 @@
       const idx = juzList.indexOf(i);
       if (idx > -1) juzList.splice(idx, 1);
       else juzList.push(i);
-
       if (juzList.length === 30) {
         user.khatm = (user.khatm || 0) + 1;
         user.streak = (user.streak || 0) + 1;
@@ -1814,53 +610,35 @@
       }
       user.juz = juzList;
       if (user.id && user.id !== 'local') {
-        try { await db.collection('users').doc(user.id).update({ juz: user.juz, khatm: user.khatm, streak: user
-            .streak }); } catch (e) {}
+        try { await db.collection('users').doc(user.id).update({ juz: user.juz, khatm: user.khatm, streak: user.streak }); } catch (e) {}
       }
       localStorage.setItem('musaffahUser', JSON.stringify(user));
       renderJuz();
-      const statJuz = document.getElementById('statJuz');
-      if (statJuz) statJuz.innerText = user.juz.length;
-      const statKhatm = document.getElementById('statKhatm');
-      if (statKhatm) statKhatm.innerText = user.khatm;
-      const statStreak = document.getElementById('statStreak');
-      if (statStreak) statStreak.innerText = user.streak;
+      document.getElementById('statJuz').innerText = user.juz.length;
+      document.getElementById('statKhatm').innerText = user.khatm;
+      document.getElementById('statStreak').innerText = user.streak;
     }
 
-    // ============ PARTNER SEARCH (Real-time) ============
+    // ============ PARTNER SEARCH ============
     function loadAllUsers() {
       if (!user) return;
-
-      if (connectionRequestsUnsubscribe) {
-        connectionRequestsUnsubscribe();
-        connectionRequestsUnsubscribe = null;
-      }
-
-      connectionRequestsUnsubscribe = db.collection('users')
-        .onSnapshot((snapshot) => {
-          const users = [];
-          snapshot.forEach(doc => {
-            const data = doc.data();
-            if (doc.id !== user.id && !data.partner && !data.partnerId && data.name) {
-              users.push({
-                id: doc.id,
-                name: data.name || 'Reader',
-                plan: data.plan || '7',
-                online: data.online === true,
-                regionName: data.regionName || 'Unknown'
-              });
-            }
-          });
-          allUsers = users;
-          renderSearchResults();
+      if (connectionRequestsUnsubscribe) { connectionRequestsUnsubscribe(); connectionRequestsUnsubscribe = null; }
+      connectionRequestsUnsubscribe = db.collection('users').onSnapshot((snapshot) => {
+        const users = [];
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          if (doc.id !== user.id && !data.partner && !data.partnerId && data.name) {
+            users.push({ id: doc.id, name: data.name || 'Reader', plan: data.plan || '7', online: data.online === true, regionName: data.regionName || 'Unknown' });
+          }
         });
+        allUsers = users;
+        renderSearchResults();
+      });
     }
 
     function searchPartners() {
       const input = document.getElementById('partnerSearchInput');
-      if (input) {
-        searchQuery = input.value.toLowerCase().trim();
-      }
+      if (input) searchQuery = input.value.toLowerCase().trim();
       renderSearchResults();
     }
 
@@ -1874,48 +652,19 @@
     function renderSearchResults() {
       const container = document.getElementById('searchResults');
       if (!container) return;
-
       let filtered = [...allUsers];
-
-      if (searchQuery) {
-        filtered = filtered.filter(u => u.name.toLowerCase().includes(searchQuery));
-      }
-
-      if (currentFilter === 'online') {
-        filtered = filtered.filter(u => u.online === true);
-      } else if (currentFilter === 'same-plan') {
-        filtered = filtered.filter(u => u.plan === user.plan);
-      } else if (currentFilter === 'different-plan') {
-        filtered = filtered.filter(u => u.plan !== user.plan);
-      }
-
+      if (searchQuery) filtered = filtered.filter(u => u.name.toLowerCase().includes(searchQuery));
+      if (currentFilter === 'online') filtered = filtered.filter(u => u.online === true);
+      else if (currentFilter === 'same-plan') filtered = filtered.filter(u => u.plan === user.plan);
+      else if (currentFilter === 'different-plan') filtered = filtered.filter(u => u.plan !== user.plan);
       if (filtered.length === 0) {
-        container.innerHTML = `
-          <div class="empty-state" style="padding:15px;">
-            <p style="font-size:0.8rem;">${searchQuery ? 'No users found matching "' + searchQuery + '"' : 'No available partners found'}</p>
-          </div>
-        `;
+        container.innerHTML = `<div class="empty-state" style="padding:15px;"><p style="font-size:0.8rem;">${searchQuery ? 'No users found matching "' + searchQuery + '"' : 'No available partners found'}</p></div>`;
         return;
       }
-
       let html = '';
       filtered.forEach(u => {
         const alreadySent = (user.sentRequests || []).includes(u.id);
-        html += `
-          <div class="search-item">
-            <div class="info">
-              <div class="name"><i class="fas fa-user-circle"></i> ${u.name}</div>
-              <div class="detail">📖 ${u.plan} day plan · ${u.regionName}</div>
-              <span class="status-badge ${u.online ? 'online' : 'offline'}">${u.online ? '🟢 Online' : '⚪ Offline'}</span>
-            </div>
-            <div class="actions">
-              ${alreadySent ? 
-                '<button disabled style="opacity:0.5;">⏳ Pending</button>' :
-                `<button onclick="sendPartnerRequest('${u.id}')" class="success"><i class="fas fa-paper-plane"></i> Connect</button>`
-              }
-            </div>
-          </div>
-        `;
+        html += `<div class="search-item"><div class="info"><div class="name"><i class="fas fa-user-circle"></i> ${u.name}</div><div class="detail">📖 ${u.plan} day plan · ${u.regionName}</div><span class="status-badge ${u.online ? 'online' : 'offline'}">${u.online ? '🟢 Online' : '⚪ Offline'}</span></div><div class="actions">${alreadySent ? '<button disabled style="opacity:0.5;">⏳ Pending</button>' : `<button onclick="sendPartnerRequest('${u.id}')" class="success"><i class="fas fa-paper-plane"></i> Connect</button>`}</div></div>`;
       });
       container.innerHTML = html;
     }
@@ -1923,341 +672,161 @@
     // ============ PARTNER REQUESTS ============
     async function sendPartnerRequest(toId) {
       if (!user) return;
-
       try {
         const targetDoc = await db.collection('users').doc(toId).get();
-        if (!targetDoc.exists) {
-          showNotification('User not found');
-          return;
-        }
-
+        if (!targetDoc.exists) { showNotification('User not found'); return; }
         const targetData = targetDoc.data();
         const currentPending = targetData.pendingRequests || [];
-
         const existingRequest = currentPending.find(req => req.fromId === user.id);
-        if (existingRequest) {
-          showNotification('Request already sent');
-          return;
-        }
-
-        const newRequest = {
-          fromId: user.id,
-          fromName: user.name || 'Reader',
-          fromPlan: user.plan || '7',
-          timestamp: new Date().toISOString()
-        };
-
+        if (existingRequest) { showNotification('Request already sent'); return; }
+        const newRequest = { fromId: user.id, fromName: user.name || 'Reader', fromPlan: user.plan || '7', timestamp: new Date().toISOString() };
         currentPending.push(newRequest);
-
-        await db.collection('users').doc(toId).update({
-          pendingRequests: currentPending
-        });
-
+        await db.collection('users').doc(toId).update({ pendingRequests: currentPending });
         const sentRequests = user.sentRequests || [];
         if (!sentRequests.includes(toId)) {
           sentRequests.push(toId);
-          await db.collection('users').doc(user.id).update({
-            sentRequests: sentRequests
-          });
+          await db.collection('users').doc(user.id).update({ sentRequests: sentRequests });
           user.sentRequests = sentRequests;
           localStorage.setItem('musaffahUser', JSON.stringify(user));
         }
-
         showNotification('✅ Request sent!');
-
-      } catch (e) {
-        console.error('Error sending request:', e);
-        showNotification('Error: ' + e.message);
-      }
+      } catch (e) { console.error('Error sending request:', e); showNotification('Error: ' + e.message); }
     }
 
     function listenForConnectionRequests() {
       if (!user) return;
-
       const container = document.getElementById('connectionRequests');
       if (!container) return;
-
       const requests = user.pendingRequests || [];
-
       if (requests.length === 0) {
-        container.innerHTML = `
-          <div class="empty-state" style="padding:15px;">
-            <p style="font-size:0.8rem;">No pending requests.</p>
-          </div>
-        `;
+        container.innerHTML = `<div class="empty-state" style="padding:15px;"><p style="font-size:0.8rem;">No pending requests.</p></div>`;
         return;
       }
-
       let html = '';
       requests.forEach((req, index) => {
-        html += `
-          <div class="request-item">
-            <div class="info">
-              <div class="name"><i class="fas fa-user-circle"></i> ${req.fromName || 'Reader'}</div>
-              <div class="detail">📖 ${req.fromPlan || '7'} day plan</div>
-            </div>
-            <div class="actions">
-              <button onclick="handlePartnerRequest('${req.fromId}', 'accept', ${index})" class="success"><i class="fas fa-check"></i> Accept</button>
-              <button onclick="handlePartnerRequest('${req.fromId}', 'reject', ${index})" class="outline danger"><i class="fas fa-times"></i> Reject</button>
-            </div>
-          </div>
-        `;
+        html += `<div class="request-item"><div class="info"><div class="name"><i class="fas fa-user-circle"></i> ${req.fromName || 'Reader'}</div><div class="detail">📖 ${req.fromPlan || '7'} day plan</div></div><div class="actions"><button onclick="handlePartnerRequest('${req.fromId}', 'accept', ${index})" class="success"><i class="fas fa-check"></i> Accept</button><button onclick="handlePartnerRequest('${req.fromId}', 'reject', ${index})" class="outline danger"><i class="fas fa-times"></i> Reject</button></div></div>`;
       });
       container.innerHTML = html;
     }
 
     async function handlePartnerRequest(fromId, action, index) {
       if (!user) return;
-
       try {
         const fromDoc = await db.collection('users').doc(fromId).get();
-        if (!fromDoc.exists) {
-          showNotification('User no longer exists');
-          return;
-        }
+        if (!fromDoc.exists) { showNotification('User no longer exists'); return; }
         const fromData = fromDoc.data();
-
         const currentPending = user.pendingRequests || [];
-
         if (action === 'accept') {
-          if (user.partner && user.partnerId) {
-            showNotification('You already have a partner.');
-            return;
-          }
-
-          if (fromData.partner && fromData.partnerId) {
-            showNotification(`${fromData.name} already has a partner.`);
-            currentPending.splice(index, 1);
-            await db.collection('users').doc(user.id).update({
-              pendingRequests: currentPending
-            });
-            user.pendingRequests = currentPending;
-            return;
-          }
-
+          if (user.partner && user.partnerId) { showNotification('You already have a partner.'); return; }
+          if (fromData.partner && fromData.partnerId) { showNotification(`${fromData.name} already has a partner.`); currentPending.splice(index, 1); await db.collection('users').doc(user.id).update({ pendingRequests: currentPending }); user.pendingRequests = currentPending; return; }
           const partnerName = fromData.name || 'Reader';
-
-          await db.collection('users').doc(user.id).update({
-            partner: partnerName,
-            partnerId: fromId,
-            pendingRequests: currentPending.filter((_, i) => i !== index)
-          });
-
+          await db.collection('users').doc(user.id).update({ partner: partnerName, partnerId: fromId, pendingRequests: currentPending.filter((_, i) => i !== index) });
           const partnerPending = fromData.pendingRequests || [];
           const updatedPartnerPending = partnerPending.filter(req => req.fromId !== user.id);
           const partnerSentRequests = fromData.sentRequests || [];
           const updatedPartnerSent = partnerSentRequests.filter(id => id !== user.id);
-
-          await db.collection('users').doc(fromId).update({
-            partner: user.name || 'Reader',
-            partnerId: user.id,
-            pendingRequests: updatedPartnerPending,
-            sentRequests: updatedPartnerSent
-          });
-
+          await db.collection('users').doc(fromId).update({ partner: user.name || 'Reader', partnerId: user.id, pendingRequests: updatedPartnerPending, sentRequests: updatedPartnerSent });
           const currentSentRequests = user.sentRequests || [];
           const updatedSentRequests = currentSentRequests.filter(id => id !== fromId);
-          await db.collection('users').doc(user.id).update({
-            sentRequests: updatedSentRequests
-          });
+          await db.collection('users').doc(user.id).update({ sentRequests: updatedSentRequests });
           user.sentRequests = updatedSentRequests;
-
           user.partner = partnerName;
           user.partnerId = fromId;
           user.pendingRequests = currentPending.filter((_, i) => i !== index);
-
           localStorage.setItem('musaffahUser', JSON.stringify(user));
-
           showNotification('🎉 Connected with ' + partnerName + '!');
-
           updatePartnerDisplay();
-
-          if (user.partnerId) {
-            listenPartnerStatus();
-          }
-
+          if (user.partnerId) listenPartnerStatus();
         } else {
           currentPending.splice(index, 1);
-          await db.collection('users').doc(user.id).update({
-            pendingRequests: currentPending
-          });
+          await db.collection('users').doc(user.id).update({ pendingRequests: currentPending });
           user.pendingRequests = currentPending;
           localStorage.setItem('musaffahUser', JSON.stringify(user));
           showNotification('Request rejected');
         }
-
-      } catch (e) {
-        console.error('Error handling request:', e);
-        showNotification('Error: ' + e.message);
-      }
+      } catch (e) { console.error('Error handling request:', e); showNotification('Error: ' + e.message); }
     }
 
-    // ============ PARTNER DISPLAY ============
     function updatePartnerDisplay() {
       const display = document.getElementById('partnerDisplay');
       if (!display) return;
-
       if (user.partner && user.partnerId) {
-        display.innerHTML = `
-          <div class="partner-avatar">${user.partner[0].toUpperCase()}</div>
-          <h3 style="font-size:0.9rem;" id="partnerNameDisplay">${user.partner}</h3>
-          <p style="font-size:0.7rem; opacity:0.6;" id="partnerPlanDisplay">🤝 Connected · ${user.plan} day plan</p>
-          <button onclick="disconnectPartner()" class="danger" style="margin-top:6px; font-size:0.8rem;"><i class="fas fa-unlink"></i> Disconnect</button>
-          <button onclick="startCallFromButton()" class="success" style="margin-top:6px; font-size:0.8rem;"><i class="fas fa-phone"></i> Start Call</button>
-        `;
+        display.innerHTML = `<div class="partner-avatar">${user.partner[0].toUpperCase()}</div><h3 style="font-size:0.9rem;" id="partnerNameDisplay">${user.partner}</h3><p style="font-size:0.7rem; opacity:0.6;" id="partnerPlanDisplay">🤝 Connected · ${user.plan} day plan</p><button onclick="disconnectPartner()" class="danger" style="margin-top:6px; font-size:0.8rem;"><i class="fas fa-unlink"></i> Disconnect</button><button onclick="startCallFromButton()" class="success" style="margin-top:6px; font-size:0.8rem;"><i class="fas fa-phone"></i> Start Call</button>`;
       } else {
-        display.innerHTML = `
-          <div class="partner-avatar">?</div>
-          <h3 style="font-size:0.9rem;" id="partnerNameDisplay">No partner yet</h3>
-          <p style="font-size:0.7rem; opacity:0.6;" id="partnerPlanDisplay">Search for a partner below</p>
-        `;
+        display.innerHTML = `<div class="partner-avatar">?</div><h3 style="font-size:0.9rem;" id="partnerNameDisplay">No partner yet</h3><p style="font-size:0.7rem; opacity:0.6;" id="partnerPlanDisplay">Search for a partner below</p>`;
       }
     }
 
     async function disconnectPartner() {
       if (!user || !user.partnerId) return;
       if (!confirm('Disconnect from your partner?')) return;
-
       try {
         if (isCallActive) endCall();
-
-        if (partnerStatusUnsubscribe) {
-          partnerStatusUnsubscribe();
-          partnerStatusUnsubscribe = null;
-        }
-        if (signalingUnsubscribe) {
-          signalingUnsubscribe();
-          signalingUnsubscribe = null;
-        }
-        if (incomingCallUnsubscribe) {
-          incomingCallUnsubscribe();
-          incomingCallUnsubscribe = null;
-        }
-
+        if (partnerStatusUnsubscribe) { partnerStatusUnsubscribe(); partnerStatusUnsubscribe = null; }
+        if (signalingUnsubscribe) { signalingUnsubscribe(); signalingUnsubscribe = null; }
+        if (incomingCallUnsubscribe) { incomingCallUnsubscribe(); incomingCallUnsubscribe = null; }
         const partnerId = user.partnerId;
         const partnerName = user.partner;
-
-        await db.collection('users').doc(user.id).update({
-          partner: '',
-          partnerId: '',
-          isReciting: false
-        });
-
-        await db.collection('users').doc(partnerId).update({
-          partner: '',
-          partnerId: '',
-          isReciting: false
-        });
-
+        await db.collection('users').doc(user.id).update({ partner: '', partnerId: '', isReciting: false });
+        await db.collection('users').doc(partnerId).update({ partner: '', partnerId: '', isReciting: false });
         user.partner = '';
         user.partnerId = '';
         partnerOnline = false;
-
         localStorage.setItem('musaffahUser', JSON.stringify(user));
-
         updatePartnerDisplay();
-
         showNotification('Disconnected from ' + partnerName);
-
-      } catch (e) {
-        console.error('Error disconnecting:', e);
-        showNotification('Error: ' + e.message);
-      }
+      } catch (e) { console.error('Error disconnecting:', e); showNotification('Error: ' + e.message); }
     }
 
-    // ============ PARTNER ONLINE STATUS (Real-time) ============
     function listenPartnerStatus() {
-      if (partnerStatusUnsubscribe) {
-        partnerStatusUnsubscribe();
-        partnerStatusUnsubscribe = null;
-      }
-
+      if (partnerStatusUnsubscribe) { partnerStatusUnsubscribe(); partnerStatusUnsubscribe = null; }
       if (!user || !user.partnerId) return;
-
-      partnerStatusUnsubscribe = db.collection('users').doc(user.partnerId)
-        .onSnapshot((doc) => {
-          if (doc.exists) {
-            const data = doc.data();
-            partnerOnline = data.online === true;
-          }
-        });
+      partnerStatusUnsubscribe = db.collection('users').doc(user.partnerId).onSnapshot((doc) => {
+        if (doc.exists) { const data = doc.data(); partnerOnline = data.online === true; }
+      });
     }
 
     // ============ INCOMING CALL LISTENER ============
     function listenForIncomingCalls() {
-      if (incomingCallUnsubscribe) {
-        incomingCallUnsubscribe();
-        incomingCallUnsubscribe = null;
-      }
-
+      if (incomingCallUnsubscribe) { incomingCallUnsubscribe(); incomingCallUnsubscribe = null; }
       if (!user || !user.id) return;
-
-      incomingCallUnsubscribe = db.collection('incomingCalls')
-        .where('toId', '==', user.id)
-        .where('status', '==', 'ringing')
-        .onSnapshot((snapshot) => {
-          snapshot.docChanges().forEach(change => {
-            if (change.type === 'added') {
-              const data = change.doc.data();
-              if (data.status === 'ringing') {
-                pendingCallData = {
-                  id: change.doc.id,
-                  fromId: data.fromId,
-                  fromName: data.fromName || 'Partner',
-                  mode: data.mode || 'video'
-                };
-                showIncomingCall(pendingCallData);
-              }
+      incomingCallUnsubscribe = db.collection('incomingCalls').where('toId', '==', user.id).where('status', '==', 'ringing').onSnapshot((snapshot) => {
+        snapshot.docChanges().forEach(change => {
+          if (change.type === 'added') {
+            const data = change.doc.data();
+            if (data.status === 'ringing') {
+              pendingCallData = { id: change.doc.id, fromId: data.fromId, fromName: data.fromName || 'Partner', mode: data.mode || 'video' };
+              showIncomingCall(pendingCallData);
             }
-          });
+          }
         });
+      });
     }
 
     function showIncomingCall(data) {
       const overlay = document.getElementById('incomingCallOverlay');
-      const avatar = document.getElementById('callerAvatar');
-      const name = document.getElementById('callerName');
-      const mode = document.getElementById('callerMode');
-
-      if (avatar) avatar.textContent = (data.fromName || 'U')[0].toUpperCase();
-      if (name) name.textContent = data.fromName || 'Unknown';
-      if (mode) mode.textContent = data.mode === 'video' ? '📹 Video Call' : '🎙️ Audio Call';
-
+      document.getElementById('callerAvatar').textContent = (data.fromName || 'U')[0].toUpperCase();
+      document.getElementById('callerName').textContent = data.fromName || 'Unknown';
+      document.getElementById('callerMode').textContent = data.mode === 'video' ? '📹 Video Call' : '🎙️ Audio Call';
       if (overlay) overlay.classList.add('show');
-
-      if (navigator.vibrate) {
-        navigator.vibrate([200, 100, 200, 100, 200]);
-      }
+      if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 200]);
     }
 
     function hideIncomingCall() {
-      const overlay = document.getElementById('incomingCallOverlay');
-      if (overlay) overlay.classList.remove('show');
+      document.getElementById('incomingCallOverlay').classList.remove('show');
     }
 
     // ============ MEDIA HELPERS ============
     async function requestMediaPermissions() {
       if (hasMediaPermissions) return true;
-      if (permissionRequested) {
-        showNotification('Access already requested.');
-        return false;
-      }
-      if (isGettingMedia) {
-        showNotification('Already requesting...');
-        return false;
-      }
-
+      if (permissionRequested) { showNotification('Access already requested.'); return false; }
+      if (isGettingMedia) { showNotification('Already requesting...'); return false; }
       try {
         isGettingMedia = true;
-
         const constraints = { audio: true };
-        if (selectedMode === 'video') {
-          constraints.video = { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } };
-        }
-
+        if (selectedMode === 'video') constraints.video = { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } };
         const stream = await navigator.mediaDevices.getUserMedia(constraints);
         stream.getTracks().forEach(track => track.stop());
-
         hasMediaPermissions = true;
         permissionRequested = true;
         showNotification('✅ Camera and microphone access granted!');
@@ -2272,34 +841,12 @@
     }
 
     async function getLocalStream() {
-      if (isGettingMedia) {
-        showNotification('⏳ Please wait...');
-        return null;
-      }
-
-      if (!hasMediaPermissions) {
-        const granted = await requestMediaPermissions();
-        if (!granted) return null;
-      }
-
+      if (isGettingMedia) { showNotification('⏳ Please wait...'); return null; }
+      if (!hasMediaPermissions) { const granted = await requestMediaPermissions(); if (!granted) return null; }
       try {
         isGettingMedia = true;
-        const constraints = {
-          audio: {
-            echoCancellation: true,
-            noiseSuppression: true
-          }
-        };
-
-        if (selectedMode === 'video') {
-          constraints.video = {
-            facingMode: 'user',
-            width: { ideal: 640 },
-            height: { ideal: 480 },
-            frameRate: { ideal: 30 }
-          };
-        }
-
+        const constraints = { audio: { echoCancellation: true, noiseSuppression: true } };
+        if (selectedMode === 'video') constraints.video = { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30 } };
         localStream = await navigator.mediaDevices.getUserMedia(constraints);
         isGettingMedia = false;
         return localStream;
@@ -2312,10 +859,7 @@
     }
 
     function stopLocalStream() {
-      if (localStream) {
-        localStream.getTracks().forEach(t => t.stop());
-        localStream = null;
-      }
+      if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
     }
 
     // ============ PEER CONNECTION ============
@@ -2327,29 +871,17 @@
           { urls: 'stun:stun2.l.google.com:19302' },
           { urls: 'stun:stun3.l.google.com:19302' },
           { urls: 'stun:stun4.l.google.com:19302' },
-          // TURN servers for better connectivity
-          {
-            urls: 'turn:openrelay.metered.ca:80',
-            username: 'openrelayproject',
-            credential: 'openrelayproject'
-          },
-          {
-            urls: 'turn:openrelay.metered.ca:443',
-            username: 'openrelayproject',
-            credential: 'openrelayproject'
-          }
+          { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+          { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' }
         ],
         iceCandidatePoolSize: 10
       };
-
       pc = new RTCPeerConnection(configuration);
-
       if (localStream) {
         localStream.getTracks().forEach(track => {
           pc.addTrack(track, localStream);
         });
       }
-
       pc.ontrack = (event) => {
         console.log('✅ Remote track received!');
         remoteStream = event.streams[0];
@@ -2357,20 +889,16 @@
         if (remoteVideo) {
           remoteVideo.srcObject = remoteStream;
           remoteVideo.style.display = 'block';
-          remoteVideo.onloadedmetadata = () => {
-            remoteVideo.play().catch(e => console.warn('Remote video play error:', e));
-          };
+          remoteVideo.onloadedmetadata = () => remoteVideo.play().catch(e => console.warn('Remote video play error:', e));
         }
         showNotification('📹 Partner connected!');
       };
-
       pc.onicecandidate = (event) => {
         if (event.candidate) {
           console.log('📤 Sending ICE candidate');
           sendSignalingData({ type: 'ice-candidate', candidate: event.candidate });
         }
       };
-
       pc.onconnectionstatechange = () => {
         const state = pc.connectionState;
         console.log('📡 Connection state:', state);
@@ -2379,114 +907,65 @@
           startCallTimer();
           showNotification('🔗 Call connected!');
         } else if (state === 'disconnected' || state === 'failed' || state === 'closed') {
-          if (isCallActive) {
-            console.log('Call ended due to state:', state);
-            endCall();
-          }
+          if (isCallActive) { console.log('Call ended due to state:', state); endCall(); }
         }
       };
-
       pc.oniceconnectionstatechange = () => {
         const state = pc.iceConnectionState;
         console.log('🧊 ICE connection state:', state);
-        if (state === 'failed') {
-          showNotification('❌ Connection failed');
-          endCall();
-        }
+        if (state === 'failed') { showNotification('❌ Connection failed'); endCall(); }
       };
-
       return pc;
     }
 
     // ============ SIGNALING ============
     function startSignalingListener() {
-      if (signalingUnsubscribe) {
-        signalingUnsubscribe();
-        signalingUnsubscribe = null;
-      }
-
+      if (signalingUnsubscribe) { signalingUnsubscribe(); signalingUnsubscribe = null; }
       if (!user || !user.partnerId) return;
-
-      signalingUnsubscribe = db.collection('signaling')
-        .where('to', '==', user.id)
-        .orderBy('timestamp', 'asc')
-        .onSnapshot((snapshot) => {
-          snapshot.docChanges().forEach(async (change) => {
-            if (change.type === 'added') {
-              const data = change.doc.data();
-              if (data.from === user.id) return;
-
-              try {
-                await change.doc.ref.delete();
-              } catch (e) {}
-
-              if (data.type === 'hangup') {
-                showNotification('📴 Call ended by partner');
-                endCall(true);
-                return;
-              }
-
-              if (data.type === 'reject') {
-                showNotification('📞 Call rejected by partner');
-                endCall(true);
-                return;
-              }
-
-              console.log('📩 Received signaling data:', data.type);
-              handleSignalingData(data);
-            }
-          });
+      signalingUnsubscribe = db.collection('signaling').where('to', '==', user.id).orderBy('timestamp', 'asc').onSnapshot((snapshot) => {
+        snapshot.docChanges().forEach(async (change) => {
+          if (change.type === 'added') {
+            const data = change.doc.data();
+            if (data.from === user.id) return;
+            try { await change.doc.ref.delete(); } catch (e) {}
+            if (data.type === 'hangup') { showNotification('📴 Call ended by partner'); endCall(true); return; }
+            if (data.type === 'reject') { showNotification('📞 Call rejected by partner'); endCall(true); return; }
+            console.log('📩 Received signaling data:', data.type);
+            handleSignalingData(data);
+          }
         });
+      });
     }
 
     function sendSignalingData(data) {
       if (!user || !user.partnerId) return;
-
       data.from = user.id;
       data.to = user.partnerId;
       data.timestamp = firebase.firestore.FieldValue.serverTimestamp();
-
-      db.collection('signaling').add(data).catch(e => {
-        console.warn('Failed to send signaling data:', e);
-      });
+      db.collection('signaling').add(data).catch(e => console.warn('Failed to send signaling data:', e));
     }
 
     async function handleSignalingData(data) {
       try {
         if (data.type === 'offer') {
-          if (isCaller) {
-            console.log('Ignoring offer - we are the caller');
-            return;
-          }
-          if (!pc) {
-            console.log('Creating peer connection for offer');
-            createPeerConnection();
-          }
+          if (isCaller) { console.log('Ignoring offer - we are the caller'); return; }
+          if (isOfferProcessed) { console.log('Offer already processed'); return; }
+          isOfferProcessed = true;
+          if (!pc) { console.log('Creating peer connection for offer'); createPeerConnection(); }
           await handleIncomingOffer(data.offer);
           return;
         }
-
         if (!pc) {
           console.warn('No peer connection for signaling data');
-          if (data.type === 'answer') {
-            console.error('Received answer but no peer connection!');
-            showNotification('❌ Connection error');
-            endCall();
-          }
+          if (data.type === 'answer') { console.error('Received answer but no peer connection!'); showNotification('❌ Connection error'); endCall(); }
           return;
         }
-
         if (data.type === 'answer') {
           if (data.answer && isCaller) {
             console.log('📥 Setting remote description from answer');
             await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
             for (const c of iceCandidatesQueue) {
-              try {
-                await pc.addIceCandidate(new RTCIceCandidate(c));
-                console.log('✅ Added queued ICE candidate');
-              } catch (e) {
-                console.warn('Failed to add queued ICE candidate:', e);
-              }
+              try { await pc.addIceCandidate(new RTCIceCandidate(c)); console.log('✅ Added queued ICE candidate'); } catch (e) { console.warn('Failed to add queued ICE candidate:', e); }
             }
             iceCandidatesQueue = [];
             console.log('Remote description set, call should connect');
@@ -2503,44 +982,30 @@
               }
             } catch (e) {
               console.warn('Failed to add ICE candidate:', e);
-              if (!iceCandidatesQueue.includes(data.candidate)) {
-                iceCandidatesQueue.push(data.candidate);
-              }
+              if (!iceCandidatesQueue.includes(data.candidate)) iceCandidatesQueue.push(data.candidate);
             }
           }
         }
-      } catch (e) {
-        console.error('Error handling signaling data:', e);
-      }
+      } catch (e) { console.error('Error handling signaling data:', e); }
     }
 
     async function handleIncomingOffer(offer) {
       try {
         if (!hasMediaPermissions) {
           const granted = await requestMediaPermissions();
-          if (!granted) {
-            sendSignalingData({ type: 'reject' });
-            return;
-          }
+          if (!granted) { sendSignalingData({ type: 'reject' }); return; }
         }
-
         if (!localStream) {
           const stream = await getLocalStream();
-          if (!stream) {
-            sendSignalingData({ type: 'reject' });
-            return;
-          }
+          if (!stream) { sendSignalingData({ type: 'reject' }); return; }
         }
 
         const callFullscreen = document.getElementById('callFullscreen');
         if (callFullscreen && !callFullscreen.classList.contains('active')) {
           callFullscreen.classList.add('active');
-          const container = document.getElementById('container');
-          const bottomNav = document.getElementById('bottomNav');
-          const header = document.querySelector('header');
-          if (container) container.style.display = 'none';
-          if (bottomNav) bottomNav.style.display = 'none';
-          if (header) header.style.display = 'none';
+          document.getElementById('container').style.display = 'none';
+          document.getElementById('bottomNav').style.display = 'none';
+          document.querySelector('header').style.display = 'none';
           setupCallUI();
         }
 
@@ -2549,37 +1014,23 @@
           localVideo.srcObject = localStream;
           localVideo.style.display = 'block';
         }
+        document.getElementById('remoteCallLabel').textContent = user.partner || 'Partner';
 
-        const remoteLabel = document.getElementById('remoteCallLabel');
-        if (remoteLabel) {
-          remoteLabel.textContent = user.partner || 'Partner';
-        }
-
-        if (!pc) {
-          console.log('Creating peer connection for incoming offer');
-          createPeerConnection();
-        }
+        if (!pc) { console.log('Creating peer connection for incoming offer'); createPeerConnection(); }
 
         console.log('📥 Setting remote description from offer');
         await pc.setRemoteDescription(new RTCSessionDescription(offer));
 
-        const answer = await pc.createAnswer({
-          offerToReceiveAudio: true,
-          offerToReceiveVideo: selectedMode === 'video'
-        });
+        const answer = await pc.createAnswer({ offerToReceiveAudio: true, offerToReceiveVideo: selectedMode === 'video' });
         await pc.setLocalDescription(answer);
         console.log('📤 Local answer set');
 
         await new Promise((resolve) => {
-          if (pc.iceGatheringState === 'complete') {
-            resolve();
-          } else {
+          if (pc.iceGatheringState === 'complete') resolve();
+          else {
             const timeout = setTimeout(resolve, 3000);
             pc.onicegatheringstatechange = () => {
-              if (pc.iceGatheringState === 'complete') {
-                clearTimeout(timeout);
-                resolve();
-              }
+              if (pc.iceGatheringState === 'complete') { clearTimeout(timeout); resolve(); }
             };
           }
         });
@@ -2590,16 +1041,10 @@
         isCallActive = true;
         startCallTimer();
         isCaller = false;
-
         showNotification('📹 Call connecting...');
 
         for (const c of iceCandidatesQueue) {
-          try {
-            await pc.addIceCandidate(new RTCIceCandidate(c));
-            console.log('✅ Added queued ICE candidate after answer');
-          } catch (e) {
-            console.warn('Failed to add queued ICE candidate after answer:', e);
-          }
+          try { await pc.addIceCandidate(new RTCIceCandidate(c)); console.log('✅ Added queued ICE candidate after answer'); } catch (e) { console.warn('Failed to add queued ICE candidate after answer:', e); }
         }
         iceCandidatesQueue = [];
 
@@ -2608,53 +1053,34 @@
           pendingCallData = null;
           hideIncomingCall();
         }
-
+        isOfferProcessed = false;
       } catch (e) {
         console.error('Error handling incoming offer:', e);
         showNotification('❌ Failed to answer call: ' + e.message);
         endCall();
+        isOfferProcessed = false;
       }
     }
 
     // ============ CALL UI HELPERS ============
     function setupCallUI() {
       if (selectedMode === 'audio') {
-        const localWrapper = document.getElementById('localVideoWrapper');
-        const remoteWrapper = document.getElementById('remoteVideoWrapper');
-        if (localWrapper) {
-          localWrapper.style.display = 'none';
-          localWrapper.classList.remove('dominant');
-        }
-        if (remoteWrapper) {
-          remoteWrapper.style.display = 'none';
-          remoteWrapper.classList.remove('dominant');
-        }
-        const camToggle = document.getElementById('callCamToggle');
-        if (camToggle) camToggle.style.display = 'none';
+        document.getElementById('localVideoWrapper').style.display = 'none';
+        document.getElementById('remoteVideoWrapper').style.display = 'none';
+        document.getElementById('callCamToggle').style.display = 'none';
       } else {
+        document.getElementById('localVideoWrapper').style.display = 'block';
+        document.getElementById('remoteVideoWrapper').style.display = 'block';
+        document.getElementById('remoteVideoWrapper').classList.add('dominant');
+        document.getElementById('callCamToggle').style.display = 'inline-block';
         const localWrapper = document.getElementById('localVideoWrapper');
-        const remoteWrapper = document.getElementById('remoteVideoWrapper');
-        if (localWrapper) {
-          localWrapper.style.display = 'block';
-          localWrapper.classList.remove('dominant');
-        }
-        if (remoteWrapper) {
-          remoteWrapper.style.display = 'block';
-          remoteWrapper.classList.add('dominant');
-        }
-        const camToggle = document.getElementById('callCamToggle');
-        if (camToggle) camToggle.style.display = 'inline-block';
-
-        const localWrapper2 = document.getElementById('localVideoWrapper');
-        if (localWrapper2) {
-          localWrapper2.style.position = 'absolute';
-          localWrapper2.style.bottom = '20px';
-          localWrapper2.style.right = '20px';
-          localWrapper2.style.width = '180px';
-          localWrapper2.style.height = '120px';
-          localWrapper2.style.top = 'auto';
-          localWrapper2.style.left = 'auto';
-        }
+        localWrapper.style.position = 'absolute';
+        localWrapper.style.bottom = '20px';
+        localWrapper.style.right = '20px';
+        localWrapper.style.width = '180px';
+        localWrapper.style.height = '120px';
+        localWrapper.style.top = 'auto';
+        localWrapper.style.left = 'auto';
       }
     }
 
@@ -2665,69 +1091,43 @@
         const elapsed = Math.floor((Date.now() - callStartTime) / 1000);
         const mins = Math.floor(elapsed / 60);
         const secs = elapsed % 60;
-        const remoteLabel = document.getElementById('remoteCallLabel');
-        if (remoteLabel) {
-          remoteLabel.textContent = (user.partner || 'Partner') + ' · ' +
-            String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
-        }
+        document.getElementById('remoteCallLabel').textContent = (user.partner || 'Partner') + ' · ' + String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
       }, 1000);
     }
 
     // ============ START / ACCEPT / REJECT / END ============
     async function startCallFromButton() {
-      if (!user || !user.partnerId) {
-        showNotification('Please connect with a partner first');
-        return;
-      }
-
-      if (!partnerOnline) {
-        showNotification(`📡 ${user.partner} is offline`);
-        return;
-      }
-
-      if (isCallActive || isProcessingCall) {
-        showNotification('Call already in progress');
-        return;
-      }
+      if (!user || !user.partnerId) { showNotification('Please connect with a partner first'); return; }
+      if (!partnerOnline) { showNotification(`📡 ${user.partner} is offline`); return; }
+      if (isCallActive || isProcessingCall) { showNotification('Call already in progress'); return; }
 
       try {
         isProcessingCall = true;
         isCaller = true;
+        isOfferProcessed = false;
 
         const callDoc = await db.collection('incomingCalls').add({
-          fromId: user.id,
-          fromName: user.name || 'Reader',
-          toId: user.partnerId,
-          mode: selectedMode,
-          status: 'ringing',
+          fromId: user.id, fromName: user.name || 'Reader', toId: user.partnerId,
+          mode: selectedMode, status: 'ringing',
           timestamp: firebase.firestore.FieldValue.serverTimestamp()
         });
         callDocumentId = callDoc.id;
-
         showNotification(`📞 Calling ${user.partner}...`);
 
-        callStatusListener = db.collection('incomingCalls').doc(callDoc.id)
-          .onSnapshot(async (snap) => {
-            if (!snap.exists) return;
-            const data = snap.data();
-
-            if (data.status === 'accepted') {
-              if (callStatusListener) {
-                callStatusListener();
-                callStatusListener = null;
-              }
-              await proceedAsCaller();
-            } else if (data.status === 'rejected') {
-              if (callStatusListener) {
-                callStatusListener();
-                callStatusListener = null;
-              }
-              showNotification('Call rejected');
-              cleanupRingingDoc();
-              isProcessingCall = false;
-              isCaller = false;
-            }
-          });
+        callStatusListener = db.collection('incomingCalls').doc(callDoc.id).onSnapshot(async (snap) => {
+          if (!snap.exists) return;
+          const data = snap.data();
+          if (data.status === 'accepted') {
+            if (callStatusListener) { callStatusListener(); callStatusListener = null; }
+            await proceedAsCaller();
+          } else if (data.status === 'rejected') {
+            if (callStatusListener) { callStatusListener(); callStatusListener = null; }
+            showNotification('Call rejected');
+            cleanupRingingDoc();
+            isProcessingCall = false;
+            isCaller = false;
+          }
+        });
 
         setTimeout(() => {
           if (isProcessingCall && !isCallActive) {
@@ -2735,10 +1135,7 @@
             cleanupRingingDoc();
             isProcessingCall = false;
             isCaller = false;
-            if (callStatusListener) {
-              callStatusListener();
-              callStatusListener = null;
-            }
+            if (callStatusListener) { callStatusListener(); callStatusListener = null; }
           }
         }, 30000);
 
@@ -2754,28 +1151,18 @@
       try {
         if (!hasMediaPermissions) {
           const granted = await requestMediaPermissions();
-          if (!granted) {
-            endCall();
-            return;
-          }
+          if (!granted) { endCall(); return; }
         }
-
         if (!localStream) {
           const stream = await getLocalStream();
-          if (!stream) {
-            endCall();
-            return;
-          }
+          if (!stream) { endCall(); return; }
         }
 
         const callFullscreen = document.getElementById('callFullscreen');
         if (callFullscreen) callFullscreen.classList.add('active');
-        const container = document.getElementById('container');
-        const bottomNav = document.getElementById('bottomNav');
-        const header = document.querySelector('header');
-        if (container) container.style.display = 'none';
-        if (bottomNav) bottomNav.style.display = 'none';
-        if (header) header.style.display = 'none';
+        document.getElementById('container').style.display = 'none';
+        document.getElementById('bottomNav').style.display = 'none';
+        document.querySelector('header').style.display = 'none';
 
         setupCallUI();
 
@@ -2784,30 +1171,21 @@
           localVideo.srcObject = localStream;
           localVideo.style.display = 'block';
         }
-
-        const remoteLabel = document.getElementById('remoteCallLabel');
-        if (remoteLabel) remoteLabel.textContent = user.partner || 'Partner';
+        document.getElementById('remoteCallLabel').textContent = user.partner || 'Partner';
 
         startSignalingListener();
         createPeerConnection();
 
-        const offer = await pc.createOffer({
-          offerToReceiveAudio: true,
-          offerToReceiveVideo: selectedMode === 'video'
-        });
+        const offer = await pc.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: selectedMode === 'video' });
         await pc.setLocalDescription(offer);
         console.log('📤 Local offer set');
 
         await new Promise((resolve) => {
-          if (pc.iceGatheringState === 'complete') {
-            resolve();
-          } else {
+          if (pc.iceGatheringState === 'complete') resolve();
+          else {
             const timeout = setTimeout(resolve, 3000);
             pc.onicegatheringstatechange = () => {
-              if (pc.iceGatheringState === 'complete') {
-                clearTimeout(timeout);
-                resolve();
-              }
+              if (pc.iceGatheringState === 'complete') { clearTimeout(timeout); resolve(); }
             };
           }
         });
@@ -2817,9 +1195,7 @@
 
         showNotification(`📞 Calling ${user.partner}...`);
         isProcessingCall = false;
-
         cleanupRingingDoc();
-
       } catch (e) {
         console.error('Error in proceedAsCaller:', e);
         showNotification('Failed to start call: ' + e.message);
@@ -2828,28 +1204,19 @@
     }
 
     async function acceptCall() {
-      if (!pendingCallData) {
-        showNotification('No incoming call found');
-        return;
-      }
-
-      if (isProcessingCall || isCallActive) {
-        showNotification('Already processing...');
-        return;
-      }
+      if (!pendingCallData) { showNotification('No incoming call found'); return; }
+      if (isProcessingCall || isCallActive) { showNotification('Already processing...'); return; }
 
       isProcessingCall = true;
       isCaller = false;
+      isOfferProcessed = false;
 
       try {
         const callData = pendingCallData;
         const callId = callData.id;
         callDocumentId = callId;
 
-        await db.collection('incomingCalls').doc(callId).update({
-          status: 'accepted'
-        });
-
+        await db.collection('incomingCalls').doc(callId).update({ status: 'accepted' });
         hideIncomingCall();
 
         if (!user.partnerId) {
@@ -2861,30 +1228,18 @@
 
         if (!hasMediaPermissions) {
           const granted = await requestMediaPermissions();
-          if (!granted) {
-            sendSignalingData({ type: 'reject' });
-            endCall();
-            return;
-          }
+          if (!granted) { sendSignalingData({ type: 'reject' }); endCall(); return; }
         }
-
         if (!localStream) {
           const stream = await getLocalStream();
-          if (!stream) {
-            sendSignalingData({ type: 'reject' });
-            endCall();
-            return;
-          }
+          if (!stream) { sendSignalingData({ type: 'reject' }); endCall(); return; }
         }
 
         const callFullscreen = document.getElementById('callFullscreen');
         if (callFullscreen) callFullscreen.classList.add('active');
-        const container = document.getElementById('container');
-        const bottomNav = document.getElementById('bottomNav');
-        const header = document.querySelector('header');
-        if (container) container.style.display = 'none';
-        if (bottomNav) bottomNav.style.display = 'none';
-        if (header) header.style.display = 'none';
+        document.getElementById('container').style.display = 'none';
+        document.getElementById('bottomNav').style.display = 'none';
+        document.querySelector('header').style.display = 'none';
 
         setupCallUI();
 
@@ -2893,12 +1248,9 @@
           localVideo.srcObject = localStream;
           localVideo.style.display = 'block';
         }
-
-        const remoteLabel = document.getElementById('remoteCallLabel');
-        if (remoteLabel) remoteLabel.textContent = user.partner || 'Partner';
+        document.getElementById('remoteCallLabel').textContent = user.partner || 'Partner';
 
         startSignalingListener();
-
         isProcessingCall = false;
 
         setTimeout(() => {
@@ -2913,97 +1265,50 @@
     }
 
     async function rejectCall() {
-      if (!pendingCallData) {
-        showNotification('No incoming call found');
-        return;
-      }
-
+      if (!pendingCallData) { showNotification('No incoming call found'); return; }
       try {
-        await db.collection('incomingCalls').doc(pendingCallData.id).update({
-          status: 'rejected'
-        });
+        await db.collection('incomingCalls').doc(pendingCallData.id).update({ status: 'rejected' });
         hideIncomingCall();
         pendingCallData = null;
         showNotification('Call rejected');
-      } catch (e) {
-        console.error('Error rejecting call:', e);
-      }
+      } catch (e) { console.error('Error rejecting call:', e); }
     }
 
     function cleanupRingingDoc() {
-      if (callDocumentId) {
-        db.collection('incomingCalls').doc(callDocumentId).delete().catch(() => {});
-        callDocumentId = null;
-      }
+      if (callDocumentId) { db.collection('incomingCalls').doc(callDocumentId).delete().catch(() => {}); callDocumentId = null; }
     }
 
     function endCall(silent = false) {
       if (isEndingCall) return;
       isEndingCall = true;
-
       console.log('Ending call...');
       isCallActive = false;
       isCaller = false;
       isProcessingCall = false;
+      isOfferProcessed = false;
 
-      if (callTimer) {
-        clearInterval(callTimer);
-        callTimer = null;
-      }
-
-      if (pc) {
-        try { pc.close(); } catch (e) {}
-        pc = null;
-      }
-
+      if (callTimer) { clearInterval(callTimer); callTimer = null; }
+      if (pc) { try { pc.close(); } catch (e) {} pc = null; }
       stopLocalStream();
 
       remoteStream = null;
       const remoteVideo = document.getElementById('remoteVideoCall');
-      if (remoteVideo) {
-        remoteVideo.pause();
-        remoteVideo.srcObject = null;
-        remoteVideo.style.display = 'none';
-      }
-
+      if (remoteVideo) { remoteVideo.pause(); remoteVideo.srcObject = null; remoteVideo.style.display = 'none'; }
       const localVideo = document.getElementById('localVideoCall');
-      if (localVideo) {
-        localVideo.pause();
-        localVideo.srcObject = null;
-        localVideo.style.display = 'none';
-      }
+      if (localVideo) { localVideo.pause(); localVideo.srcObject = null; localVideo.style.display = 'none'; }
 
-      const callFullscreen = document.getElementById('callFullscreen');
-      if (callFullscreen) callFullscreen.classList.remove('active');
+      document.getElementById('callFullscreen').classList.remove('active');
+      document.getElementById('container').style.display = 'block';
+      document.getElementById('bottomNav').style.display = 'flex';
+      document.querySelector('header').style.display = 'block';
 
-      const container = document.getElementById('container');
-      const bottomNav = document.getElementById('bottomNav');
-      const header = document.querySelector('header');
-      if (container) container.style.display = 'block';
-      if (bottomNav) bottomNav.style.display = 'flex';
-      if (header) header.style.display = 'block';
+      if (signalingUnsubscribe) { signalingUnsubscribe(); signalingUnsubscribe = null; }
+      if (callStatusListener) { callStatusListener(); callStatusListener = null; }
 
-      if (signalingUnsubscribe) {
-        signalingUnsubscribe();
-        signalingUnsubscribe = null;
-      }
-
-      if (callStatusListener) {
-        callStatusListener();
-        callStatusListener = null;
-      }
-
-      if (user && user.partnerId && !silent) {
-        sendSignalingData({ type: 'hangup' });
-      }
-
+      if (user && user.partnerId && !silent) { sendSignalingData({ type: 'hangup' }); }
       cleanupRingingDoc();
 
-      if (pendingCallData && pendingCallData.id) {
-        db.collection('incomingCalls').doc(pendingCallData.id).delete().catch(() => {});
-        pendingCallData = null;
-      }
-
+      if (pendingCallData && pendingCallData.id) { db.collection('incomingCalls').doc(pendingCallData.id).delete().catch(() => {}); pendingCallData = null; }
       iceCandidatesQueue = [];
 
       const localWrapper = document.getElementById('localVideoWrapper');
@@ -3024,13 +1329,8 @@
         remoteWrapper.classList.add('dominant');
       }
       dominantVideo = 'remote';
-
-      const camToggle = document.getElementById('callCamToggle');
-      if (camToggle) camToggle.style.display = 'inline-block';
-
-      const flash = document.getElementById('correctionFlash');
-      if (flash) flash.classList.remove('active');
-
+      document.getElementById('callCamToggle').style.display = 'inline-block';
+      document.getElementById('correctionFlash').classList.remove('active');
       hideIncomingCall();
 
       if (!silent) showNotification('📴 Call ended');
@@ -3041,130 +1341,78 @@
     function toggleCallMic() {
       if (!localStream) return;
       isMicOn = !isMicOn;
-      const audioTracks = localStream.getAudioTracks();
-      audioTracks.forEach(track => track.enabled = isMicOn);
+      localStream.getAudioTracks().forEach(track => track.enabled = isMicOn);
       const btn = document.getElementById('callMicToggle');
-      if (btn) {
-        btn.innerHTML = isMicOn ? '<i class="fas fa-microphone"></i> Mic' : '<i class="fas fa-microphone-slash"></i> Mic';
-        btn.className = isMicOn ? 'outline' : 'mic-off';
-      }
+      btn.innerHTML = isMicOn ? '<i class="fas fa-microphone"></i> Mic' : '<i class="fas fa-microphone-slash"></i> Mic';
+      btn.className = isMicOn ? 'outline' : 'mic-off';
     }
 
     function toggleCallCam() {
       if (selectedMode === 'audio' || !localStream) return;
       isCameraOn = !isCameraOn;
-      const videoTracks = localStream.getVideoTracks();
-      videoTracks.forEach(track => track.enabled = isCameraOn);
+      localStream.getVideoTracks().forEach(track => track.enabled = isCameraOn);
       const btn = document.getElementById('callCamToggle');
-      if (btn) {
-        btn.innerHTML = isCameraOn ? '<i class="fas fa-video"></i> Cam' : '<i class="fas fa-video-slash"></i> Cam';
-        btn.className = isCameraOn ? 'outline' : 'cam-off';
-      }
+      btn.innerHTML = isCameraOn ? '<i class="fas fa-video"></i> Cam' : '<i class="fas fa-video-slash"></i> Cam';
+      btn.className = isCameraOn ? 'outline' : 'cam-off';
     }
 
     function sendCorrectionAlert() {
-      if (!isCallActive || !user || !user.partnerId) {
-        showNotification('No active call');
-        return;
-      }
-
+      if (!isCallActive || !user || !user.partnerId) { showNotification('No active call'); return; }
       db.collection('attentionAlerts').add({
-        fromId: user.id,
-        fromName: user.name || 'Reader',
-        toId: user.partnerId,
-        dismissed: false,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        fromId: user.id, fromName: user.name || 'Reader', toId: user.partnerId,
+        dismissed: false, createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
-
-      const flash = document.getElementById('correctionFlash');
-      if (flash) {
-        flash.classList.add('active');
-        setTimeout(() => flash.classList.remove('active'), 1500);
-      }
-
+      document.getElementById('correctionFlash').classList.add('active');
+      setTimeout(() => document.getElementById('correctionFlash').classList.remove('active'), 1500);
       showNotification('🔔 Correction alert sent to ' + user.partner);
     }
 
     function listenForCorrectionAlerts() {
       if (!user) return;
-
-      db.collection('attentionAlerts')
-        .where('toId', '==', user.id)
-        .where('dismissed', '==', false)
-        .onSnapshot((snapshot) => {
-          snapshot.forEach(doc => {
-            const alert = doc.data();
-
-            const flash = document.getElementById('correctionFlash');
-            if (flash) {
-              flash.classList.add('active');
-              setTimeout(() => flash.classList.remove('active'), 1500);
-            }
-
-            const partnerName = document.getElementById('attentionPartnerName');
-            if (partnerName) {
-              partnerName.innerText = alert.fromName || 'Your partner';
-            }
-
-            const overlay = document.getElementById('attentionOverlay');
-            if (overlay) {
-              overlay.classList.add('show');
-            }
-
-            if (navigator.vibrate) {
-              navigator.vibrate([200, 100, 200]);
-            }
-
-            if (attentionTimeout) clearTimeout(attentionTimeout);
-            attentionTimeout = setTimeout(() => {
-              dismissAttention();
-            }, 10000);
-
-            doc.ref.update({ dismissed: true }).catch(() => {});
-          });
+      db.collection('attentionAlerts').where('toId', '==', user.id).where('dismissed', '==', false).onSnapshot((snapshot) => {
+        snapshot.forEach(doc => {
+          const alert = doc.data();
+          document.getElementById('correctionFlash').classList.add('active');
+          setTimeout(() => document.getElementById('correctionFlash').classList.remove('active'), 1500);
+          document.getElementById('attentionPartnerName').innerText = alert.fromName || 'Your partner';
+          document.getElementById('attentionOverlay').classList.add('show');
+          if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+          if (attentionTimeout) clearTimeout(attentionTimeout);
+          attentionTimeout = setTimeout(() => dismissAttention(), 10000);
+          doc.ref.update({ dismissed: true }).catch(() => {});
         });
+      });
     }
 
     function dismissAttention() {
-      const overlay = document.getElementById('attentionOverlay');
-      if (overlay) {
-        overlay.classList.remove('show');
-      }
-      if (attentionTimeout) {
-        clearTimeout(attentionTimeout);
-        attentionTimeout = null;
-      }
+      document.getElementById('attentionOverlay').classList.remove('show');
+      if (attentionTimeout) { clearTimeout(attentionTimeout); attentionTimeout = null; }
     }
 
     // ============ VIDEO DOMINANT TOGGLE + DRAG ============
     function toggleDominantVideo() {
       const remoteWrapper = document.getElementById('remoteVideoWrapper');
       const localWrapper = document.getElementById('localVideoWrapper');
-
       if (dominantVideo === 'remote') {
-        if (remoteWrapper) remoteWrapper.classList.remove('dominant');
-        if (localWrapper) localWrapper.classList.add('dominant');
-        if (localWrapper) {
-          localWrapper.style.position = 'relative';
-          localWrapper.style.bottom = 'auto';
-          localWrapper.style.right = 'auto';
-          localWrapper.style.width = 'auto';
-          localWrapper.style.height = 'auto';
-        }
+        remoteWrapper.classList.remove('dominant');
+        localWrapper.classList.add('dominant');
+        localWrapper.style.position = 'relative';
+        localWrapper.style.bottom = 'auto';
+        localWrapper.style.right = 'auto';
+        localWrapper.style.width = 'auto';
+        localWrapper.style.height = 'auto';
         dominantVideo = 'local';
       } else {
-        if (localWrapper) localWrapper.classList.remove('dominant');
-        if (remoteWrapper) remoteWrapper.classList.add('dominant');
+        localWrapper.classList.remove('dominant');
+        remoteWrapper.classList.add('dominant');
         const localWrapper2 = document.getElementById('localVideoWrapper');
-        if (localWrapper2) {
-          localWrapper2.style.position = 'absolute';
-          localWrapper2.style.bottom = '20px';
-          localWrapper2.style.right = '20px';
-          localWrapper2.style.width = '180px';
-          localWrapper2.style.height = '120px';
-          localWrapper2.style.top = 'auto';
-          localWrapper2.style.left = 'auto';
-        }
+        localWrapper2.style.position = 'absolute';
+        localWrapper2.style.bottom = '20px';
+        localWrapper2.style.right = '20px';
+        localWrapper2.style.width = '180px';
+        localWrapper2.style.height = '120px';
+        localWrapper2.style.top = 'auto';
+        localWrapper2.style.left = 'auto';
         dominantVideo = 'remote';
       }
     }
@@ -3172,14 +1420,11 @@
     function setupDrag() {
       const localWrapper = document.getElementById('localVideoWrapper');
       if (!localWrapper) return;
-
-      let isDragging = false;
-      let startX, startY, initialX, initialY;
+      let isDragging = false, startX, startY, initialX, initialY;
 
       localWrapper.addEventListener('mousedown', startDrag);
       document.addEventListener('mousemove', drag);
       document.addEventListener('mouseup', endDrag);
-
       localWrapper.addEventListener('touchstart', startDragTouch, { passive: false });
       document.addEventListener('touchmove', dragTouch, { passive: false });
       document.addEventListener('touchend', endDragTouch, { passive: false });
@@ -3189,10 +1434,8 @@
         isDragging = true;
         localWrapper.classList.add('dragging');
         const rect = localWrapper.getBoundingClientRect();
-        startX = e.clientX;
-        startY = e.clientY;
-        initialX = rect.left;
-        initialY = rect.top;
+        startX = e.clientX; startY = e.clientY;
+        initialX = rect.left; initialY = rect.top;
         e.preventDefault();
       }
 
@@ -3202,17 +1445,14 @@
         localWrapper.classList.add('dragging');
         const touch = e.touches[0];
         const rect = localWrapper.getBoundingClientRect();
-        startX = touch.clientX;
-        startY = touch.clientY;
-        initialX = rect.left;
-        initialY = rect.top;
+        startX = touch.clientX; startY = touch.clientY;
+        initialX = rect.left; initialY = rect.top;
         e.preventDefault();
       }
 
       function drag(e) {
         if (!isDragging) return;
-        const dx = e.clientX - startX;
-        const dy = e.clientY - startY;
+        const dx = e.clientX - startX, dy = e.clientY - startY;
         moveElement(dx, dy);
         e.preventDefault();
       }
@@ -3220,18 +1460,15 @@
       function dragTouch(e) {
         if (!isDragging) return;
         const touch = e.touches[0];
-        const dx = touch.clientX - startX;
-        const dy = touch.clientY - startY;
+        const dx = touch.clientX - startX, dy = touch.clientY - startY;
         moveElement(dx, dy);
         e.preventDefault();
       }
 
       function moveElement(dx, dy) {
-        const newX = initialX + dx;
-        const newY = initialY + dy;
+        const newX = initialX + dx, newY = initialY + dy;
         const rect = localWrapper.getBoundingClientRect();
-        const maxX = window.innerWidth - rect.width;
-        const maxY = window.innerHeight - rect.height;
+        const maxX = window.innerWidth - rect.width, maxY = window.innerHeight - rect.height;
         const clampedX = Math.max(0, Math.min(newX, maxX));
         const clampedY = Math.max(0, Math.min(newY, maxY));
         localWrapper.style.left = clampedX + 'px';
@@ -3240,129 +1477,68 @@
         localWrapper.style.bottom = 'auto';
       }
 
-      function endDrag() {
-        if (isDragging) {
-          isDragging = false;
-          localWrapper.classList.remove('dragging');
-        }
-      }
+      function endDrag() { if (isDragging) { isDragging = false; localWrapper.classList.remove('dragging'); } }
 
-      function endDragTouch() {
-        if (isDragging) {
-          isDragging = false;
-          localWrapper.classList.remove('dragging');
-        }
-      }
+      function endDragTouch() { if (isDragging) { isDragging = false; localWrapper.classList.remove('dragging'); } }
     }
 
-    // ============ NAVIGATION ============
     function switchPage(pageId) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      const page = document.getElementById(pageId);
-      if (page) page.classList.add('active');
-
-      document.querySelectorAll('#bottomNav button').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.page === pageId);
-      });
-
-      if (pageId === 'pageMusaffah') {
-        if (user && user.partner) {
-          listenPartnerStatus();
-        }
-      }
+      document.getElementById(pageId).classList.add('active');
+      document.querySelectorAll('#bottomNav button').forEach(btn => btn.classList.toggle('active', btn.dataset.page === pageId));
     }
 
     document.addEventListener('DOMContentLoaded', function() {
-      const nav = document.getElementById('bottomNav');
-      if (nav) {
-        nav.addEventListener('click', function(e) {
-          const btn = e.target.closest('button');
-          if (!btn) return;
-          const page = btn.dataset.page;
-          if (page) switchPage(page);
-        });
-      }
-
+      document.getElementById('bottomNav').addEventListener('click', function(e) {
+        const btn = e.target.closest('button');
+        if (btn) { const page = btn.dataset.page; if (page) switchPage(page); }
+      });
       setupDrag();
       setupCallCleanup();
     });
 
-    // ============ THEME ============
     async function toggleTheme() {
       if (!user) return;
       const isDark = document.body.classList.toggle('dark');
       user.theme = isDark ? 'dark' : 'light';
-      if (user.id && user.id !== 'local') {
-        try { await db.collection('users').doc(user.id).update({ theme: user.theme }); } catch (e) {}
-      }
+      if (user.id && user.id !== 'local') { try { await db.collection('users').doc(user.id).update({ theme: user.theme }); } catch (e) {} }
       localStorage.setItem('musaffahUser', JSON.stringify(user));
     }
 
-    // ============ LANGUAGE ============
     function updateLanguage() {
-      const langNames = {
-        en: 'English',
-        ar: 'العربية',
-        ha: 'Hausa',
-        ur: 'اردو',
-        tr: 'Türkçe',
-        fr: 'Français',
-        id: 'Bahasa Indonesia'
-      };
-      const label = document.getElementById('langLabel');
-      if (label) label.innerText = langNames[currentLang] || 'English';
+      const langNames = { en: 'English', ar: 'العربية', ha: 'Hausa', ur: 'اردو', tr: 'Türkçe', fr: 'Français', id: 'Bahasa Indonesia' };
+      document.getElementById('langLabel').innerText = langNames[currentLang] || 'English';
     }
 
-    // ============ CALL STATE MANAGEMENT ============
     function initializeCallState() {
       isCallActive = false;
       isCaller = false;
       isProcessingCall = false;
       isEndingCall = false;
+      isOfferProcessed = false;
       callDocumentId = null;
       pendingCallData = null;
-
       if (user && user.id) {
-        db.collection('incomingCalls')
-          .where('toId', '==', user.id)
-          .where('status', '==', 'ringing')
-          .get()
-          .then((snapshot) => {
-            snapshot.forEach(doc => {
-              doc.ref.delete().catch(() => {});
-            });
-          })
+        db.collection('incomingCalls').where('toId', '==', user.id).where('status', '==', 'ringing').get()
+          .then((snapshot) => { snapshot.forEach(doc => { doc.ref.delete().catch(() => {}); }); })
           .catch(() => {});
       }
     }
 
     function setupCallCleanup() {
-      document.addEventListener('visibilitychange', () => {
-        if (document.hidden && isCallActive) {
-          endCall();
-        }
-      });
-
-      window.addEventListener('beforeunload', () => {
-        if (isCallActive) endCall(true);
-      });
+      document.addEventListener('visibilitychange', () => { if (document.hidden && isCallActive) endCall(); });
+      window.addEventListener('beforeunload', () => { if (isCallActive) endCall(true); });
     }
 
-    // ============ EVENT LISTENERS ============
     document.addEventListener('click', function(e) {
       const remoteWrapper = document.getElementById('remoteVideoWrapper');
       const localWrapper = document.getElementById('localVideoWrapper');
       if (selectedMode === 'video') {
-        if (e.target.closest('#remoteVideoWrapper') && remoteWrapper && !localWrapper.classList.contains('dragging')) {
-          toggleDominantVideo();
-        }
-        if (e.target.closest('#localVideoWrapper') && localWrapper && !localWrapper.classList.contains('dragging')) {
-          toggleDominantVideo();
-        }
+        if (e.target.closest('#remoteVideoWrapper') && remoteWrapper && !localWrapper.classList.contains('dragging')) toggleDominantVideo();
+        if (e.target.closest('#localVideoWrapper') && localWrapper && !localWrapper.classList.contains('dragging')) toggleDominantVideo();
       }
     });
 
-    // ============ START ============
     listenForCorrectionAlerts();
   </script>
 </body>
