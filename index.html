@@ -123,18 +123,12 @@
     .empty-state i { font-size: 2.5rem; margin-bottom: 10px; display: block; }
     .empty-state p { font-size: 0.85rem; }
 
-    .recitation-status { padding: 10px; border-radius: 14px; text-align: center; margin-top: 6px; }
-    .recitation-status.active { background: #d1fae5; color: #065f46; }
-    .recitation-status.inactive { background: #fef3c7; color: #92400e; }
-    .dark .recitation-status.active { background: #064e3b; color: #a7f3d0; }
-    .dark .recitation-status.inactive { background: #78350f; color: #fde68a; }
-
     .dashboard-info .row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #eef3f2; }
     .dark .dashboard-info .row { border-bottom-color: #2a3a38; }
     .dashboard-info .row .label { opacity: 0.6; font-size: 0.8rem; }
     .dashboard-info .row .value { font-weight: 500; font-size: 0.85rem; }
 
-    .profile-header { display: flex; align-items: center; gap: 10px; }
+    .profile-header { display: flex; align-items: center; gap: 10px; cursor: pointer; }
     .profile-header .toggle-icon { transition: transform 0.3s ease; }
     .profile-header .toggle-icon.open { transform: rotate(180deg); }
     .dashboard-info { display: flex; flex-direction: column; gap: 4px; max-height: 0; overflow: hidden; transition: max-height 0.3s ease, padding 0.3s ease; padding: 0 0; }
@@ -264,13 +258,13 @@
       <div id="authStep1" class="onboarding-step active">
         <div id="authError" class="verification-banner hidden" style="background:#fee2e2;border-color:#dc2626;color:#991b1b;"></div>
         
-        <input id="authEmail" type="email" placeholder="Email" value="test@example.com">
+        <input id="authEmail" type="email" placeholder="Email">
         <div class="password-wrapper">
-          <input id="authPassword" type="password" placeholder="Password" value="password123">
+          <input id="authPassword" type="password" placeholder="Password">
           <button class="toggle-password" onclick="togglePasswordVisibility('authPassword', this)"><i class="fas fa-eye"></i></button>
         </div>
         <div class="password-wrapper" id="confirmPasswordWrapper">
-          <input id="confirmPassword" type="password" placeholder="Re-enter Password" value="password123">
+          <input id="confirmPassword" type="password" placeholder="Re-enter Password">
           <button class="toggle-password" onclick="togglePasswordVisibility('confirmPassword', this)"><i class="fas fa-eye"></i></button>
         </div>
         <button id="authButton" onclick="handleAuth()"><i class="fas fa-user-plus"></i> Sign Up</button>
@@ -456,18 +450,13 @@
             </div>
           </div>
         </div>
-
-        <div id="mediaPermissionBanner" class="card" style="background:#fef3c7; border:1px solid #d97706; display:none; text-align:center;">
-          <p>🎥 Allow camera and microphone access for calls.</p>
-          <button onclick="requestMediaPermissions()" class="success" style="width:auto; padding:4px 16px; margin:4px auto 0; font-size:0.75rem;"><i class="fas fa-video"></i> Grant Access</button>
-        </div>
       </div>
     </div>
   </div>
 
   <!-- CALL FULLSCREEN -->
   <div id="callFullscreen" class="call-fullscreen">
-    <div class="video-grid" id="callVideoGrid">
+    <div class="video-grid">
       <div class="video-wrapper dominant" id="remoteVideoWrapper">
         <video id="remoteVideoCall" autoplay playsinline></video>
         <span class="video-label" id="remoteCallLabel">Partner</span>
@@ -476,7 +465,6 @@
         <video id="localVideoCall" autoplay muted playsinline></video>
         <span class="video-label">You</span>
       </div>
-      <div id="audioModeIndicator" style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:white; font-size:3rem; opacity:0.5;">🎙️</div>
     </div>
     <div class="correction-flash" id="correctionFlash"></div>
     <div class="call-controls">
@@ -548,6 +536,7 @@
     let callStartTime = null;
     let iceCandidatesQueue = [];
     let attentionTimeout = null;
+    let isCaller = false;
 
     // ============ UI HELPERS ============
     function showStep(stepId) {
@@ -603,20 +592,26 @@
       profileOpen = !profileOpen;
       const details = document.getElementById('profileDetails');
       const icon = document.getElementById('profileToggleIcon');
-      if (profileOpen) {
-        details.classList.add('open');
-        icon.classList.add('open');
-      } else {
-        details.classList.remove('open');
-        icon.classList.remove('open');
+      if (details && icon) {
+        if (profileOpen) {
+          details.classList.add('open');
+          icon.classList.add('open');
+        } else {
+          details.classList.remove('open');
+          icon.classList.remove('open');
+        }
       }
     }
 
     // ============ MODE SELECTION ============
     function selectMode(mode) {
       selectedMode = mode;
-      document.getElementById('modeVideo').classList.toggle('active', mode === 'video');
-      document.getElementById('modeAudio').classList.toggle('active', mode === 'audio');
+      const modeVideo = document.getElementById('modeVideo');
+      const modeAudio = document.getElementById('modeAudio');
+      if (modeVideo && modeAudio) {
+        modeVideo.classList.toggle('active', mode === 'video');
+        modeAudio.classList.toggle('active', mode === 'audio');
+      }
       showNotification('Switched to ' + (mode === 'video' ? 'Video' : 'Audio') + ' mode');
     }
 
@@ -870,23 +865,41 @@
       document.getElementById('appMain').classList.remove('hidden');
 
       const initial = (user.name || 'Reader')[0].toUpperCase();
-      document.getElementById('avatarDisplay').innerText = initial;
-      document.getElementById('welcomeName').innerText = 'Assalamu Alaikum, ' + (user.name || 'Reader');
-      document.getElementById('userEmailDisplay').innerText = auth.currentUser?.email || '';
+      const avatarDisplay = document.getElementById('avatarDisplay');
+      if (avatarDisplay) avatarDisplay.innerText = initial;
       
-      document.getElementById('profileName').innerText = user.name || 'Reader';
-      document.getElementById('profileEmail').innerText = auth.currentUser?.email || '';
-      document.getElementById('profilePlan').innerText = (user.plan || '7') + ' days';
-      document.getElementById('profileRegion').innerText = user.regionName || 'Mecca';
+      const welcomeName = document.getElementById('welcomeName');
+      if (welcomeName) welcomeName.innerText = 'Assalamu Alaikum, ' + (user.name || 'Reader');
+      
+      const userEmailDisplay = document.getElementById('userEmailDisplay');
+      if (userEmailDisplay) userEmailDisplay.innerText = auth.currentUser?.email || '';
+      
+      const profileName = document.getElementById('profileName');
+      if (profileName) profileName.innerText = user.name || 'Reader';
+      
+      const profileEmail = document.getElementById('profileEmail');
+      if (profileEmail) profileEmail.innerText = auth.currentUser?.email || '';
+      
+      const profilePlan = document.getElementById('profilePlan');
+      if (profilePlan) profilePlan.innerText = (user.plan || '7') + ' days';
+      
+      const profileRegion = document.getElementById('profileRegion');
+      if (profileRegion) profileRegion.innerText = user.regionName || 'Mecca';
       
       const langNames = {
         en: 'English', ar: 'العربية', ha: 'Hausa', ur: 'اردو', tr: 'Türkçe', fr: 'Français', id: 'Bahasa Indonesia'
       };
-      document.getElementById('profileLanguage').innerText = langNames[user.lang] || 'English';
+      const profileLanguage = document.getElementById('profileLanguage');
+      if (profileLanguage) profileLanguage.innerText = langNames[user.lang] || 'English';
 
-      document.getElementById('statJuz').innerText = user.juz ? user.juz.length : 0;
-      document.getElementById('statKhatm').innerText = user.khatm || 0;
-      document.getElementById('statStreak').innerText = user.streak || 0;
+      const statJuz = document.getElementById('statJuz');
+      if (statJuz) statJuz.innerText = user.juz ? user.juz.length : 0;
+      
+      const statKhatm = document.getElementById('statKhatm');
+      if (statKhatm) statKhatm.innerText = user.khatm || 0;
+      
+      const statStreak = document.getElementById('statStreak');
+      if (statStreak) statStreak.innerText = user.streak || 0;
 
       if (user.theme === 'dark') document.body.classList.add('dark');
       else document.body.classList.remove('dark');
@@ -975,6 +988,7 @@
     // ============ JUZ ============
     function renderJuz() {
       const grid = document.getElementById('juzGrid');
+      if (!grid) return;
       grid.innerHTML = '';
       const juzList = user.juz || [];
       for (let i = 1; i <= 30; i++) {
@@ -1004,9 +1018,12 @@
       }
       localStorage.setItem('musaffahUser', JSON.stringify(user));
       renderJuz();
-      document.getElementById('statJuz').innerText = user.juz.length;
-      document.getElementById('statKhatm').innerText = user.khatm;
-      document.getElementById('statStreak').innerText = user.streak;
+      const statJuz = document.getElementById('statJuz');
+      if (statJuz) statJuz.innerText = user.juz.length;
+      const statKhatm = document.getElementById('statKhatm');
+      if (statKhatm) statKhatm.innerText = user.khatm;
+      const statStreak = document.getElementById('statStreak');
+      if (statStreak) statStreak.innerText = user.streak;
     }
 
     // ============ PARTNER SEARCH ============
@@ -1057,7 +1074,9 @@
 
     function searchPartners() {
       const input = document.getElementById('partnerSearchInput');
-      searchQuery = input.value.toLowerCase().trim();
+      if (input) {
+        searchQuery = input.value.toLowerCase().trim();
+      }
       renderSearchResults();
     }
 
@@ -1070,6 +1089,7 @@
 
     function renderSearchResults() {
       const container = document.getElementById('searchResults');
+      if (!container) return;
       
       let filtered = [...allUsers];
       
@@ -1136,12 +1156,14 @@
           return;
         }
         
-        currentPending.push({
+        const newRequest = {
           fromId: user.id,
           fromName: user.name || 'Reader',
           fromPlan: user.plan || '7',
           timestamp: new Date().toISOString()
-        });
+        };
+        
+        currentPending.push(newRequest);
         
         await db.collection('users').doc(toId).update({
           pendingRequests: currentPending
@@ -1175,6 +1197,7 @@
           const data = doc.data();
           const requests = data.pendingRequests || [];
           const container = document.getElementById('connectionRequests');
+          if (!container) return;
           
           if (requests.length === 0) {
             container.innerHTML = `
@@ -1295,6 +1318,8 @@
     // ============ PARTNER DISPLAY ============
     function updatePartnerDisplay() {
       const display = document.getElementById('partnerDisplay');
+      if (!display) return;
+      
       if (user.partner && user.partnerId) {
         display.innerHTML = `
           <div class="partner-avatar">${user.partner[0].toUpperCase()}</div>
@@ -1322,6 +1347,10 @@
         if (partnerStatusUnsubscribe) {
           partnerStatusUnsubscribe();
           partnerStatusUnsubscribe = null;
+        }
+        if (signalingUnsubscribe) {
+          signalingUnsubscribe();
+          signalingUnsubscribe = null;
         }
         
         const partnerId = user.partnerId;
@@ -1374,7 +1403,7 @@
         });
     }
 
-    // ============ MEDIA PERMISSIONS ============
+    // ============ REQUEST MEDIA PERMISSIONS ============
     async function requestMediaPermissions() {
       if (hasMediaPermissions) return true;
       if (permissionRequested) {
@@ -1388,7 +1417,6 @@
       
       try {
         isGettingMedia = true;
-        document.getElementById('mediaPermissionBanner').style.display = 'none';
         
         const constraints = { audio: true };
         if (selectedMode === 'video') {
@@ -1400,7 +1428,6 @@
         
         hasMediaPermissions = true;
         permissionRequested = true;
-        document.getElementById('mediaPermissionBanner').style.display = 'none';
         showNotification('✅ Camera and microphone access granted!');
         isGettingMedia = false;
         return true;
@@ -1411,18 +1438,8 @@
         let errorMsg = '';
         if (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError') {
           errorMsg = 'Camera/microphone access denied. Please enable in browser settings.';
-          document.getElementById('mediaPermissionBanner').style.display = 'block';
-          document.getElementById('mediaPermissionBanner').innerHTML = `
-            <p>🎥 Access denied. Please enable in browser settings.</p>
-            <button onclick="requestMediaPermissions()" class="success" style="width:auto; padding:4px 16px; margin:4px auto 0; font-size:0.75rem;"><i class="fas fa-sync"></i> Try Again</button>
-          `;
         } else if (e.name === 'NotFoundError') {
           errorMsg = 'No camera or microphone found.';
-          document.getElementById('mediaPermissionBanner').style.display = 'block';
-          document.getElementById('mediaPermissionBanner').innerHTML = `
-            <p>📹 No camera or microphone detected. Please connect a device.</p>
-            <button onclick="requestMediaPermissions()" class="success" style="width:auto; padding:4px 16px; margin:4px auto 0; font-size:0.75rem;"><i class="fas fa-sync"></i> Try Again</button>
-          `;
         } else {
           errorMsg = 'Could not access camera/microphone.';
         }
@@ -1483,7 +1500,9 @@
       peerConnection.ontrack = (event) => {
         remoteStream = event.streams[0];
         const remoteVideo = document.getElementById('remoteVideoCall');
-        remoteVideo.srcObject = remoteStream;
+        if (remoteVideo) {
+          remoteVideo.srcObject = remoteStream;
+        }
         showNotification('📹 Call connected!');
       };
       
@@ -1506,90 +1525,7 @@
       return peerConnection;
     }
 
-    async function startCall() {
-      if (!user || !user.partnerId) {
-        showNotification('Please connect with a partner first');
-        return;
-      }
-      
-      if (!partnerOnline) {
-        showNotification(`📡 ${user.partner} is offline`);
-        return;
-      }
-      
-      if (isCallActive) {
-        endCall();
-        return;
-      }
-      
-      if (isGettingMedia) {
-        showNotification('⏳ Please wait...');
-        return;
-      }
-      
-      try {
-        if (!hasMediaPermissions) {
-          const granted = await requestMediaPermissions();
-          if (!granted) return;
-        }
-        
-        if (!localStream) {
-          const stream = await getLocalStream();
-          if (!stream) return;
-        }
-        
-        // Setup fullscreen
-        document.getElementById('callFullscreen').classList.add('active');
-        document.getElementById('container').style.display = 'none';
-        document.getElementById('bottomNav').style.display = 'none';
-        document.getElementById('header').style.display = 'none';
-        
-        if (selectedMode === 'audio') {
-          document.getElementById('localVideoWrapper').style.display = 'none';
-          document.getElementById('remoteVideoWrapper').style.display = 'none';
-          document.getElementById('audioModeIndicator').style.display = 'block';
-          document.getElementById('callCamToggle').style.display = 'none';
-        } else {
-          document.getElementById('localVideoWrapper').style.display = 'block';
-          document.getElementById('remoteVideoWrapper').style.display = 'block';
-          document.getElementById('audioModeIndicator').style.display = 'none';
-          document.getElementById('callCamToggle').style.display = 'inline-block';
-        }
-        
-        const localVideo = document.getElementById('localVideoCall');
-        localVideo.srcObject = localStream;
-        
-        document.getElementById('remoteCallLabel').textContent = user.partner;
-        
-        createPeerConnection();
-        
-        const offer = await peerConnection.createOffer();
-        await peerConnection.setLocalDescription(offer);
-        
-        sendSignalingData({ type: 'offer', offer: offer });
-        
-        showNotification(`📞 Calling ${user.partner}...`);
-        
-      } catch (e) {
-        console.error('Error starting call:', e);
-        showNotification('❌ Failed to start call');
-        endCall();
-      }
-    }
-
-    function sendSignalingData(data) {
-      if (!user || !user.partnerId) return;
-      
-      data.from = user.id;
-      data.to = user.partnerId;
-      data.timestamp = firebase.firestore.FieldValue.serverTimestamp();
-      
-      db.collection('signaling').add(data).catch(e => {
-        console.warn('Failed to send signaling data:', e);
-      });
-    }
-
-    function listenForSignaling() {
+    function startSignalingListener() {
       if (signalingUnsubscribe) {
         signalingUnsubscribe();
         signalingUnsubscribe = null;
@@ -1606,35 +1542,142 @@
               const data = change.doc.data();
               if (data.from === user.id) return;
               
+              change.doc.ref.delete().catch(() => {});
+              
               if (data.type === 'reject') {
-                showNotification('Call rejected');
+                showNotification('📞 Call rejected by partner');
                 endCall();
-                change.doc.ref.delete().catch(() => {});
+                return;
+              }
+              
+              if (data.type === 'hangup') {
+                showNotification('📴 Call ended by partner');
+                endCall();
                 return;
               }
               
               handleSignalingData(data);
-              change.doc.ref.delete().catch(() => {});
             }
           });
         });
     }
 
-    async function handleSignalingData(data) {
-      if (!peerConnection) {
-        if (data.type === 'offer') {
-          await handleIncomingCall(data.offer);
-        }
+    async function startCall() {
+      if (!user || !user.partnerId) {
+        showNotification('Please connect with a partner first');
+        return;
+      }
+      
+      if (!partnerOnline) {
+        showNotification(`📡 ${user.partner} is offline`);
+        return;
+      }
+      
+      if (isCallActive) {
+        endCall();
         return;
       }
       
       try {
+        startSignalingListener();
+        
+        if (!hasMediaPermissions) {
+          const granted = await requestMediaPermissions();
+          if (!granted) {
+            if (signalingUnsubscribe) {
+              signalingUnsubscribe();
+              signalingUnsubscribe = null;
+            }
+            return;
+          }
+        }
+        
+        if (!localStream) {
+          const stream = await getLocalStream();
+          if (!stream) {
+            if (signalingUnsubscribe) {
+              signalingUnsubscribe();
+              signalingUnsubscribe = null;
+            }
+            return;
+          }
+        }
+        
+        const callFullscreen = document.getElementById('callFullscreen');
+        if (callFullscreen) {
+          callFullscreen.classList.add('active');
+        }
+        document.getElementById('container').style.display = 'none';
+        document.getElementById('bottomNav').style.display = 'none';
+        document.getElementById('header').style.display = 'none';
+        
+        if (selectedMode === 'audio') {
+          const localWrapper = document.getElementById('localVideoWrapper');
+          const remoteWrapper = document.getElementById('remoteVideoWrapper');
+          if (localWrapper) localWrapper.style.display = 'none';
+          if (remoteWrapper) remoteWrapper.style.display = 'none';
+          const camToggle = document.getElementById('callCamToggle');
+          if (camToggle) camToggle.style.display = 'none';
+        } else {
+          const localWrapper = document.getElementById('localVideoWrapper');
+          const remoteWrapper = document.getElementById('remoteVideoWrapper');
+          if (localWrapper) localWrapper.style.display = 'block';
+          if (remoteWrapper) remoteWrapper.style.display = 'block';
+          const camToggle = document.getElementById('callCamToggle');
+          if (camToggle) camToggle.style.display = 'inline-block';
+        }
+        
+        const localVideo = document.getElementById('localVideoCall');
+        if (localVideo) {
+          localVideo.srcObject = localStream;
+        }
+        
+        const remoteLabel = document.getElementById('remoteCallLabel');
+        if (remoteLabel) {
+          remoteLabel.textContent = user.partner;
+        }
+        
+        createPeerConnection();
+        
+        const offer = await peerConnection.createOffer();
+        await peerConnection.setLocalDescription(offer);
+        
+        sendSignalingData({ type: 'offer', offer: offer });
+        
+        showNotification(`📞 Calling ${user.partner}...`);
+        isCaller = true;
+        
+      } catch (e) {
+        console.error('Error starting call:', e);
+        showNotification('❌ Failed to start call: ' + e.message);
+        endCall();
+      }
+    }
+
+    function sendSignalingData(data) {
+      if (!user || !user.partnerId) return;
+      
+      data.from = user.id;
+      data.to = user.partnerId;
+      data.timestamp = firebase.firestore.FieldValue.serverTimestamp();
+      
+      db.collection('signaling').add(data).catch(e => {
+        console.warn('Failed to send signaling data:', e);
+      });
+    }
+
+    async function handleSignalingData(data) {
+      try {
         if (data.type === 'offer') {
-          await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
-          const answer = await peerConnection.createAnswer();
-          await peerConnection.setLocalDescription(answer);
-          sendSignalingData({ type: 'answer', answer: answer });
-        } else if (data.type === 'answer') {
+          if (!isCallActive) {
+            await handleIncomingCall(data.offer);
+          }
+          return;
+        }
+        
+        if (!peerConnection) return;
+        
+        if (data.type === 'answer') {
           await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
         } else if (data.type === 'ice-candidate') {
           if (data.candidate) {
@@ -1646,16 +1689,11 @@
           }
         }
       } catch (e) {
-        console.error('Error handling signaling:', e);
+        console.error('Error handling signaling data:', e);
       }
     }
 
     async function handleIncomingCall(offer) {
-      if (isGettingMedia) {
-        sendSignalingData({ type: 'reject', reason: 'busy' });
-        return;
-      }
-      
       try {
         if (!partnerOnline) {
           sendSignalingData({ type: 'reject', reason: 'offline' });
@@ -1679,27 +1717,39 @@
           }
         }
         
-        document.getElementById('callFullscreen').classList.add('active');
+        const callFullscreen = document.getElementById('callFullscreen');
+        if (callFullscreen) {
+          callFullscreen.classList.add('active');
+        }
         document.getElementById('container').style.display = 'none';
         document.getElementById('bottomNav').style.display = 'none';
         document.getElementById('header').style.display = 'none';
         
         if (selectedMode === 'audio') {
-          document.getElementById('localVideoWrapper').style.display = 'none';
-          document.getElementById('remoteVideoWrapper').style.display = 'none';
-          document.getElementById('audioModeIndicator').style.display = 'block';
-          document.getElementById('callCamToggle').style.display = 'none';
+          const localWrapper = document.getElementById('localVideoWrapper');
+          const remoteWrapper = document.getElementById('remoteVideoWrapper');
+          if (localWrapper) localWrapper.style.display = 'none';
+          if (remoteWrapper) remoteWrapper.style.display = 'none';
+          const camToggle = document.getElementById('callCamToggle');
+          if (camToggle) camToggle.style.display = 'none';
         } else {
-          document.getElementById('localVideoWrapper').style.display = 'block';
-          document.getElementById('remoteVideoWrapper').style.display = 'block';
-          document.getElementById('audioModeIndicator').style.display = 'none';
-          document.getElementById('callCamToggle').style.display = 'inline-block';
+          const localWrapper = document.getElementById('localVideoWrapper');
+          const remoteWrapper = document.getElementById('remoteVideoWrapper');
+          if (localWrapper) localWrapper.style.display = 'block';
+          if (remoteWrapper) remoteWrapper.style.display = 'block';
+          const camToggle = document.getElementById('callCamToggle');
+          if (camToggle) camToggle.style.display = 'inline-block';
         }
         
         const localVideo = document.getElementById('localVideoCall');
-        localVideo.srcObject = localStream;
+        if (localVideo) {
+          localVideo.srcObject = localStream;
+        }
         
-        document.getElementById('remoteCallLabel').textContent = user.partner;
+        const remoteLabel = document.getElementById('remoteCallLabel');
+        if (remoteLabel) {
+          remoteLabel.textContent = user.partner;
+        }
         
         createPeerConnection();
         
@@ -1710,6 +1760,7 @@
         
         isCallActive = true;
         startCallTimer();
+        isCaller = false;
         
         showNotification('📹 Call connected!');
         
@@ -1720,17 +1771,17 @@
           iceCandidatesQueue = [];
         }
         
-        listenForSignaling();
-        
       } catch (e) {
         console.error('Error handling incoming call:', e);
-        showNotification('❌ Failed to answer call');
+        showNotification('❌ Failed to answer call: ' + e.message);
         endCall();
       }
     }
 
     function endCall() {
       isCallActive = false;
+      isCaller = false;
+      
       if (callTimer) {
         clearInterval(callTimer);
         callTimer = null;
@@ -1742,10 +1793,16 @@
       }
       
       remoteStream = null;
-      document.getElementById('remoteVideoCall').srcObject = null;
-      document.getElementById('localVideoCall').srcObject = null;
+      const remoteVideo = document.getElementById('remoteVideoCall');
+      if (remoteVideo) remoteVideo.srcObject = null;
       
-      document.getElementById('callFullscreen').classList.remove('active');
+      const localVideo = document.getElementById('localVideoCall');
+      if (localVideo) localVideo.srcObject = null;
+      
+      const callFullscreen = document.getElementById('callFullscreen');
+      if (callFullscreen) {
+        callFullscreen.classList.remove('active');
+      }
       document.getElementById('container').style.display = 'block';
       document.getElementById('bottomNav').style.display = 'flex';
       document.getElementById('header').style.display = 'block';
@@ -1761,11 +1818,16 @@
       
       iceCandidatesQueue = [];
       
-      document.getElementById('audioModeIndicator').style.display = 'none';
-      document.getElementById('localVideoWrapper').style.display = 'block';
-      document.getElementById('remoteVideoWrapper').style.display = 'block';
-      document.getElementById('callCamToggle').style.display = 'inline-block';
-      document.getElementById('correctionFlash').classList.remove('active');
+      const localWrapper = document.getElementById('localVideoWrapper');
+      const remoteWrapper = document.getElementById('remoteVideoWrapper');
+      if (localWrapper) localWrapper.style.display = 'block';
+      if (remoteWrapper) remoteWrapper.style.display = 'block';
+      
+      const camToggle = document.getElementById('callCamToggle');
+      if (camToggle) camToggle.style.display = 'inline-block';
+      
+      const flash = document.getElementById('correctionFlash');
+      if (flash) flash.classList.remove('active');
       
       showNotification('📴 Call ended');
     }
@@ -1777,8 +1839,11 @@
         const elapsed = Math.floor((Date.now() - callStartTime) / 1000);
         const mins = Math.floor(elapsed / 60);
         const secs = elapsed % 60;
-        document.getElementById('remoteCallLabel').textContent = user.partner + ' · ' + 
-          String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+        const remoteLabel = document.getElementById('remoteCallLabel');
+        if (remoteLabel) {
+          remoteLabel.textContent = user.partner + ' · ' + 
+            String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+        }
       }, 1000);
     }
 
@@ -1788,8 +1853,11 @@
       isMicOn = !isMicOn;
       const audioTracks = localStream.getAudioTracks();
       audioTracks.forEach(track => track.enabled = isMicOn);
-      document.getElementById('callMicToggle').innerHTML = isMicOn ? '<i class="fas fa-microphone"></i> Mic' : '<i class="fas fa-microphone-slash"></i> Mic';
-      document.getElementById('callMicToggle').className = isMicOn ? 'outline' : 'mic-off';
+      const btn = document.getElementById('callMicToggle');
+      if (btn) {
+        btn.innerHTML = isMicOn ? '<i class="fas fa-microphone"></i> Mic' : '<i class="fas fa-microphone-slash"></i> Mic';
+        btn.className = isMicOn ? 'outline' : 'mic-off';
+      }
     }
 
     function toggleCallCam() {
@@ -1797,8 +1865,11 @@
       isCameraOn = !isCameraOn;
       const videoTracks = localStream.getVideoTracks();
       videoTracks.forEach(track => track.enabled = isCameraOn);
-      document.getElementById('callCamToggle').innerHTML = isCameraOn ? '<i class="fas fa-video"></i> Cam' : '<i class="fas fa-video-slash"></i> Cam';
-      document.getElementById('callCamToggle').className = isCameraOn ? 'outline' : 'cam-off';
+      const btn = document.getElementById('callCamToggle');
+      if (btn) {
+        btn.innerHTML = isCameraOn ? '<i class="fas fa-video"></i> Cam' : '<i class="fas fa-video-slash"></i> Cam';
+        btn.className = isCameraOn ? 'outline' : 'cam-off';
+      }
     }
 
     function sendCorrectionAlert() {
@@ -1816,8 +1887,10 @@
       });
       
       const flash = document.getElementById('correctionFlash');
-      flash.classList.add('active');
-      setTimeout(() => flash.classList.remove('active'), 1500);
+      if (flash) {
+        flash.classList.add('active');
+        setTimeout(() => flash.classList.remove('active'), 1500);
+      }
       
       showNotification('🔔 Correction alert sent to ' + user.partner);
     }
@@ -1833,11 +1906,20 @@
             const alert = doc.data();
             
             const flash = document.getElementById('correctionFlash');
-            flash.classList.add('active');
-            setTimeout(() => flash.classList.remove('active'), 1500);
+            if (flash) {
+              flash.classList.add('active');
+              setTimeout(() => flash.classList.remove('active'), 1500);
+            }
             
-            document.getElementById('attentionPartnerName').innerText = alert.fromName || 'Your partner';
-            document.getElementById('attentionOverlay').classList.add('show');
+            const partnerName = document.getElementById('attentionPartnerName');
+            if (partnerName) {
+              partnerName.innerText = alert.fromName || 'Your partner';
+            }
+            
+            const overlay = document.getElementById('attentionOverlay');
+            if (overlay) {
+              overlay.classList.add('show');
+            }
             
             if (navigator.vibrate) {
               navigator.vibrate([200, 100, 200]);
@@ -1854,7 +1936,10 @@
     }
 
     function dismissAttention() {
-      document.getElementById('attentionOverlay').classList.remove('show');
+      const overlay = document.getElementById('attentionOverlay');
+      if (overlay) {
+        overlay.classList.remove('show');
+      }
       if (attentionTimeout) {
         clearTimeout(attentionTimeout);
         attentionTimeout = null;
@@ -1867,12 +1952,12 @@
       const localWrapper = document.getElementById('localVideoWrapper');
       
       if (dominantVideo === 'remote') {
-        remoteWrapper.classList.remove('dominant');
-        localWrapper.classList.add('dominant');
+        if (remoteWrapper) remoteWrapper.classList.remove('dominant');
+        if (localWrapper) localWrapper.classList.add('dominant');
         dominantVideo = 'local';
       } else {
-        localWrapper.classList.remove('dominant');
-        remoteWrapper.classList.add('dominant');
+        if (localWrapper) localWrapper.classList.remove('dominant');
+        if (remoteWrapper) remoteWrapper.classList.add('dominant');
         dominantVideo = 'remote';
       }
     }
@@ -1880,7 +1965,9 @@
     // ============ NAVIGATION ============
     function switchPage(pageId) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      document.getElementById(pageId).classList.add('active');
+      const page = document.getElementById(pageId);
+      if (page) page.classList.add('active');
+      
       document.querySelectorAll('#bottomNav button').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.page === pageId);
       });
@@ -1916,18 +2003,21 @@
       const langNames = {
         en: 'English', ar: 'العربية', ha: 'Hausa', ur: 'اردو', tr: 'Türkçe', fr: 'Français', id: 'Bahasa Indonesia'
       };
-      document.getElementById('langLabel').innerText = langNames[currentLang] || 'English';
+      const label = document.getElementById('langLabel');
+      if (label) label.innerText = langNames[currentLang] || 'English';
     }
 
     // ============ EVENT LISTENERS ============
     document.addEventListener('click', function(e) {
       const remoteWrapper = document.getElementById('remoteVideoWrapper');
       const localWrapper = document.getElementById('localVideoWrapper');
-      if (e.target.closest('#remoteVideoWrapper') && remoteWrapper) {
-        if (selectedMode === 'video') toggleDominantVideo();
-      }
-      if (e.target.closest('#localVideoWrapper') && localWrapper) {
-        if (selectedMode === 'video') toggleDominantVideo();
+      if (selectedMode === 'video') {
+        if (e.target.closest('#remoteVideoWrapper') && remoteWrapper) {
+          toggleDominantVideo();
+        }
+        if (e.target.closest('#localVideoWrapper') && localWrapper) {
+          toggleDominantVideo();
+        }
       }
     });
 
