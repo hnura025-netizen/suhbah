@@ -1670,6 +1670,7 @@
 
     async function startCallAfterAccept(partnerId, partnerName) {
       try {
+        // Get media permissions
         if (!hasMediaPermissions) {
           const granted = await requestMediaPermissions();
           if (!granted) {
@@ -1678,6 +1679,7 @@
           }
         }
         
+        // Get local stream
         if (!localStream) {
           const stream = await getLocalStream();
           if (!stream) {
@@ -1845,7 +1847,6 @@
         if (remoteVideo) {
           remoteVideo.srcObject = remoteStream;
           remoteVideo.style.display = 'block';
-          document.getElementById('remotePlaceholder').style.display = 'none';
         }
         showNotification('📹 Partner connected!');
       };
