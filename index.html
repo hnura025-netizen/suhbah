@@ -9,6 +9,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
   <style>
+    /* ... (keep all existing styles, same as before) ... */
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
     body { background: #f2f6f5; padding-bottom: 80px; transition: background 0.2s, color 0.2s; }
     header { background: #0f766e; color: white; padding: 10px 16px 8px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.06); position: sticky; top: 0; z-index: 20; }
@@ -1620,6 +1621,8 @@
       incomingCallData = null;
     }
 
+    // ============ CALL FUNCTIONS - COMPLETELY REWRITTEN ============
+    
     async function acceptCall() {
       if (!incomingCallData || isProcessingCall) return;
       
@@ -1633,7 +1636,7 @@
         
         hideIncomingCall();
         
-        // First ensure we have a partner set
+        // Ensure we have a partner set
         if (!user.partnerId) {
           user.partner = incomingCallData.fromName || 'Partner';
           user.partnerId = incomingCallData.fromId;
@@ -1641,10 +1644,10 @@
           updatePartnerDisplay();
         }
         
-        // Start the call with a small delay to ensure everything is set up
+        // Start the call with a small delay
         setTimeout(async () => {
           try {
-            await startCall(incomingCallData.fromId, incomingCallData.fromName);
+            await startCallAfterAccept(incomingCallData.fromId, incomingCallData.fromName);
           } catch (e) {
             console.error('Error starting call after accept:', e);
             showNotification('Failed to connect call: ' + e.message);
@@ -1656,6 +1659,75 @@
         console.error('Error accepting call:', e);
         showNotification('Failed to accept call: ' + e.message);
         isProcessingCall = false;
+      }
+    }
+
+    async function startCallAfterAccept(partnerId, partnerName) {
+      try {
+        // 1. Get media permissions
+        if (!hasMediaPermissions) {
+          const granted = await requestMediaPermissions();
+          if (!granted) {
+            showNotification('Media permissions required');
+            return;
+          }
+        }
+        
+        // 2. Get local stream
+        if (!localStream) {
+          const stream = await getLocalStream();
+          if (!stream) {
+            showNotification('Could not access camera/microphone');
+            return;
+          }
+        }
+        
+        // 3. Setup fullscreen call UI
+        const callFullscreen = document.getElementById('callFullscreen');
+        if (callFullscreen) {
+          callFullscreen.classList.add('active');
+        }
+        const container = document.getElementById('container');
+        const bottomNav = document.getElementById('bottomNav');
+        const header = document.querySelector('header');
+        if (container) container.style.display = 'none';
+        if (bottomNav) bottomNav.style.display = 'none';
+        if (header) header.style.display = 'none';
+        
+        // 4. Setup video/audio UI
+        setupCallUI();
+        
+        // 5. Set local video
+        const localVideo = document.getElementById('localVideoCall');
+        if (localVideo && localStream) {
+          localVideo.srcObject = localStream;
+        }
+        
+        // 6. Set remote label
+        const remoteLabel = document.getElementById('remoteCallLabel');
+        if (remoteLabel) {
+          remoteLabel.textContent = user.partner || 'Partner';
+        }
+        
+        // 7. Start signaling listener
+        startSignalingListener();
+        
+        // 8. Create peer connection and send offer
+        createPeerConnection();
+        
+        if (pc) {
+          const offer = await pc.createOffer();
+          await pc.setLocalDescription(offer);
+          sendSignalingData({ type: 'offer', offer: offer });
+          
+          showNotification(`📞 Calling ${user.partner || 'Partner'}...`);
+          isCaller = true;
+        }
+        
+      } catch (e) {
+        console.error('Error in startCallAfterAccept:', e);
+        showNotification('Failed to start call: ' + e.message);
+        endCall();
       }
     }
 
@@ -1821,135 +1893,6 @@
             }
           });
         });
-    }
-
-    async function startCall(partnerId, partnerName) {
-      if (isCallActive) {
-        endCall();
-        return;
-      }
-      
-      try {
-        // Set partner if not already set
-        if (partnerId && !user.partnerId) {
-          user.partner = partnerName || 'Partner';
-          user.partnerId = partnerId;
-          localStorage.setItem('musaffahUser', JSON.stringify(user));
-          updatePartnerDisplay();
-        }
-        
-        // Start signaling listener
-        startSignalingListener();
-        
-        // Get media permissions
-        if (!hasMediaPermissions) {
-          const granted = await requestMediaPermissions();
-          if (!granted) {
-            if (signalingUnsubscribe) {
-              signalingUnsubscribe();
-              signalingUnsubscribe = null;
-            }
-            return;
-          }
-        }
-        
-        // Get local stream
-        if (!localStream) {
-          const stream = await getLocalStream();
-          if (!stream) {
-            if (signalingUnsubscribe) {
-              signalingUnsubscribe();
-              signalingUnsubscribe = null;
-            }
-            return;
-          }
-        }
-        
-        // Setup fullscreen
-        const callFullscreen = document.getElementById('callFullscreen');
-        if (callFullscreen) {
-          callFullscreen.classList.add('active');
-        }
-        const container = document.getElementById('container');
-        const bottomNav = document.getElementById('bottomNav');
-        const header = document.querySelector('header');
-        if (container) container.style.display = 'none';
-        if (bottomNav) bottomNav.style.display = 'none';
-        if (header) header.style.display = 'none';
-        
-        setupCallUI();
-        
-        const localVideo = document.getElementById('localVideoCall');
-        if (localVideo && localStream) {
-          localVideo.srcObject = localStream;
-        }
-        
-        const remoteLabel = document.getElementById('remoteCallLabel');
-        if (remoteLabel) {
-          remoteLabel.textContent = user.partner || 'Partner';
-        }
-        
-        // Create peer connection
-        createPeerConnection();
-        
-        // Create and send offer
-        const offer = await pc.createOffer();
-        await pc.setLocalDescription(offer);
-        
-        sendSignalingData({ type: 'offer', offer: offer });
-        
-        showNotification(`📞 Calling ${user.partner || 'Partner'}...`);
-        isCaller = true;
-        
-      } catch (e) {
-        console.error('Error starting call:', e);
-        showNotification('❌ Failed to start call: ' + e.message);
-        endCall();
-      }
-    }
-
-    function setupCallUI() {
-      if (selectedMode === 'audio') {
-        const localWrapper = document.getElementById('localVideoWrapper');
-        const remoteWrapper = document.getElementById('remoteVideoWrapper');
-        if (localWrapper) {
-          localWrapper.style.display = 'none';
-          localWrapper.classList.remove('dominant');
-        }
-        if (remoteWrapper) {
-          remoteWrapper.style.display = 'none';
-          remoteWrapper.classList.remove('dominant');
-        }
-        const camToggle = document.getElementById('callCamToggle');
-        if (camToggle) camToggle.style.display = 'none';
-      } else {
-        const localWrapper = document.getElementById('localVideoWrapper');
-        const remoteWrapper = document.getElementById('remoteVideoWrapper');
-        if (localWrapper) {
-          localWrapper.style.display = 'block';
-          localWrapper.classList.remove('dominant');
-        }
-        if (remoteWrapper) {
-          remoteWrapper.style.display = 'block';
-          remoteWrapper.classList.add('dominant');
-        }
-        const camToggle = document.getElementById('callCamToggle');
-        if (camToggle) camToggle.style.display = 'inline-block';
-        
-        const videoGrid = document.getElementById('videoGrid');
-        if (videoGrid) {
-          const localWrapper2 = document.getElementById('localVideoWrapper');
-          if (localWrapper2) {
-            localWrapper2.style.position = 'absolute';
-            localWrapper2.style.bottom = '20px';
-            localWrapper2.style.right = '20px';
-            localWrapper2.style.width = '180px';
-            localWrapper2.style.height = '120px';
-            localWrapper2.style.top = 'auto';
-            localWrapper2.style.left = 'auto';
-          }
-        }
-      }
     }
 
     function sendSignalingData(data) {
@@ -2148,6 +2091,50 @@
       }, 1000);
     }
 
+    function setupCallUI() {
+      if (selectedMode === 'audio') {
+        const localWrapper = document.getElementById('localVideoWrapper');
+        const remoteWrapper = document.getElementById('remoteVideoWrapper');
+        if (localWrapper) {
+          localWrapper.style.display = 'none';
+          localWrapper.classList.remove('dominant');
+        }
+        if (remoteWrapper) {
+          remoteWrapper.style.display = 'none';
+          remoteWrapper.classList.remove('dominant');
+        }
+        const camToggle = document.getElementById('callCamToggle');
+        if (camToggle) camToggle.style.display = 'none';
+      } else {
+        const localWrapper = document.getElementById('localVideoWrapper');
+        const remoteWrapper = document.getElementById('remoteVideoWrapper');
+        if (localWrapper) {
+          localWrapper.style.display = 'block';
+          localWrapper.classList.remove('dominant');
+        }
+        if (remoteWrapper) {
+          remoteWrapper.style.display = 'block';
+          remoteWrapper.classList.add('dominant');
+        }
+        const camToggle = document.getElementById('callCamToggle');
+        if (camToggle) camToggle.style.display = 'inline-block';
+        
+        const videoGrid = document.getElementById('videoGrid');
+        if (videoGrid) {
+          const localWrapper2 = document.getElementById('localVideoWrapper');
+          if (localWrapper2) {
+            localWrapper2.style.position = 'absolute';
+            localWrapper2.style.bottom = '20px';
+            localWrapper2.style.right = '20px';
+            localWrapper2.style.width = '180px';
+            localWrapper2.style.height = '120px';
+            localWrapper2.style.top = 'auto';
+            localWrapper2.style.left = 'auto';
+          }
+        }
+      }
+    }
+
     // ============ START CALL FROM BUTTON ============
     async function startCallFromButton() {
       if (!user || !user.partnerId) {
@@ -2188,7 +2175,7 @@
         // Start the actual call after a delay
         setTimeout(async () => {
           try {
-            await startCall(user.partnerId, user.partner);
+            await startCallAfterAccept(user.partnerId, user.partner);
           } catch (e) {
             console.error('Error starting call:', e);
           }
