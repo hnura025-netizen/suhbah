@@ -266,7 +266,6 @@
     .attention-overlay .content .icon { font-size: 3rem; display: block; margin-bottom: 10px; }
     .attention-overlay .content .close-btn { margin-top: 10px; width: auto; padding: 8px 24px; }
 
-    /* Incoming Call Popup */
     .incoming-call-overlay {
       position: fixed;
       top: 0;
@@ -657,6 +656,9 @@
     let isCaller = false;
     let incomingCallData = null;
     let incomingCallUnsubscribe = null;
+    let userListenerUnsubscribe = null;
+    let partnerListenerUnsubscribe = null;
+    let connectionRequestsUnsubscribe = null;
 
     // ============ UI HELPERS ============
     function showStep(stepId) {
@@ -924,6 +926,8 @@
     // ============ SIGN OUT ============
     async function signOut() {
       if (isCallActive) endCall();
+      
+      // Clean up all listeners
       if (partnerStatusUnsubscribe) {
         partnerStatusUnsubscribe();
         partnerStatusUnsubscribe = null;
@@ -935,6 +939,18 @@
       if (incomingCallUnsubscribe) {
         incomingCallUnsubscribe();
         incomingCallUnsubscribe = null;
+      }
+      if (userListenerUnsubscribe) {
+        userListenerUnsubscribe();
+        userListenerUnsubscribe = null;
+      }
+      if (partnerListenerUnsubscribe) {
+        partnerListenerUnsubscribe();
+        partnerListenerUnsubscribe = null;
+      }
+      if (connectionRequestsUnsubscribe) {
+        connectionRequestsUnsubscribe();
+        connectionRequestsUnsubscribe = null;
       }
       
       if (user && user.id) {
@@ -953,6 +969,37 @@
       if (appMain) appMain.classList.add('hidden');
       showStep('authStep1');
       showNotification('👋 Signed out');
+    }
+
+    // ============ REAL-TIME USER LISTENER ============
+    function startUserListener() {
+      if (userListenerUnsubscribe) {
+        userListenerUnsubscribe();
+        userListenerUnsubscribe = null;
+      }
+      
+      if (!user || !user.id) return;
+      
+      userListenerUnsubscribe = db.collection('users').doc(user.id)
+        .onSnapshot((doc) => {
+          if (doc.exists) {
+            const data = doc.data();
+            // Update local user data in real-time
+            user.partner = data.partner || '';
+            user.partnerId = data.partnerId || '';
+            user.pendingRequests = data.pendingRequests || [];
+            user.sentRequests = data.sentRequests || [];
+            
+            // Update UI
+            updatePartnerDisplay();
+            listenForConnectionRequests();
+            
+            // If partner changed, update status
+            if (user.partnerId) {
+              listenPartnerStatus();
+            }
+          }
+        });
     }
 
     // ============ LOAD APP ============
@@ -1049,6 +1096,9 @@
 
       renderJuz();
       updatePartnerDisplay();
+      
+      // Start real-time listeners
+      startUserListener();
       listenForConnectionRequests();
       listenForIncomingCalls();
       loadAllUsers();
@@ -1175,14 +1225,19 @@
       if (statStreak) statStreak.innerText = user.streak;
     }
 
-    // ============ PARTNER SEARCH ============
+    // ============ PARTNER SEARCH (Real-time) ============
     function loadAllUsers() {
       if (!user) return;
       
-      db.collection('users')
-        .where('online', '==', true)
-        .get()
-        .then((snapshot) => {
+      // Real-time listener for available partners
+      if (connectionRequestsUnsubscribe) {
+        connectionRequestsUnsubscribe();
+        connectionRequestsUnsubscribe = null;
+      }
+      
+      // We'll use a combined query approach - listen to all users
+      connectionRequestsUnsubscribe = db.collection('users')
+        .onSnapshot((snapshot) => {
           const users = [];
           snapshot.forEach(doc => {
             const data = doc.data();
@@ -1191,33 +1246,13 @@
                 id: doc.id,
                 name: data.name || 'Reader',
                 plan: data.plan || '7',
-                online: true,
+                online: data.online === true,
                 regionName: data.regionName || 'Unknown'
               });
             }
           });
-          
-          db.collection('users')
-            .where('online', '==', false)
-            .get()
-            .then((snapshot2) => {
-              snapshot2.forEach(doc => {
-                const data = doc.data();
-                if (doc.id !== user.id && !data.partner && !data.partnerId && data.name) {
-                  if (!users.find(u => u.id === doc.id)) {
-                    users.push({
-                      id: doc.id,
-                      name: data.name || 'Reader',
-                      plan: data.plan || '7',
-                      online: false,
-                      regionName: data.regionName || 'Unknown'
-                    });
-                  }
-                }
-              });
-              allUsers = users;
-              searchPartners();
-            });
+          allUsers = users;
+          renderSearchResults();
         });
     }
 
@@ -1329,7 +1364,7 @@
         }
         
         showNotification('✅ Request sent!');
-        loadAllUsers();
+        // Search results will update automatically via real-time listener
         
       } catch (e) {
         console.error('Error sending request:', e);
@@ -1338,42 +1373,41 @@
     }
 
     function listenForConnectionRequests() {
+      // This is now handled by the user listener
       if (!user) return;
       
-      db.collection('users').doc(user.id)
-        .onSnapshot((doc) => {
-          if (!doc.exists) return;
-          const data = doc.data();
-          const requests = data.pendingRequests || [];
-          const container = document.getElementById('connectionRequests');
-          if (!container) return;
-          
-          if (requests.length === 0) {
-            container.innerHTML = `
-              <div class="empty-state" style="padding:15px;">
-                <p style="font-size:0.8rem;">No pending requests.</p>
-              </div>
-            `;
-            return;
-          }
+      // The user listener already updates pendingRequests
+      // Just render them when they change
+      const container = document.getElementById('connectionRequests');
+      if (!container) return;
+      
+      const requests = user.pendingRequests || [];
+      
+      if (requests.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state" style="padding:15px;">
+            <p style="font-size:0.8rem;">No pending requests.</p>
+          </div>
+        `;
+        return;
+      }
 
-          let html = '';
-          requests.forEach((req, index) => {
-            html += `
-              <div class="request-item">
-                <div class="info">
-                  <div class="name"><i class="fas fa-user-circle"></i> ${req.fromName || 'Reader'}</div>
-                  <div class="detail">📖 ${req.fromPlan || '7'} day plan</div>
-                </div>
-                <div class="actions">
-                  <button onclick="handlePartnerRequest('${req.fromId}', 'accept', ${index})" class="success"><i class="fas fa-check"></i> Accept</button>
-                  <button onclick="handlePartnerRequest('${req.fromId}', 'reject', ${index})" class="outline danger"><i class="fas fa-times"></i> Reject</button>
-                </div>
-              </div>
-            `;
-          });
-          container.innerHTML = html;
-        });
+      let html = '';
+      requests.forEach((req, index) => {
+        html += `
+          <div class="request-item">
+            <div class="info">
+              <div class="name"><i class="fas fa-user-circle"></i> ${req.fromName || 'Reader'}</div>
+              <div class="detail">📖 ${req.fromPlan || '7'} day plan</div>
+            </div>
+            <div class="actions">
+              <button onclick="handlePartnerRequest('${req.fromId}', 'accept', ${index})" class="success"><i class="fas fa-check"></i> Accept</button>
+              <button onclick="handlePartnerRequest('${req.fromId}', 'reject', ${index})" class="outline danger"><i class="fas fa-times"></i> Reject</button>
+            </div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
     }
 
     async function handlePartnerRequest(fromId, action, index) {
@@ -1441,7 +1475,6 @@
           showNotification('🎉 Connected with ' + partnerName + '!');
           
           updatePartnerDisplay();
-          loadAllUsers();
           
           if (user.partnerId) {
             listenPartnerStatus();
@@ -1455,7 +1488,6 @@
           user.pendingRequests = currentPending;
           localStorage.setItem('musaffahUser', JSON.stringify(user));
           showNotification('Request rejected');
-          loadAllUsers();
         }
         
       } catch (e) {
@@ -1475,7 +1507,7 @@
           <h3 style="font-size:0.9rem;" id="partnerNameDisplay">${user.partner}</h3>
           <p style="font-size:0.7rem; opacity:0.6;" id="partnerPlanDisplay">🤝 Connected · ${user.plan} day plan</p>
           <button onclick="disconnectPartner()" class="danger" style="margin-top:6px; font-size:0.8rem;"><i class="fas fa-unlink"></i> Disconnect</button>
-          <button onclick="startCall()" class="success" style="margin-top:6px; font-size:0.8rem;"><i class="fas fa-phone"></i> Start Call</button>
+          <button onclick="startCallFromButton()" class="success" style="margin-top:6px; font-size:0.8rem;"><i class="fas fa-phone"></i> Start Call</button>
         `;
       } else {
         display.innerHTML = `
@@ -1528,7 +1560,6 @@
         localStorage.setItem('musaffahUser', JSON.stringify(user));
         
         updatePartnerDisplay();
-        loadAllUsers();
         
         showNotification('Disconnected from ' + partnerName);
         
@@ -1538,7 +1569,7 @@
       }
     }
 
-    // ============ PARTNER ONLINE STATUS ============
+    // ============ PARTNER ONLINE STATUS (Real-time) ============
     function listenPartnerStatus() {
       if (partnerStatusUnsubscribe) {
         partnerStatusUnsubscribe();
@@ -1556,7 +1587,7 @@
         });
     }
 
-    // ============ INCOMING CALL LISTENER ============
+    // ============ INCOMING CALL LISTENER (Real-time) ============
     function listenForIncomingCalls() {
       if (incomingCallUnsubscribe) {
         incomingCallUnsubscribe();
@@ -2115,6 +2146,11 @@
         return;
       }
       
+      if (isCallActive) {
+        showNotification('Call already active');
+        return;
+      }
+      
       // Send incoming call notification to partner
       try {
         await db.collection('incomingCalls').add({
@@ -2369,7 +2405,6 @@
       });
       
       if (pageId === 'pageMusaffah') {
-        loadAllUsers();
         if (user && user.partner) {
           listenPartnerStatus();
         }
@@ -2377,12 +2412,15 @@
     }
 
     document.addEventListener('DOMContentLoaded', function() {
-      document.getElementById('bottomNav').addEventListener('click', function(e) {
-        const btn = e.target.closest('button');
-        if (!btn) return;
-        const page = btn.dataset.page;
-        if (page) switchPage(page);
-      });
+      const nav = document.getElementById('bottomNav');
+      if (nav) {
+        nav.addEventListener('click', function(e) {
+          const btn = e.target.closest('button');
+          if (!btn) return;
+          const page = btn.dataset.page;
+          if (page) switchPage(page);
+        });
+      }
       
       setupDrag();
     });
@@ -2421,16 +2459,13 @@
       }
     });
 
-    // Override the startCall button
-    document.addEventListener('DOMContentLoaded', function() {
-      const startCallBtn = document.querySelector('#partnerDisplay .success');
-      if (startCallBtn) {
-        startCallBtn.onclick = startCallFromButton;
-      }
-    });
-
     // ============ START ============
     listenForCorrectionAlerts();
+    
+    // Fix for DOMContentLoaded if already loaded
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      // DOM already loaded
+    }
   </script>
 </body>
 </html>
