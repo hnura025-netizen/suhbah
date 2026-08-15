@@ -657,8 +657,8 @@
     let incomingCallData = null;
     let incomingCallUnsubscribe = null;
     let userListenerUnsubscribe = null;
-    let partnerListenerUnsubscribe = null;
     let connectionRequestsUnsubscribe = null;
+    let isProcessingCall = false;
 
     // ============ UI HELPERS ============
     function showStep(stepId) {
@@ -927,7 +927,6 @@
     async function signOut() {
       if (isCallActive) endCall();
       
-      // Clean up all listeners
       if (partnerStatusUnsubscribe) {
         partnerStatusUnsubscribe();
         partnerStatusUnsubscribe = null;
@@ -943,10 +942,6 @@
       if (userListenerUnsubscribe) {
         userListenerUnsubscribe();
         userListenerUnsubscribe = null;
-      }
-      if (partnerListenerUnsubscribe) {
-        partnerListenerUnsubscribe();
-        partnerListenerUnsubscribe = null;
       }
       if (connectionRequestsUnsubscribe) {
         connectionRequestsUnsubscribe();
@@ -984,17 +979,14 @@
         .onSnapshot((doc) => {
           if (doc.exists) {
             const data = doc.data();
-            // Update local user data in real-time
             user.partner = data.partner || '';
             user.partnerId = data.partnerId || '';
             user.pendingRequests = data.pendingRequests || [];
             user.sentRequests = data.sentRequests || [];
             
-            // Update UI
             updatePartnerDisplay();
             listenForConnectionRequests();
             
-            // If partner changed, update status
             if (user.partnerId) {
               listenPartnerStatus();
             }
@@ -1097,7 +1089,6 @@
       renderJuz();
       updatePartnerDisplay();
       
-      // Start real-time listeners
       startUserListener();
       listenForConnectionRequests();
       listenForIncomingCalls();
@@ -1229,13 +1220,11 @@
     function loadAllUsers() {
       if (!user) return;
       
-      // Real-time listener for available partners
       if (connectionRequestsUnsubscribe) {
         connectionRequestsUnsubscribe();
         connectionRequestsUnsubscribe = null;
       }
       
-      // We'll use a combined query approach - listen to all users
       connectionRequestsUnsubscribe = db.collection('users')
         .onSnapshot((snapshot) => {
           const users = [];
@@ -1364,7 +1353,6 @@
         }
         
         showNotification('✅ Request sent!');
-        // Search results will update automatically via real-time listener
         
       } catch (e) {
         console.error('Error sending request:', e);
@@ -1373,11 +1361,8 @@
     }
 
     function listenForConnectionRequests() {
-      // This is now handled by the user listener
       if (!user) return;
       
-      // The user listener already updates pendingRequests
-      // Just render them when they change
       const container = document.getElementById('connectionRequests');
       if (!container) return;
       
@@ -1603,7 +1588,6 @@
           snapshot.docChanges().forEach(change => {
             if (change.type === 'added') {
               const data = change.doc.data();
-              // Check if call is still valid
               if (data.status === 'ringing') {
                 showIncomingCall(data);
                 incomingCallData = { id: change.doc.id, ...data };
@@ -1625,7 +1609,6 @@
       
       if (overlay) overlay.classList.add('show');
       
-      // Vibrate
       if (navigator.vibrate) {
         navigator.vibrate([200, 100, 200, 100, 200]);
       }
@@ -1638,9 +1621,9 @@
     }
 
     async function acceptCall() {
-      if (!incomingCallData) return;
+      if (!incomingCallData || isProcessingCall) return;
       
-      hideIncomingCall();
+      isProcessingCall = true;
       
       try {
         // Update the call status to accepted
@@ -1648,12 +1631,31 @@
           status: 'accepted'
         });
         
-        // Start the call
-        await startCall(incomingCallData.fromId, incomingCallData.fromName);
+        hideIncomingCall();
+        
+        // First ensure we have a partner set
+        if (!user.partnerId) {
+          user.partner = incomingCallData.fromName || 'Partner';
+          user.partnerId = incomingCallData.fromId;
+          localStorage.setItem('musaffahUser', JSON.stringify(user));
+          updatePartnerDisplay();
+        }
+        
+        // Start the call with a small delay to ensure everything is set up
+        setTimeout(async () => {
+          try {
+            await startCall(incomingCallData.fromId, incomingCallData.fromName);
+          } catch (e) {
+            console.error('Error starting call after accept:', e);
+            showNotification('Failed to connect call: ' + e.message);
+          }
+          isProcessingCall = false;
+        }, 500);
         
       } catch (e) {
         console.error('Error accepting call:', e);
         showNotification('Failed to accept call: ' + e.message);
+        isProcessingCall = false;
       }
     }
 
@@ -1836,8 +1838,10 @@
           updatePartnerDisplay();
         }
         
+        // Start signaling listener
         startSignalingListener();
         
+        // Get media permissions
         if (!hasMediaPermissions) {
           const granted = await requestMediaPermissions();
           if (!granted) {
@@ -1849,6 +1853,7 @@
           }
         }
         
+        // Get local stream
         if (!localStream) {
           const stream = await getLocalStream();
           if (!stream) {
@@ -1875,7 +1880,7 @@
         setupCallUI();
         
         const localVideo = document.getElementById('localVideoCall');
-        if (localVideo) {
+        if (localVideo && localStream) {
           localVideo.srcObject = localStream;
         }
         
@@ -1884,8 +1889,10 @@
           remoteLabel.textContent = user.partner || 'Partner';
         }
         
+        // Create peer connection
         createPeerConnection();
         
+        // Create and send offer
         const offer = await pc.createOffer();
         await pc.setLocalDescription(offer);
         
@@ -1929,7 +1936,6 @@
         const camToggle = document.getElementById('callCamToggle');
         if (camToggle) camToggle.style.display = 'inline-block';
         
-        // Reset local video position
         const videoGrid = document.getElementById('videoGrid');
         if (videoGrid) {
           const localWrapper2 = document.getElementById('localVideoWrapper');
@@ -1987,6 +1993,7 @@
 
     async function handleIncomingCall(offer) {
       try {
+        // Get media permissions
         if (!hasMediaPermissions) {
           const granted = await requestMediaPermissions();
           if (!granted) {
@@ -1995,6 +2002,7 @@
           }
         }
         
+        // Get local stream
         if (!localStream) {
           const stream = await getLocalStream();
           if (!stream) {
@@ -2018,7 +2026,7 @@
         setupCallUI();
         
         const localVideo = document.getElementById('localVideoCall');
-        if (localVideo) {
+        if (localVideo && localStream) {
           localVideo.srcObject = localStream;
         }
         
@@ -2027,8 +2035,10 @@
           remoteLabel.textContent = user.partner || 'Partner';
         }
         
+        // Create peer connection
         createPeerConnection();
         
+        // Set remote description and create answer
         await pc.setRemoteDescription(new RTCSessionDescription(offer));
         const answer = await pc.createAnswer();
         await pc.setLocalDescription(answer);
@@ -2040,6 +2050,7 @@
         
         showNotification('📹 Call connected!');
         
+        // Process queued ICE candidates
         if (iceCandidatesQueue.length > 0) {
           iceCandidatesQueue.forEach(candidate => {
             pc.addIceCandidate(new RTCIceCandidate(candidate));
@@ -2063,6 +2074,7 @@
     function endCall() {
       isCallActive = false;
       isCaller = false;
+      isProcessingCall = false;
       
       if (callTimer) {
         clearInterval(callTimer);
@@ -2070,7 +2082,9 @@
       }
       
       if (pc) {
-        pc.close();
+        try {
+          pc.close();
+        } catch (e) {}
         pc = null;
       }
       
@@ -2151,8 +2165,15 @@
         return;
       }
       
+      if (isProcessingCall) {
+        showNotification('⏳ Already processing a call...');
+        return;
+      }
+      
       // Send incoming call notification to partner
       try {
+        isProcessingCall = true;
+        
         await db.collection('incomingCalls').add({
           fromId: user.id,
           fromName: user.name || 'Reader',
@@ -2164,14 +2185,20 @@
         
         showNotification(`📞 Calling ${user.partner}...`);
         
-        // Start the actual call after a short delay
-        setTimeout(() => {
-          startCall(user.partnerId, user.partner);
+        // Start the actual call after a delay
+        setTimeout(async () => {
+          try {
+            await startCall(user.partnerId, user.partner);
+          } catch (e) {
+            console.error('Error starting call:', e);
+          }
+          isProcessingCall = false;
         }, 1000);
         
       } catch (e) {
         console.error('Error initiating call:', e);
         showNotification('Failed to call: ' + e.message);
+        isProcessingCall = false;
       }
     }
 
@@ -2461,11 +2488,6 @@
 
     // ============ START ============
     listenForCorrectionAlerts();
-    
-    // Fix for DOMContentLoaded if already loaded
-    if (document.readyState === 'complete' || document.readyState === 'interactive') {
-      // DOM already loaded
-    }
   </script>
 </body>
 </html>
