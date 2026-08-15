@@ -9,6 +9,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
   <style>
+    /* ... (keep all existing styles) ... */
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
     body { background: #f2f6f5; padding-bottom: 80px; transition: background 0.2s, color 0.2s; }
     header { background: #0f766e; color: white; padding: 10px 16px 8px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.06); position: sticky; top: 0; z-index: 20; }
@@ -654,7 +655,7 @@
     let iceCandidatesQueue = [];
     let attentionTimeout = null;
     let isCaller = false;
-    let incomingCallData = null;
+    let pendingCallData = null; // Store incoming call data here
     let incomingCallUnsubscribe = null;
     let userListenerUnsubscribe = null;
     let connectionRequestsUnsubscribe = null;
@@ -663,13 +664,11 @@
     // ============ UI HELPERS ============
     function showStep(stepId) {
       document.querySelectorAll('.onboarding-step').forEach(s => s.classList.remove('active'));
-      const targetStep = document.getElementById(stepId);
-      if (targetStep) targetStep.classList.add('active');
+      document.getElementById(stepId).classList.add('active');
     }
 
     function togglePasswordVisibility(inputId, btn) {
       const input = document.getElementById(inputId);
-      if (!input) return;
       if (input.type === 'password') {
         input.type = 'text';
         btn.innerHTML = '<i class="fas fa-eye-slash"></i>';
@@ -681,19 +680,11 @@
 
     function toggleAuthMode() {
       isSignUp = !isSignUp;
-      const titleEl = document.getElementById('authTitle');
-      const btnEl = document.getElementById('authButton');
-      const confirmWrapper = document.getElementById('confirmPasswordWrapper');
-      const authError = document.getElementById('authError');
-
-      if (titleEl) titleEl.innerText = isSignUp ? 'Sign Up' : 'Sign In';
-      if (btnEl) btnEl.innerHTML = isSignUp ? '<i class="fas fa-user-plus"></i> Sign Up' : '<i class="fas fa-sign-in-alt"></i> Sign In';
-      const toggleEl = document.querySelector('.auth-toggle');
-      if (toggleEl) {
-        toggleEl.innerHTML = isSignUp ? 'Already have an account? <strong>Sign In</strong>' : "Don't have an account? <strong>Sign Up</strong>";
-      }
-      if (confirmWrapper) confirmWrapper.style.display = isSignUp ? 'block' : 'none';
-      if (authError) authError.classList.add('hidden');
+      document.getElementById('authTitle').innerText = isSignUp ? 'Sign Up' : 'Sign In';
+      document.getElementById('authButton').innerHTML = isSignUp ? '<i class="fas fa-user-plus"></i> Sign Up' : '<i class="fas fa-sign-in-alt"></i> Sign In';
+      document.querySelector('.auth-toggle').innerHTML = isSignUp ? 'Already have an account? <strong>Sign In</strong>' : "Don't have an account? <strong>Sign Up</strong>";
+      document.getElementById('confirmPasswordWrapper').style.display = isSignUp ? 'block' : 'none';
+      document.getElementById('authError').classList.add('hidden');
       showStep('authStep1');
     }
 
@@ -751,13 +742,9 @@
 
     // ============ AUTH ============
     async function handleAuth() {
-      const emailInput = document.getElementById('authEmail');
-      const passwordInput = document.getElementById('authPassword');
-      const confirmInput = document.getElementById('confirmPassword');
-
-      const email = emailInput ? emailInput.value.trim() : '';
-      const password = passwordInput ? passwordInput.value : '';
-      const confirm = confirmInput ? confirmInput.value : '';
+      const email = document.getElementById('authEmail').value.trim();
+      const password = document.getElementById('authPassword').value;
+      const confirm = document.getElementById('confirmPassword').value;
       
       const errorEl = document.getElementById('authError');
       if (errorEl) errorEl.classList.add('hidden');
@@ -891,15 +878,10 @@
         return;
       }
 
-      const nameInput = document.getElementById('onboardingName');
-      const langSelect = document.getElementById('onboardingLang');
-      const regionSelect = document.getElementById('onboardingRegion');
-      const planSelect = document.getElementById('onboardingPlan');
-
-      const name = nameInput ? nameInput.value.trim() : 'Reader';
-      const lang = langSelect ? langSelect.value : 'en';
-      const region = regionSelect ? regionSelect.value : 'mecca';
-      const plan = planSelect ? planSelect.value : '7';
+      const name = document.getElementById('onboardingName').value.trim() || 'Reader';
+      const lang = document.getElementById('onboardingLang').value;
+      const region = document.getElementById('onboardingRegion').value;
+      const plan = document.getElementById('onboardingPlan').value;
 
       const regionNames = {
         mecca: 'Makkah', medina: 'Madinah', cairo: 'Cairo',
@@ -946,14 +928,31 @@
     async function signOut() {
       if (isCallActive) endCall();
       
-      if (partnerStatusUnsubscribe) { partnerStatusUnsubscribe(); partnerStatusUnsubscribe = null; }
-      if (signalingUnsubscribe) { signalingUnsubscribe(); signalingUnsubscribe = null; }
-      if (incomingCallUnsubscribe) { incomingCallUnsubscribe(); incomingCallUnsubscribe = null; }
-      if (userListenerUnsubscribe) { userListenerUnsubscribe(); userListenerUnsubscribe = null; }
-      if (connectionRequestsUnsubscribe) { connectionRequestsUnsubscribe(); connectionRequestsUnsubscribe = null; }
+      if (partnerStatusUnsubscribe) {
+        partnerStatusUnsubscribe();
+        partnerStatusUnsubscribe = null;
+      }
+      if (signalingUnsubscribe) {
+        signalingUnsubscribe();
+        signalingUnsubscribe = null;
+      }
+      if (incomingCallUnsubscribe) {
+        incomingCallUnsubscribe();
+        incomingCallUnsubscribe = null;
+      }
+      if (userListenerUnsubscribe) {
+        userListenerUnsubscribe();
+        userListenerUnsubscribe = null;
+      }
+      if (connectionRequestsUnsubscribe) {
+        connectionRequestsUnsubscribe();
+        connectionRequestsUnsubscribe = null;
+      }
       
       if (user && user.id) {
-        try { await db.collection('users').doc(user.id).update({ online: false }); } catch (e) {}
+        try {
+          await db.collection('users').doc(user.id).update({ online: false });
+        } catch (e) {}
       }
       
       auth.signOut();
@@ -979,7 +978,7 @@
       
       userListenerUnsubscribe = db.collection('users').doc(user.id)
         .onSnapshot((doc) => {
-          if (doc && doc.exists) {
+          if (doc.exists) {
             const data = doc.data();
             user.partner = data.partner || '';
             user.partnerId = data.partnerId || '';
@@ -1182,7 +1181,7 @@
       const grid = document.getElementById('juzGrid');
       if (!grid) return;
       grid.innerHTML = '';
-      const juzList = user && user.juz ? user.juz : [];
+      const juzList = user.juz || [];
       for (let i = 1; i <= 30; i++) {
         const el = document.createElement('div');
         el.className = 'juz-item' + (juzList.includes(i) ? ' completed' : '');
@@ -1488,7 +1487,7 @@
       const display = document.getElementById('partnerDisplay');
       if (!display) return;
       
-      if (user && user.partner && user.partnerId) {
+      if (user.partner && user.partnerId) {
         display.innerHTML = `
           <div class="partner-avatar">${user.partner[0].toUpperCase()}</div>
           <h3 style="font-size:0.9rem;" id="partnerNameDisplay">${user.partner}</h3>
@@ -1512,9 +1511,18 @@
       try {
         if (isCallActive) endCall();
         
-        if (partnerStatusUnsubscribe) { partnerStatusUnsubscribe(); partnerStatusUnsubscribe = null; }
-        if (signalingUnsubscribe) { signalingUnsubscribe(); signalingUnsubscribe = null; }
-        if (incomingCallUnsubscribe) { incomingCallUnsubscribe(); incomingCallUnsubscribe = null; }
+        if (partnerStatusUnsubscribe) {
+          partnerStatusUnsubscribe();
+          partnerStatusUnsubscribe = null;
+        }
+        if (signalingUnsubscribe) {
+          signalingUnsubscribe();
+          signalingUnsubscribe = null;
+        }
+        if (incomingCallUnsubscribe) {
+          incomingCallUnsubscribe();
+          incomingCallUnsubscribe = null;
+        }
         
         const partnerId = user.partnerId;
         const partnerName = user.partner;
@@ -1558,14 +1566,14 @@
       
       partnerStatusUnsubscribe = db.collection('users').doc(user.partnerId)
         .onSnapshot((doc) => {
-          if (doc && doc.exists) {
+          if (doc.exists) {
             const data = doc.data();
             partnerOnline = data.online === true;
           }
         });
     }
 
-    // ============ INCOMING CALL LISTENER (Real-time) ============
+    // ============ INCOMING CALL LISTENER ============
     function listenForIncomingCalls() {
       if (incomingCallUnsubscribe) {
         incomingCallUnsubscribe();
@@ -1578,13 +1586,18 @@
         .where('toId', '==', user.id)
         .where('status', '==', 'ringing')
         .onSnapshot((snapshot) => {
-          if (!snapshot) return;
           snapshot.docChanges().forEach(change => {
             if (change.type === 'added') {
               const data = change.doc.data();
-              if (data && data.status === 'ringing') {
-                incomingCallData = { id: change.doc.id, ...data };
-                showIncomingCall(data);
+              if (data.status === 'ringing') {
+                // Store the call data globally
+                pendingCallData = { 
+                  id: change.doc.id, 
+                  fromId: data.fromId, 
+                  fromName: data.fromName || 'Partner',
+                  mode: data.mode || 'video'
+                };
+                showIncomingCall(pendingCallData);
               }
             }
           });
@@ -1611,53 +1624,60 @@
     function hideIncomingCall() {
       const overlay = document.getElementById('incomingCallOverlay');
       if (overlay) overlay.classList.remove('show');
-      incomingCallData = null;
     }
 
-    // ============ CALL FUNCTIONS - FIXED NULL ISSUES ============
+    // ============ CALL FUNCTIONS ============
+    
     async function acceptCall() {
-      if (!incomingCallData || isProcessingCall) return;
+      // Use the stored pendingCallData
+      if (!pendingCallData) {
+        showNotification('No incoming call found');
+        return;
+      }
+      
+      if (isProcessingCall) {
+        showNotification('Already processing...');
+        return;
+      }
       
       isProcessingCall = true;
       
       try {
-        if (incomingCallData.id) {
-          await db.collection('incomingCalls').doc(incomingCallData.id).update({
-            status: 'accepted'
-          }).catch(e => console.warn("Could not update call status:", e));
-        }
+        // Get the call data
+        const callData = pendingCallData;
+        const fromId = callData.fromId;
+        const fromName = callData.fromName || 'Partner';
+        const callId = callData.id;
+        
+        // Update the call status to accepted
+        await db.collection('incomingCalls').doc(callId).update({
+          status: 'accepted'
+        });
         
         hideIncomingCall();
         
-        if (user && !user.partnerId && incomingCallData.fromId) {
-          user.partner = incomingCallData.fromName || 'Partner';
-          user.partnerId = incomingCallData.fromId;
+        // Ensure we have a partner set
+        if (!user.partnerId) {
+          user.partner = fromName;
+          user.partnerId = fromId;
           localStorage.setItem('musaffahUser', JSON.stringify(user));
           updatePartnerDisplay();
         }
         
-        const partnerId = incomingCallData.fromId;
-        const partnerName = incomingCallData.fromName;
-
-        setTimeout(async () => {
-          try {
-            await startCallAfterAccept(partnerId, partnerName);
-          } catch (e) {
-            console.error('Error starting call after accept:', e);
-            showNotification('Failed to connect call: ' + e.message);
-          }
-          isProcessingCall = false;
-        }, 500);
+        // Start the call
+        await startCallAfterAccept(fromId, fromName);
         
       } catch (e) {
         console.error('Error accepting call:', e);
         showNotification('Failed to accept call: ' + e.message);
-        isProcessingCall = false;
       }
+      
+      isProcessingCall = false;
     }
 
     async function startCallAfterAccept(partnerId, partnerName) {
       try {
+        // 1. Get media permissions
         if (!hasMediaPermissions) {
           const granted = await requestMediaPermissions();
           if (!granted) {
@@ -1666,6 +1686,7 @@
           }
         }
         
+        // 2. Get local stream
         if (!localStream) {
           const stream = await getLocalStream();
           if (!stream) {
@@ -1674,30 +1695,37 @@
           }
         }
         
+        // 3. Setup fullscreen call UI
         const callFullscreen = document.getElementById('callFullscreen');
-        if (callFullscreen) callFullscreen.classList.add('active');
-        
+        if (callFullscreen) {
+          callFullscreen.classList.add('active');
+        }
         const container = document.getElementById('container');
         const bottomNav = document.getElementById('bottomNav');
         const header = document.querySelector('header');
-        
         if (container) container.style.display = 'none';
         if (bottomNav) bottomNav.style.display = 'none';
         if (header) header.style.display = 'none';
         
+        // 4. Setup video/audio UI
         setupCallUI();
         
+        // 5. Set local video
         const localVideo = document.getElementById('localVideoCall');
         if (localVideo && localStream) {
           localVideo.srcObject = localStream;
         }
         
+        // 6. Set remote label
         const remoteLabel = document.getElementById('remoteCallLabel');
         if (remoteLabel) {
-          remoteLabel.textContent = partnerName || (user ? user.partner : '') || 'Partner';
+          remoteLabel.textContent = user.partner || 'Partner';
         }
         
+        // 7. Start signaling listener
         startSignalingListener();
+        
+        // 8. Create peer connection and send offer
         createPeerConnection();
         
         if (pc) {
@@ -1705,7 +1733,7 @@
           await pc.setLocalDescription(offer);
           sendSignalingData({ type: 'offer', offer: offer });
           
-          showNotification(`📞 Calling ${partnerName || (user ? user.partner : '') || 'Partner'}...`);
+          showNotification(`📞 Calling ${user.partner || 'Partner'}...`);
           isCaller = true;
         }
         
@@ -1717,15 +1745,17 @@
     }
 
     async function rejectCall() {
-      if (!incomingCallData) return;
+      if (!pendingCallData) {
+        showNotification('No incoming call found');
+        return;
+      }
       
       try {
-        if (incomingCallData.id) {
-          await db.collection('incomingCalls').doc(incomingCallData.id).update({
-            status: 'rejected'
-          });
-        }
+        await db.collection('incomingCalls').doc(pendingCallData.id).update({
+          status: 'rejected'
+        });
         hideIncomingCall();
+        pendingCallData = null;
         showNotification('Call rejected');
       } catch (e) {
         console.error('Error rejecting call:', e);
@@ -1833,7 +1863,6 @@
       };
       
       pc.onconnectionstatechange = () => {
-        if (!pc) return;
         const state = pc.connectionState;
         if (state === 'connected') {
           isCallActive = true;
@@ -1858,11 +1887,10 @@
         .where('to', '==', user.id)
         .orderBy('timestamp', 'asc')
         .onSnapshot((snapshot) => {
-          if (!snapshot) return;
           snapshot.docChanges().forEach(change => {
             if (change.type === 'added') {
               const data = change.doc.data();
-              if (!data || data.from === user.id) return;
+              if (data.from === user.id) return;
               
               change.doc.ref.delete().catch(() => {});
               
@@ -1925,6 +1953,7 @@
 
     async function handleIncomingCall(offer) {
       try {
+        // Get media permissions
         if (!hasMediaPermissions) {
           const granted = await requestMediaPermissions();
           if (!granted) {
@@ -1933,6 +1962,7 @@
           }
         }
         
+        // Get local stream
         if (!localStream) {
           const stream = await getLocalStream();
           if (!stream) {
@@ -1941,13 +1971,14 @@
           }
         }
         
+        // Setup fullscreen
         const callFullscreen = document.getElementById('callFullscreen');
-        if (callFullscreen) callFullscreen.classList.add('active');
-        
+        if (callFullscreen) {
+          callFullscreen.classList.add('active');
+        }
         const container = document.getElementById('container');
         const bottomNav = document.getElementById('bottomNav');
         const header = document.querySelector('header');
-        
         if (container) container.style.display = 'none';
         if (bottomNav) bottomNav.style.display = 'none';
         if (header) header.style.display = 'none';
@@ -1961,11 +1992,13 @@
         
         const remoteLabel = document.getElementById('remoteCallLabel');
         if (remoteLabel) {
-          remoteLabel.textContent = user ? user.partner : 'Partner';
+          remoteLabel.textContent = user.partner || 'Partner';
         }
         
+        // Create peer connection
         createPeerConnection();
         
+        // Set remote description and create answer
         await pc.setRemoteDescription(new RTCSessionDescription(offer));
         const answer = await pc.createAnswer();
         await pc.setLocalDescription(answer);
@@ -1977,6 +2010,7 @@
         
         showNotification('📹 Call connected!');
         
+        // Process queued ICE candidates
         if (iceCandidatesQueue.length > 0) {
           iceCandidatesQueue.forEach(candidate => {
             pc.addIceCandidate(new RTCIceCandidate(candidate));
@@ -1984,8 +2018,10 @@
           iceCandidatesQueue = [];
         }
         
-        if (incomingCallData && incomingCallData.id) {
-          await db.collection('incomingCalls').doc(incomingCallData.id).delete().catch(() => {});
+        // Remove incoming call from Firestore
+        if (pendingCallData && pendingCallData.id) {
+          await db.collection('incomingCalls').doc(pendingCallData.id).delete().catch(() => {});
+          pendingCallData = null;
           hideIncomingCall();
         }
         
@@ -2007,7 +2043,9 @@
       }
       
       if (pc) {
-        try { pc.close(); } catch (e) {}
+        try {
+          pc.close();
+        } catch (e) {}
         pc = null;
       }
       
@@ -2019,8 +2057,9 @@
       if (localVideo) localVideo.srcObject = null;
       
       const callFullscreen = document.getElementById('callFullscreen');
-      if (callFullscreen) callFullscreen.classList.remove('active');
-      
+      if (callFullscreen) {
+        callFullscreen.classList.remove('active');
+      }
       const container = document.getElementById('container');
       const bottomNav = document.getElementById('bottomNav');
       const header = document.querySelector('header');
@@ -2050,6 +2089,7 @@
       const flash = document.getElementById('correctionFlash');
       if (flash) flash.classList.remove('active');
       
+      pendingCallData = null;
       hideIncomingCall();
       
       showNotification('📴 Call ended');
@@ -2064,7 +2104,7 @@
         const secs = elapsed % 60;
         const remoteLabel = document.getElementById('remoteCallLabel');
         if (remoteLabel) {
-          remoteLabel.textContent = (user ? user.partner : 'Partner') + ' · ' + 
+          remoteLabel.textContent = (user.partner || 'Partner') + ' · ' + 
             String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
         }
       }, 1000);
@@ -2098,15 +2138,18 @@
         const camToggle = document.getElementById('callCamToggle');
         if (camToggle) camToggle.style.display = 'inline-block';
         
-        const localWrapper2 = document.getElementById('localVideoWrapper');
-        if (localWrapper2) {
-          localWrapper2.style.position = 'absolute';
-          localWrapper2.style.bottom = '20px';
-          localWrapper2.style.right = '20px';
-          localWrapper2.style.width = '180px';
-          localWrapper2.style.height = '120px';
-          localWrapper2.style.top = 'auto';
-          localWrapper2.style.left = 'auto';
+        const videoGrid = document.getElementById('videoGrid');
+        if (videoGrid) {
+          const localWrapper2 = document.getElementById('localVideoWrapper');
+          if (localWrapper2) {
+            localWrapper2.style.position = 'absolute';
+            localWrapper2.style.bottom = '20px';
+            localWrapper2.style.right = '20px';
+            localWrapper2.style.width = '180px';
+            localWrapper2.style.height = '120px';
+            localWrapper2.style.top = 'auto';
+            localWrapper2.style.left = 'auto';
+          }
         }
       }
     }
@@ -2133,6 +2176,7 @@
         return;
       }
       
+      // Send incoming call notification to partner
       try {
         isProcessingCall = true;
         
@@ -2147,6 +2191,7 @@
         
         showNotification(`📞 Calling ${user.partner}...`);
         
+        // Start the actual call after a delay
         setTimeout(async () => {
           try {
             await startCallAfterAccept(user.partnerId, user.partner);
@@ -2218,10 +2263,8 @@
         .where('toId', '==', user.id)
         .where('dismissed', '==', false)
         .onSnapshot((snapshot) => {
-          if (!snapshot) return;
           snapshot.forEach(doc => {
             const alert = doc.data();
-            if (!alert) return;
             
             const flash = document.getElementById('correctionFlash');
             if (flash) {
@@ -2439,11 +2482,11 @@
     document.addEventListener('click', function(e) {
       const remoteWrapper = document.getElementById('remoteVideoWrapper');
       const localWrapper = document.getElementById('localVideoWrapper');
-      if (selectedMode === 'video' && localWrapper) {
+      if (selectedMode === 'video') {
         if (e.target.closest('#remoteVideoWrapper') && remoteWrapper && !localWrapper.classList.contains('dragging')) {
           toggleDominantVideo();
         }
-        if (e.target.closest('#localVideoWrapper') && !localWrapper.classList.contains('dragging')) {
+        if (e.target.closest('#localVideoWrapper') && localWrapper && !localWrapper.classList.contains('dragging')) {
           toggleDominantVideo();
         }
       }
