@@ -11,7 +11,6 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"></script>
   <style>
-    /* ... (keep all existing styles) ... */
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
     body { background: #f2f6f5; padding-bottom: 80px; transition: background 0.2s, color 0.2s; }
     header { background: #0f766e; color: white; padding: 10px 16px 8px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.06); position: sticky; top: 0; z-index: 20; }
@@ -71,21 +70,6 @@
     @keyframes slideIn { 0% { transform: translateX(100px); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } }
     @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
 
-    .post { background: #f8fafc; border-radius: 14px; padding: 10px; margin-bottom: 8px; border-left: 3px solid #0f766e; }
-    .dark .post { background: #1a2625; }
-    .post-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
-    .post-avatar { width: 30px; height: 30px; border-radius: 50%; background: #0f766e; color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.8rem; flex-shrink: 0; }
-    .post-name { font-weight: 600; font-size: 0.8rem; }
-    .post-time { font-size: 0.6rem; opacity: 0.5; }
-    .post-content { margin: 4px 0; font-size: 0.85rem; }
-    .post-actions { display: flex; gap: 12px; margin-top: 4px; font-size: 0.7rem; color: #5b7a76; }
-    .post-actions span { cursor: pointer; display: flex; align-items: center; gap: 4px; }
-    .post-actions span:hover { color: #0f766e; }
-    .post-comments { margin-top: 8px; padding-top: 8px; border-top: 1px solid #eef3f2; }
-    .dark .post-comments { border-top-color: #2a3a38; }
-    .comment { display: flex; gap: 8px; margin-bottom: 4px; font-size: 0.75rem; }
-    .comment-avatar { width: 20px; height: 20px; border-radius: 50%; background: #7c3aed; color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.6rem; flex-shrink: 0; }
-
     .chat-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #eef3f2; cursor: pointer; transition: background 0.1s; }
     .dark .chat-item { border-bottom-color: #2a3a38; }
     .chat-item:hover { background: #f0f6f5; }
@@ -117,15 +101,6 @@
     .password-wrapper input { padding-right: 40px; }
     .toggle-password { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #6b7280; background: none; border: none; font-size: 1rem; padding: 0; margin: 0; width: auto; }
     .toggle-password:hover { color: #0f766e; }
-
-    .recitation-status { padding: 10px; border-radius: 14px; text-align: center; margin-top: 6px; transition: all 0.3s; }
-    .recitation-status.active { background: #d1fae5; color: #065f46; }
-    .recitation-status.inactive { background: #fef3c7; color: #92400e; }
-    .recitation-status.attention { background: #fee2e2; color: #991b1b; animation: flashAttention 1s ease 3; }
-    @keyframes flashAttention { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
-    .dark .recitation-status.active { background: #064e3b; color: #a7f3d0; }
-    .dark .recitation-status.inactive { background: #78350f; color: #fde68a; }
-    .dark .recitation-status.attention { background: #7f1d1d; color: #fca5a5; }
 
     .verification-banner { background: #fef3c7; border: 1px solid #d97706; border-radius: 12px; padding: 10px; margin: 8px 0; text-align: center; font-size: 0.85rem; color: #92400e; }
     .dark .verification-banner { background: #78350f; border-color: #d97706; color: #fde68a; }
@@ -171,32 +146,6 @@
     .dark .search-item .status-badge.online { background: #064e3b; color: #a7f3d0; }
     .dark .search-item .status-badge.offline { background: #78350f; color: #fde68a; }
 
-    .alarm-item { background: #f0fdf4; border-radius: 12px; padding: 12px; margin-bottom: 8px; border-left: 4px solid #0f766e; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
-    .dark .alarm-item { background: #052e16; border-left-color: #0f766e; }
-    .alarm-item .info { flex: 1; }
-    .alarm-item .info .time { font-weight: 600; font-size: 1.1rem; }
-    .alarm-item .info .detail { font-size: 0.75rem; opacity: 0.6; }
-    .alarm-item .info .status { font-size: 0.65rem; opacity: 0.5; }
-    .alarm-item .actions { display: flex; gap: 6px; align-items: center; }
-    .alarm-item .actions button { width: auto; padding: 6px 12px; margin: 0; font-size: 0.7rem; }
-    .alarm-item .toggle { position: relative; width: 48px; height: 26px; background: #ccc; border-radius: 13px; cursor: pointer; transition: 0.3s; flex-shrink: 0; }
-    .alarm-item .toggle.active { background: #0f766e; }
-    .alarm-item .toggle .slider { position: absolute; top: 2px; left: 2px; width: 22px; height: 22px; background: white; border-radius: 50%; transition: 0.3s; }
-    .alarm-item .toggle.active .slider { left: 24px; }
-
-    .alarm-notification { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 1000; display: none; justify-content: center; align-items: center; }
-    .alarm-notification.show { display: flex; }
-    .alarm-notification .content { background: white; padding: 30px 40px; border-radius: 20px; text-align: center; max-width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.5); animation: bounceIn 0.5s ease; }
-    @keyframes bounceIn { 0% { transform: scale(0.5); opacity: 0; } 60% { transform: scale(1.05); } 100% { transform: scale(1); opacity: 1; } }
-    .dark .alarm-notification .content { background: #1e1e1e; }
-    .alarm-notification .icon { font-size: 4rem; display: block; margin-bottom: 10px; }
-    .alarm-notification h2 { color: #0f766e; font-size: 1.8rem; }
-    .alarm-notification p { margin: 10px 0; opacity: 0.8; font-size: 1.1rem; }
-    .alarm-notification .btn-group { display: flex; gap: 10px; justify-content: center; margin-top: 15px; flex-wrap: wrap; }
-    .alarm-notification .btn-group button { width: auto; padding: 12px 28px; margin: 0; font-size: 0.9rem; }
-
-    .alarm-badge { display: inline-block; background: #dc2626; color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.6rem; margin-left: 4px; }
-
     .permission-banner { background: #e0f2fe; border-radius: 12px; padding: 10px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     .dark .permission-banner { background: #1a3340; }
     .permission-banner p { font-size: 0.8rem; flex: 1; }
@@ -204,176 +153,191 @@
 
     .fcm-status { font-size: 0.7rem; opacity: 0.6; margin-top: 4px; }
 
-    .video-container { 
-      display: grid; 
-      grid-template-columns: 1fr 1fr; 
-      gap: 8px; 
-      margin-top: 8px; 
-      background: #1a1a1a; 
-      border-radius: 14px; 
-      padding: 8px; 
-      min-height: 200px; 
+    /* Video Call Full Screen */
+    .call-fullscreen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: #000;
+      z-index: 100;
+      display: none;
+      flex-direction: column;
     }
-    .video-container .video-wrapper { 
-      position: relative; 
-      background: #2a2a2a; 
-      border-radius: 10px; 
-      overflow: hidden; 
-      min-height: 150px; 
+    .call-fullscreen.active { display: flex; }
+    .call-fullscreen .video-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+      padding: 4px;
+      background: #1a1a1a;
+    }
+    .call-fullscreen .video-grid .video-wrapper {
+      position: relative;
+      background: #2a2a2a;
+      border-radius: 8px;
+      overflow: hidden;
+      min-height: 200px;
+      cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
     }
-    .video-container video { 
-      width: 100%; 
-      height: 100%; 
-      min-height: 150px; 
-      object-fit: cover; 
-      background: #1a1a1a; 
-      border-radius: 10px; 
-      transform: scaleX(-1); 
+    .call-fullscreen .video-grid .video-wrapper.dominant {
+      grid-column: 1 / -1;
+      grid-row: 1 / -1;
+      min-height: 70vh;
     }
-    .video-container .video-placeholder { 
-      color: white; 
-      opacity: 0.6; 
-      font-size: 0.8rem; 
-      text-align: center; 
+    .call-fullscreen .video-grid .video-wrapper.dominant ~ .video-wrapper {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      width: 180px;
+      height: 120px;
+      border-radius: 12px;
+      border: 2px solid #0f766e;
+      z-index: 10;
+      cursor: pointer;
     }
-    .video-container .video-label { 
-      position: absolute; 
-      bottom: 8px; 
-      left: 8px; 
-      background: rgba(0,0,0,0.7); 
-      color: white; 
-      padding: 2px 10px; 
-      border-radius: 20px; 
-      font-size: 0.65rem; 
-      font-weight: 500; 
+    .call-fullscreen .video-grid .video-wrapper.dominant ~ .video-wrapper .video-label {
+      font-size: 0.5rem;
     }
-    .video-container .video-wrapper.muted::after { 
-      content: '🔇'; 
-      position: absolute; 
-      top: 8px; 
-      right: 8px; 
-      font-size: 1.2rem; 
-      background: rgba(0,0,0,0.5); 
-      border-radius: 50%; 
-      padding: 4px; 
+    .call-fullscreen video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      background: #1a1a1a;
+      transform: scaleX(-1);
     }
-    .video-controls { 
-      display: flex; 
-      gap: 6px; 
-      justify-content: center; 
-      margin-top: 8px; 
-      flex-wrap: wrap; 
+    .call-fullscreen .video-grid .video-wrapper.dominant video {
+      transform: scaleX(-1);
     }
-    .video-controls button { 
-      width: auto; 
-      padding: 6px 14px; 
-      margin: 0; 
-      font-size: 0.7rem; 
-      border-radius: 30px; 
+    .call-fullscreen .video-label {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 500;
+      pointer-events: none;
     }
-    .video-controls button.call-btn { background: #16a34a; }
-    .video-controls button.call-btn.active { background: #dc2626; animation: pulseCall 1s ease infinite; }
-    @keyframes pulseCall { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
-    .video-controls button:disabled { opacity: 0.4; cursor: not-allowed; }
+    .call-fullscreen .call-controls {
+      background: rgba(0,0,0,0.8);
+      padding: 12px;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .call-fullscreen .call-controls button {
+      width: auto;
+      padding: 8px 16px;
+      margin: 0;
+      font-size: 0.75rem;
+      border-radius: 30px;
+      min-width: 60px;
+    }
+    .call-fullscreen .call-controls button.end-call { background: #dc2626; }
+    .call-fullscreen .call-controls button.mic-off { background: #6b7280; }
+    .call-fullscreen .call-controls button.cam-off { background: #6b7280; }
+    .call-fullscreen .call-controls button.correction { background: #dc2626; animation: pulseCorrection 1s ease infinite; }
+    @keyframes pulseCorrection { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
 
-    .call-status { text-align: center; font-size: 0.8rem; padding: 4px; margin-top: 4px; border-radius: 10px; }
-    .call-status.connected { background: #d1fae5; color: #065f46; }
-    .call-status.connecting { background: #fef3c7; color: #92400e; }
-    .call-status.disconnected { background: #fee2e2; color: #991b1b; }
-    .call-status.idle { background: #f3f4f6; color: #6b7280; }
-    .call-status.offline { background: #fef3c7; color: #92400e; }
-    .dark .call-status.connected { background: #064e3b; color: #a7f3d0; }
-    .dark .call-status.connecting { background: #78350f; color: #fde68a; }
-    .dark .call-status.disconnected { background: #7f1d1d; color: #fca5a5; }
-    .dark .call-status.idle { background: #1f2937; color: #9ca3af; }
-    .dark .call-status.offline { background: #78350f; color: #fde68a; }
+    .call-fullscreen .correction-flash {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(220, 38, 38, 0.5);
+      z-index: 200;
+      display: none;
+      pointer-events: none;
+      animation: flashRed 0.5s ease 3;
+    }
+    .call-fullscreen .correction-flash.active { display: block; }
+    @keyframes flashRed { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+    .call-fullscreen .audio-mode-indicator {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      font-size: 3rem;
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    /* Dashboard Styles */
+    .dashboard-stats { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0; }
+    .dashboard-stat { background: #f0fdf4; border-radius: 12px; padding: 12px 16px; flex: 1; min-width: 80px; text-align: center; }
+    .dark .dashboard-stat { background: #052e16; }
+    .dashboard-stat .number { font-size: 1.5rem; font-weight: 700; color: #0f766e; }
+    .dark .dashboard-stat .number { color: #7acfc5; }
+    .dashboard-stat .label { font-size: 0.65rem; opacity: 0.6; margin-top: 2px; }
+    .dashboard-info { display: flex; flex-direction: column; gap: 4px; max-height: 0; overflow: hidden; transition: max-height 0.3s ease, padding 0.3s ease; padding: 0 0; }
+    .dashboard-info.open { max-height: 400px; padding: 10px 0 0 0; }
+    .dashboard-info .row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #eef3f2; }
+    .dark .dashboard-info .row { border-bottom-color: #2a3a38; }
+    .dashboard-info .row .label { opacity: 0.6; font-size: 0.8rem; }
+    .dashboard-info .row .value { font-weight: 500; font-size: 0.85rem; }
+    .profile-header { cursor: pointer; display: flex; align-items: center; gap: 10px; }
+    .profile-header .toggle-icon { transition: transform 0.3s ease; }
+    .profile-header .toggle-icon.open { transform: rotate(180deg); }
+
+    /* Chat Actions */
+    .chat-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+    .chat-actions button { flex: 1; min-width: 80px; padding: 8px 12px; font-size: 0.75rem; border-radius: 30px; }
+
+    .friend-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #eef3f2; }
+    .dark .friend-item { border-bottom-color: #2a3a38; }
+    .friend-item .friend-avatar { width: 32px; height: 32px; border-radius: 50%; background: #7c3aed; color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.7rem; flex-shrink: 0; }
+    .friend-item .friend-name { flex: 1; font-size: 0.85rem; }
+    .friend-item .friend-status { font-size: 0.6rem; opacity: 0.5; }
+    .friend-item button { width: auto; padding: 4px 12px; margin: 0; font-size: 0.7rem; }
+
+    /* User List for Add Friend */
+    .user-list { max-height: 300px; overflow-y: auto; }
+    .user-list .user-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #eef3f2; }
+    .dark .user-list .user-item { border-bottom-color: #2a3a38; }
+    .user-list .user-item .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: #0f766e; color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.7rem; flex-shrink: 0; }
+    .user-list .user-item .user-name { flex: 1; font-size: 0.85rem; }
+    .user-list .user-item .user-status { font-size: 0.6rem; opacity: 0.5; }
+    .user-list .user-item button { width: auto; padding: 4px 12px; margin: 0; font-size: 0.7rem; }
+
+    .search-box { display: flex; gap: 6px; margin-bottom: 8px; align-items: center; }
+    .search-box input { flex: 1; margin: 0; padding: 8px 12px; font-size: 0.85rem; }
+    .search-box button { width: auto; padding: 8px 16px; margin: 0; font-size: 0.8rem; }
 
     .media-permission-banner { background: #fef3c7; border: 1px solid #d97706; border-radius: 12px; padding: 10px; margin-bottom: 8px; text-align: center; }
     .dark .media-permission-banner { background: #78350f; border-color: #d97706; color: #fde68a; }
     .media-permission-banner button { width: auto; padding: 4px 16px; margin: 4px auto 0; font-size: 0.75rem; }
 
-    .camera-select { 
-      display: flex; 
-      gap: 6px; 
-      align-items: center; 
-      margin-top: 4px; 
-      font-size: 0.75rem; 
-    }
-    .camera-select select { 
-      flex: 1; 
-      padding: 4px 8px; 
-      margin: 0; 
-      font-size: 0.75rem; 
-      border-radius: 8px; 
-      border: 1px solid #dde3e2; 
-    }
-
-    .auth-loading { text-align: center; padding: 20px; }
-    .auth-loading i { font-size: 2rem; animation: spin 1s linear infinite; }
-    @keyframes spin { 100% { transform: rotate(360deg); } }
-
-    .search-box { 
-      display: flex; 
-      gap: 6px; 
-      margin-bottom: 8px; 
-      align-items: center; 
-    }
-    .search-box input { 
-      flex: 1; 
-      margin: 0; 
-      padding: 8px 12px; 
-      font-size: 0.85rem; 
-    }
-    .search-box button { 
-      width: auto; 
-      padding: 8px 16px; 
-      margin: 0; 
-      font-size: 0.8rem; 
-    }
-    .search-filters {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-      margin-bottom: 8px;
-    }
-    .search-filters button {
-      width: auto;
-      padding: 4px 14px;
-      margin: 0;
-      font-size: 0.7rem;
-      border-radius: 30px;
-      background: #eef3f2;
-      color: #5b7a76;
-      border: none;
-      cursor: pointer;
-    }
-    .search-filters button.active {
-      background: #0f766e;
-      color: white;
-    }
-    .dark .search-filters button {
-      background: #2a2a2a;
-      color: #aaa;
-    }
-    .dark .search-filters button.active {
-      background: #0f766e;
-      color: white;
-    }
-
     .media-error { color: #dc2626; font-size: 0.75rem; margin-top: 4px; display: none; }
-    
-    /* Connected partner status in search */
-    .partner-connected { 
-      background: #d1fae5 !important; 
-      border-left-color: #16a34a !important; 
-    }
-    .dark .partner-connected { 
-      background: #064e3b !important; 
-      border-left-color: #16a34a !important; 
-    }
+
+    .mode-selection { display: flex; gap: 10px; margin: 10px 0; }
+    .mode-selection button { flex: 1; padding: 12px; border-radius: 12px; border: 2px solid #dde3e2; background: white; cursor: pointer; transition: all 0.3s; font-size: 0.85rem; }
+    .mode-selection button.active { border-color: #0f766e; background: #eaf9f7; }
+    .mode-selection button i { display: block; font-size: 1.5rem; margin-bottom: 4px; }
+    .dark .mode-selection button { background: #1e1e1e; border-color: #444; }
+    .dark .mode-selection button.active { border-color: #0f766e; background: #1d3a38; }
+
+    /* Shuffle animation */
+    .shuffling { animation: shuffleAnim 0.5s ease; }
+    @keyframes shuffleAnim { 0% { opacity: 0.3; transform: scale(0.95); } 100% { opacity: 1; transform: scale(1); } }
+
+    .friend-request-item { background: #fef3c7; border-radius: 12px; padding: 10px; margin-bottom: 8px; border-left: 4px solid #d97706; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+    .dark .friend-request-item { background: #78350f; border-left-color: #d97706; }
+    .friend-request-item .info { flex: 1; }
+    .friend-request-item .info .name { font-weight: 600; font-size: 0.9rem; }
+    .friend-request-item .actions { display: flex; gap: 6px; }
+    .friend-request-item .actions button { width: auto; padding: 4px 12px; margin: 0; font-size: 0.7rem; }
   </style>
 </head>
 <body>
@@ -462,80 +426,66 @@
 
     <!-- MAIN APP -->
     <div id="appMain" class="hidden">
-      <!-- HOME -->
+      <!-- HOME - DASHBOARD -->
       <div id="pageHome" class="page active">
         <div class="card">
-          <div style="display:flex; align-items:center; gap:10px;">
+          <div class="profile-header" onclick="toggleProfileDetails()">
             <div class="profile-avatar" id="avatarDisplay">A</div>
-            <div><h2 id="welcomeName" style="font-size:0.95rem;">Assalamu Alaikum</h2>
-            <p style="opacity:0.5; font-size:0.65rem;" id="userEmailDisplay">user@example.com</p></div>
-            <div style="margin-left:auto; display:flex; gap:4px;">
-              <button onclick="toggleTheme()" style="width:auto; padding:4px 10px; margin:0; background:#2c7a7a; font-size:0.65rem;"><i class="fas fa-moon"></i></button>
-              <button onclick="signOut()" style="width:auto; padding:4px 10px; margin:0; background:#b91c1c; font-size:0.65rem;"><i class="fas fa-sign-out-alt"></i></button>
+            <div style="flex:1;">
+              <h2 id="welcomeName" style="font-size:0.95rem; margin:0;">Assalamu Alaikum</h2>
+              <p style="opacity:0.5; font-size:0.65rem; margin:0;" id="userEmailDisplay">user@example.com</p>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <i class="fas fa-chevron-down toggle-icon" id="profileToggleIcon"></i>
+              <button onclick="event.stopPropagation(); toggleTheme()" style="width:auto; padding:4px 10px; margin:0; background:#2c7a7a; font-size:0.65rem;"><i class="fas fa-moon"></i></button>
+              <button onclick="event.stopPropagation(); signOut()" style="width:auto; padding:4px 10px; margin:0; background:#b91c1c; font-size:0.65rem;"><i class="fas fa-sign-out-alt"></i></button>
+            </div>
+          </div>
+          <div class="dashboard-info" id="profileDetails">
+            <div class="row">
+              <span class="label"><i class="fas fa-user"></i> Name</span>
+              <span class="value" id="profileName">Reader</span>
+            </div>
+            <div class="row">
+              <span class="label"><i class="fas fa-envelope"></i> Email</span>
+              <span class="value" id="profileEmail">user@example.com</span>
+            </div>
+            <div class="row">
+              <span class="label"><i class="fas fa-calendar"></i> Plan</span>
+              <span class="value" id="profilePlan">7 days</span>
+            </div>
+            <div class="row">
+              <span class="label"><i class="fas fa-globe"></i> Region</span>
+              <span class="value" id="profileRegion">Makkah</span>
+            </div>
+            <div class="row">
+              <span class="label"><i class="fas fa-language"></i> Language</span>
+              <span class="value" id="profileLanguage">English</span>
             </div>
           </div>
         </div>
 
         <div class="card">
-          <div class="stats-mini">
-            <span class="stat-mini">📊 <span id="miniJuz">0</span> Juz</span>
-            <span class="stat-mini">🏆 <span id="miniKhatm">0</span> Khatm</span>
-            <span class="stat-mini">🔥 <span id="miniStreak">0</span> Streak</span>
-            <span class="stat-mini">🌍 <span id="userRegion">Mecca</span></span>
-            <span class="stat-mini">⏰ <span id="alarmCount">0</span> Alarms</span>
+          <h2><i class="fas fa-chart-simple"></i> Statistics</h2>
+          <div class="dashboard-stats">
+            <div class="dashboard-stat">
+              <div class="number" id="statJuz">0</div>
+              <div class="label">Juz Completed</div>
+            </div>
+            <div class="dashboard-stat">
+              <div class="number" id="statKhatm">0</div>
+              <div class="label">Khatm</div>
+            </div>
+            <div class="dashboard-stat">
+              <div class="number" id="statStreak">0</div>
+              <div class="label">Day Streak</div>
+            </div>
           </div>
+        </div>
+
+        <div class="card">
+          <h2><i class="fas fa-flag"></i> Quran Progress</h2>
           <div class="juz-grid" id="juzGrid"></div>
-        </div>
-
-        <!-- FCM Permission Banner -->
-        <div id="fcmPermissionBanner" class="card permission-banner hidden">
-          <p>🔔 Enable push notifications to receive Quran reminders even when the app is closed.</p>
-          <button onclick="requestFCMToken()" class="success"><i class="fas fa-bell"></i> Enable Notifications</button>
-        </div>
-
-        <div class="card">
-          <h2><i class="fas fa-newspaper"></i> Feed</h2>
-          <div style="display:flex; gap:6px; margin-bottom:8px;">
-            <input id="postInput" placeholder="Share your Quran progress..." style="flex:1; margin:0; font-size:0.8rem;">
-            <button onclick="createPost()" style="width:auto; padding:9px 16px; margin:0; font-size:0.8rem;"><i class="fas fa-paper-plane"></i></button>
-          </div>
-          <div id="feedContainer">
-            <div class="empty-state">
-              <i class="fas fa-feather-alt"></i>
-              <p>No posts yet. Be the first to share!</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- ALARMS SECTION -->
-        <div class="card">
-          <h2><i class="fas fa-clock"></i> Quran Reminders <span id="alarmBadge" class="alarm-badge hidden">0</span></h2>
-          <div style="display:flex; gap:6px; margin-bottom:8px; flex-wrap:wrap;">
-            <select id="alarmHour" style="flex:1; min-width:60px; margin:0; font-size:0.8rem; padding:6px;">
-              <option value="0">00</option><option value="1">01</option><option value="2">02</option><option value="3">03</option>
-              <option value="4">04</option><option value="5">05</option><option value="6">06</option><option value="7">07</option>
-              <option value="8">08</option><option value="9">09</option><option value="10">10</option><option value="11">11</option>
-              <option value="12">12</option><option value="13">13</option><option value="14">14</option><option value="15">15</option>
-              <option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19">19</option>
-              <option value="20">20</option><option value="21">21</option><option value="22">22</option><option value="23">23</option>
-            </select>
-            <span style="display:flex;align-items:center;font-size:1.2rem;">:</span>
-            <select id="alarmMinute" style="flex:1; min-width:60px; margin:0; font-size:0.8rem; padding:6px;">
-              <option value="0">00</option><option value="5">05</option><option value="10">10</option><option value="15">15</option>
-              <option value="20">20</option><option value="25">25</option><option value="30">30</option><option value="35">35</option>
-              <option value="40">40</option><option value="45">45</option><option value="50">50</option><option value="55">55</option>
-            </select>
-          </div>
-          <div style="display:flex; gap:6px;">
-            <input id="alarmMessage" placeholder="Reminder message (optional)" style="flex:2; margin:0; font-size:0.8rem; padding:6px;">
-            <button onclick="setAlarm()" class="success" style="width:auto; padding:6px 16px; margin:0; font-size:0.8rem;"><i class="fas fa-plus"></i> Set</button>
-          </div>
-          <div id="alarmList" style="margin-top:8px;">
-            <div class="empty-state" style="padding:10px;">
-              <p style="font-size:0.8rem;">No alarms set. Add a reminder for your Quran reading!</p>
-            </div>
-          </div>
-          <div id="fcmStatus" class="fcm-status"></div>
         </div>
       </div>
 
@@ -544,6 +494,21 @@
         <div class="card">
           <h2><i class="fas fa-handshake"></i> Musāfaḥ</h2>
           <p style="font-size:0.75rem; opacity:0.6;">Recite together · Live Video/Audio · Correct each other</p>
+        </div>
+
+        <!-- Mode Selection -->
+        <div class="card">
+          <h3><i class="fas fa-sliders-h"></i> Select Mode</h3>
+          <div class="mode-selection">
+            <button onclick="selectMode('video')" id="modeVideo" class="active">
+              <i class="fas fa-video"></i>
+              Live Video
+            </button>
+            <button onclick="selectMode('audio')" id="modeAudio">
+              <i class="fas fa-microphone"></i>
+              Live Audio
+            </button>
+          </div>
         </div>
 
         <div class="card">
@@ -589,103 +554,35 @@
           <button onclick="requestMediaPermissions()" class="success"><i class="fas fa-video"></i> Grant Access</button>
         </div>
         <div id="mediaError" class="media-error"></div>
-
-        <!-- WebRTC Video Call -->
-        <div class="card">
-          <h3><i class="fas fa-video"></i> Live Session</h3>
-          <div class="video-container" id="videoContainer">
-            <div class="video-wrapper" id="localVideoWrapper">
-              <video id="localVideo" autoplay muted playsinline></video>
-              <div id="localPlaceholder" class="video-placeholder">📹 Camera off</div>
-              <span class="video-label">You</span>
-            </div>
-            <div class="video-wrapper" id="remoteVideoWrapper">
-              <video id="remoteVideo" autoplay playsinline></video>
-              <div id="remotePlaceholder" class="video-placeholder">📹 Waiting for partner...</div>
-              <span class="video-label" id="remoteLabel">Partner</span>
-            </div>
-          </div>
-          <div id="callStatus" class="call-status idle">📡 Not connected</div>
-          
-          <!-- Camera selection -->
-          <div class="camera-select">
-            <i class="fas fa-camera"></i>
-            <select id="cameraSelect" onchange="switchCamera()">
-              <option value="">Loading cameras...</option>
-            </select>
-            <button onclick="switchCamera()" class="outline" style="width:auto; padding:4px 12px; margin:0; font-size:0.7rem;"><i class="fas fa-sync"></i></button>
-          </div>
-          
-          <div class="video-controls">
-            <button onclick="toggleCamera()" id="cameraToggle" class="outline" disabled><i class="fas fa-video"></i> Camera</button>
-            <button onclick="toggleMicrophone()" id="micToggle" class="outline" disabled><i class="fas fa-microphone"></i> Mic</button>
-            <button onclick="toggleScreenShare()" id="screenToggle" class="outline" disabled><i class="fas fa-desktop"></i> Share</button>
-            <button onclick="startCall()" id="callButton" class="call-btn" disabled><i class="fas fa-phone"></i> Start Call</button>
-          </div>
-        </div>
-
-        <div class="card">
-          <h3><i class="fas fa-microphone-alt"></i> Recitation Status</h3>
-          <div style="text-align:center; padding:8px;">
-            <div id="recitationStatus" class="recitation-status inactive">
-              <p>🕊️ No active session</p>
-            </div>
-            <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:8px;">
-              <button onclick="toggleRecitation()" class="recording-btn" style="width:64px;height:64px;border-radius:50%;font-size:1.5rem;margin:0;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;background:#0f766e;color:white;">
-                <i class="fas fa-microphone"></i>
-              </button>
-              <button id="callAttentionBtn" onclick="callAttention()" style="width:64px;height:64px;border-radius:50%;font-size:1.5rem;margin:0;display:none;align-items:center;justify-content:center;border:none;cursor:pointer;background:#dc2626;color:white;" title="Call partner's attention for correction">
-                <i class="fas fa-exclamation-triangle"></i>
-              </button>
-            </div>
-            <p style="font-size:0.7rem; opacity:0.5; margin-top:4px;" id="recitationLabel">Tap to start reciting</p>
-            <div id="recitationTimer" style="font-size:1.1rem; font-weight:600; margin-top:4px;">00:00</div>
-          </div>
-        </div>
-
-        <div class="card">
-          <h3><i class="fas fa-exchange-alt"></i> Corrections</h3>
-          <div id="correctionsContainer">
-            <div class="empty-state" style="padding:15px;">
-              <p style="font-size:0.8rem;">No corrections yet. Help your partner improve!</p>
-            </div>
-          </div>
-          <div style="display:flex; gap:6px; margin-top:6px;">
-            <input id="correctionInput" placeholder="Send correction to partner..." style="flex:1; margin:0; font-size:0.8rem;">
-            <button onclick="sendCorrection()" style="width:auto; padding:9px 16px; margin:0; font-size:0.8rem;"><i class="fas fa-pen"></i></button>
-          </div>
-        </div>
-
-        <div class="card">
-          <h3><i class="fas fa-trophy"></i> Musaffah Stats</h3>
-          <div class="stats-mini">
-            <span class="stat-mini">🤝 <span id="musaffahSessions">0</span> Sessions</span>
-            <span class="stat-mini">📖 <span id="musaffahJuz">0</span> Juz</span>
-            <span class="stat-mini">🔥 <span id="musaffahStreak">0</span> Streak</span>
-          </div>
-        </div>
       </div>
 
       <!-- CHATS -->
       <div id="pageChats" class="page">
         <div class="card">
           <h2><i class="fas fa-comment-dots"></i> Chats</h2>
-          <div class="chat-type-tabs">
-            <button class="active" onclick="switchChatTab('groups', event)"><i class="fas fa-users"></i> Groups</button>
-            <button onclick="switchChatTab('private', event)"><i class="fas fa-user"></i> Private</button>
+          
+          <!-- Chat Action Buttons -->
+          <div class="chat-actions">
+            <button onclick="openAddFriend()" class="success"><i class="fas fa-user-plus"></i> Add Friend</button>
+            <button onclick="showFriendRequests()" class="warning"><i class="fas fa-bell"></i> Requests</button>
           </div>
+
+          <div class="chat-type-tabs">
+            <button class="active" onclick="switchChatTab('chats', event)"><i class="fas fa-comments"></i> Chats</button>
+            <button onclick="switchChatTab('friends', event)"><i class="fas fa-user-friends"></i> Friends</button>
+          </div>
+
           <div id="chatList">
             <div class="empty-state">
               <i class="fas fa-comments"></i>
-              <p>No chats yet. Start a conversation!</p>
+              <p>No chats yet. Add friends and start chatting!</p>
             </div>
           </div>
-          <button onclick="createNewChat()" class="success" style="margin-top:4px; font-size:0.8rem;"><i class="fas fa-plus"></i> New Chat</button>
         </div>
 
         <div id="chatPanel" class="card hidden">
           <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
-            <div class="chat-avatar" id="chatAvatar" style="width:32px;height:32px;font-size:0.7rem;">👥</div>
+            <div class="chat-avatar" id="chatAvatar" style="width:32px;height:32px;font-size:0.7rem;">👤</div>
             <h2 style="font-size:0.9rem; flex:1;" id="chatPartnerName">Chat</h2>
             <span onclick="closeChatPanel()" style="cursor:pointer;font-size:1.2rem;opacity:0.5;">✕</span>
           </div>
@@ -699,29 +596,51 @@
     </div>
   </div>
 
+  <!-- CALL FULLSCREEN -->
+  <div id="callFullscreen" class="call-fullscreen">
+    <div class="video-grid" id="callVideoGrid">
+      <div class="video-wrapper dominant" id="remoteVideoWrapper">
+        <video id="remoteVideoCall" autoplay playsinline></video>
+        <span class="video-label" id="remoteCallLabel">Partner</span>
+      </div>
+      <div class="video-wrapper" id="localVideoWrapper">
+        <video id="localVideoCall" autoplay muted playsinline></video>
+        <span class="video-label">You</span>
+      </div>
+      <div id="audioModeIndicator" class="audio-mode-indicator" style="display:none;">🎙️</div>
+    </div>
+    <div class="correction-flash" id="correctionFlash"></div>
+    <div class="call-controls">
+      <button onclick="toggleCallMic()" id="callMicToggle" class="outline"><i class="fas fa-microphone"></i> Mic</button>
+      <button onclick="toggleCallCam()" id="callCamToggle" class="outline"><i class="fas fa-video"></i> Cam</button>
+      <button onclick="sendCorrectionAlert()" id="correctionBtn" class="correction"><i class="fas fa-exclamation-triangle"></i> Correct</button>
+      <button onclick="endCall()" class="end-call"><i class="fas fa-phone-slash"></i> End</button>
+    </div>
+  </div>
+
+  <!-- ADD FRIEND MODAL -->
+  <div id="addFriendModal" class="card" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:60; width:90%; max-width:400px; max-height:80vh; overflow-y:auto;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+      <h2><i class="fas fa-user-plus"></i> Add Friend</h2>
+      <span onclick="closeAddFriend()" style="cursor:pointer;font-size:1.5rem;opacity:0.5;">✕</span>
+    </div>
+    <div class="search-box">
+      <input id="friendSearchInput" placeholder="Search by name..." onkeyup="searchUsers()">
+      <button onclick="searchUsers()" class="purple"><i class="fas fa-search"></i></button>
+    </div>
+    <button onclick="shuffleUserList()" class="outline" style="margin-bottom:8px; padding:4px 12px; font-size:0.7rem; width:auto;"><i class="fas fa-random"></i> Shuffle</button>
+    <div id="userListContainer" class="user-list"></div>
+  </div>
+  <div id="addFriendOverlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:55;" onclick="closeAddFriend()"></div>
+
   <!-- ATTENTION OVERLAY -->
   <div id="attentionOverlay" class="attention-overlay">
     <div class="content">
       <i class="fas fa-exclamation-triangle" style="font-size:3rem;color:#dc2626;display:block;margin-bottom:10px;"></i>
       <h2>⚠️ Attention!</h2>
       <p style="margin:10px 0;font-size:1rem;"><span id="attentionPartnerName">Your partner</span> called your attention during recitation.</p>
-      <p style="font-size:0.85rem;opacity:0.6;">Please check the correction message below.</p>
-      <div id="attentionCorrectionMessage" style="background:#fef3c7;padding:10px;border-radius:10px;margin:10px 0;font-style:italic;"></div>
+      <p style="font-size:0.85rem;opacity:0.6;">Please correct your recitation.</p>
       <button onclick="dismissAttention()" class="close-btn" style="background:#0f766e;color:white;border:none;padding:8px 24px;border-radius:30px;cursor:pointer;font-size:0.9rem;">✓ Got it</button>
-    </div>
-  </div>
-
-  <!-- ALARM NOTIFICATION -->
-  <div id="alarmNotification" class="alarm-notification">
-    <div class="content">
-      <span class="icon">📖</span>
-      <h2>⏰ Time for Quran!</h2>
-      <p id="alarmNotificationMessage">It's time to read your daily Quran.</p>
-      <div class="btn-group">
-        <button onclick="dismissAlarm()" class="success"><i class="fas fa-check"></i> I'll read</button>
-        <button onclick="snoozeAlarm()" class="warning"><i class="fas fa-hourglass-half"></i> Snooze 5 min</button>
-        <button onclick="dismissAlarm()" class="outline"><i class="fas fa-times"></i> Dismiss</button>
-      </div>
     </div>
   </div>
 
@@ -753,26 +672,20 @@
     let currentLang = 'en';
     let isSignUp = true;
     let currentChatId = null;
-    let currentChatType = 'group';
+    let currentChatType = 'private';
     let unsubscribeChat = null;
-    let isReciting = false;
-    let recitationTimer = null;
-    let recitationSeconds = 0;
     let pendingUserData = null;
-    let activeChatTab = 'groups';
-    let partnerIsReciting = false;
+    let activeChatTab = 'chats';
     let attentionTimeout = null;
-    let unsubscribeAvailablePartners = null;
     let unsubscribeRequests = null;
-    let alarmTimeouts = [];
-    let snoozeTimeout = null;
-    let alarmCheckInterval = null;
-    let isAlarmRinging = false;
     let fcmToken = null;
     let authStateChecked = false;
     let allUsers = [];
     let currentFilter = 'all';
     let searchQuery = '';
+    let selectedMode = 'video';
+    let allUsersList = [];
+    let friendRequestsListener = null;
 
     // ============ WEBRTC STATE ============
     let peerConnection = null;
@@ -788,10 +701,12 @@
     let signalingUnsubscribe = null;
     let hasMediaPermissions = false;
     let permissionRequested = false;
-    let cameraDevices = [];
     let partnerOnline = false;
     let partnerStatusUnsubscribe = null;
     let isGettingMedia = false;
+    let dominantVideo = 'remote'; // 'remote' or 'local'
+    let callPartnerId = null;
+    let callPartnerName = 'Partner';
 
     // ============ UI HELPERS ============
     function showStep(stepId) {
@@ -830,6 +745,30 @@
       errorEl.classList.remove('hidden');
     }
 
+    // ============ PROFILE TOGGLE ============
+    let profileOpen = false;
+
+    function toggleProfileDetails() {
+      profileOpen = !profileOpen;
+      const details = document.getElementById('profileDetails');
+      const icon = document.getElementById('profileToggleIcon');
+      if (profileOpen) {
+        details.classList.add('open');
+        icon.classList.add('open');
+      } else {
+        details.classList.remove('open');
+        icon.classList.remove('open');
+      }
+    }
+
+    // ============ MUSYAFFAH MODE SELECTION ============
+    function selectMode(mode) {
+      selectedMode = mode;
+      document.getElementById('modeVideo').classList.toggle('active', mode === 'video');
+      document.getElementById('modeAudio').classList.toggle('active', mode === 'audio');
+      showNotification('Switched to ' + (mode === 'video' ? 'Video' : 'Audio') + ' mode');
+    }
+
     // ============ PARTNER SEARCH ============
     function loadAllUsers() {
       if (!user) return;
@@ -841,7 +780,6 @@
           const users = [];
           snapshot.forEach(doc => {
             const data = doc.data();
-            // Don't show self, users with partners, or users without name
             if (doc.id !== user.id && !data.partner && !data.partnerId && data.name) {
               users.push({
                 id: doc.id,
@@ -918,7 +856,6 @@
 
       let html = '';
       filtered.forEach(u => {
-        // Check if request was already sent
         const alreadySent = (user.sentRequests || []).includes(u.id);
         html += `
           <div class="search-item">
@@ -1108,11 +1045,10 @@
           online: true,
           pendingRequests: [],
           sentRequests: [],
-          musaffahSessions: 0,
-          musaffahJuz: 0,
-          musaffahStreak: 0,
+          friendRequests: [],
+          friends: [],
+          chats: [],
           isReciting: false,
-          alarms: [],
           fcmToken: '',
           notificationsEnabled: false,
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -1136,16 +1072,14 @@
 
     // ============ SIGN OUT ============
     async function signOut() {
-      if (isReciting) toggleRecitation();
       if (isCallActive) endCall();
-      clearAllAlarms();
-      if (alarmCheckInterval) {
-        clearInterval(alarmCheckInterval);
-        alarmCheckInterval = null;
-      }
       if (partnerStatusUnsubscribe) {
         partnerStatusUnsubscribe();
         partnerStatusUnsubscribe = null;
+      }
+      if (friendRequestsListener) {
+        friendRequestsListener();
+        friendRequestsListener = null;
       }
       
       if (user && user.id) {
@@ -1158,7 +1092,6 @@
       localStorage.removeItem('musaffahUser');
       user = null;
       if (unsubscribeChat) unsubscribeChat();
-      if (unsubscribeAvailablePartners) unsubscribeAvailablePartners();
       if (unsubscribeRequests) unsubscribeRequests();
       if (signalingUnsubscribe) signalingUnsubscribe();
       
@@ -1213,19 +1146,27 @@
       document.getElementById('authCard').classList.add('hidden');
       document.getElementById('appMain').classList.remove('hidden');
 
+      // Update Dashboard
       const initial = (user.name || 'Reader')[0].toUpperCase();
       document.getElementById('avatarDisplay').innerText = initial;
       document.getElementById('welcomeName').innerText = 'Assalamu Alaikum, ' + (user.name || 'Reader');
       document.getElementById('userEmailDisplay').innerText = auth.currentUser?.email || '';
+      
+      // Update Profile
+      document.getElementById('profileName').innerText = user.name || 'Reader';
+      document.getElementById('profileEmail').innerText = auth.currentUser?.email || '';
+      document.getElementById('profilePlan').innerText = (user.plan || '7') + ' days';
+      document.getElementById('profileRegion').innerText = user.regionName || 'Mecca';
+      
+      const langNames = {
+        en: 'English', ar: 'العربية', ha: 'Hausa', ur: 'اردو', tr: 'Türkçe', fr: 'Français', id: 'Bahasa Indonesia'
+      };
+      document.getElementById('profileLanguage').innerText = langNames[user.lang] || 'English';
 
-      document.getElementById('miniJuz').innerText = user.juz ? user.juz.length : 0;
-      document.getElementById('miniKhatm').innerText = user.khatm || 0;
-      document.getElementById('miniStreak').innerText = user.streak || 0;
-      document.getElementById('userRegion').innerText = user.regionName || 'Mecca';
-
-      document.getElementById('musaffahSessions').innerText = user.musaffahSessions || 0;
-      document.getElementById('musaffahJuz').innerText = user.musaffahJuz || 0;
-      document.getElementById('musaffahStreak').innerText = user.musaffahStreak || 0;
+      // Update Stats
+      document.getElementById('statJuz').innerText = user.juz ? user.juz.length : 0;
+      document.getElementById('statKhatm').innerText = user.khatm || 0;
+      document.getElementById('statStreak').innerText = user.streak || 0;
 
       if (user.theme === 'dark') document.body.classList.add('dark');
       else document.body.classList.remove('dark');
@@ -1235,11 +1176,8 @@
 
       renderJuz();
       updatePartnerDisplay();
-      listenForFeed();
-      listenForCorrections();
       listenForConnectionRequests();
-      renderAlarms();
-      startAlarmChecker();
+      listenForFriendRequests();
       renderChats();
       switchPage('pageHome');
       
@@ -1278,8 +1216,6 @@
                 await db.collection('users').doc(user.id).update({ online: true });
                 authStateChecked = true;
                 loadApp();
-                listenForPartnerRecitation();
-                listenForAttention();
                 checkFCMPermission();
                 return;
               }
@@ -1299,8 +1235,6 @@
             await db.collection('users').doc(user.id).update({ online: true });
             authStateChecked = true;
             loadApp();
-            listenForPartnerRecitation();
-            listenForAttention();
             checkFCMPermission();
           } else {
             pendingUserData = { uid: firebaseUser.uid, email: firebaseUser.email };
@@ -1329,30 +1263,6 @@
       if (e.key === 'Enter') sendChatMessage();
     });
 
-    const now = new Date();
-    document.getElementById('alarmHour').value = String(now.getHours()).padStart(2, '0');
-    const minuteOptions = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
-    const closestMinute = minuteOptions.reduce((prev, curr) => {
-      return Math.abs(curr - now.getMinutes()) < Math.abs(prev - now.getMinutes()) ? curr : prev;
-    });
-    document.getElementById('alarmMinute').value = String(closestMinute).padStart(2, '0');
-
-    if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
-      navigator.mediaDevices.enumerateDevices().then(devices => {
-        const videoDevices = devices.filter(d => d.kind === 'videoinput');
-        if (videoDevices.length > 0) {
-          const select = document.getElementById('cameraSelect');
-          select.innerHTML = '';
-          videoDevices.forEach((device, index) => {
-            const option = document.createElement('option');
-            option.value = device.deviceId;
-            option.text = device.label || `Camera ${index + 1}`;
-            select.appendChild(option);
-          });
-        }
-      }).catch(() => {});
-    }
-
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('firebase-messaging-sw.js')
         .then((registration) => {
@@ -1362,6 +1272,9 @@
           console.log('Service Worker registration failed:', err);
         });
     }
+
+    // Default mode: video
+    selectMode('video');
 
     // ============ PARTNER ONLINE STATUS ============
     function listenPartnerStatus() {
@@ -1377,34 +1290,17 @@
           if (doc.exists) {
             const data = doc.data();
             partnerOnline = data.online === true;
-            
-            const callBtn = document.getElementById('callButton');
-            if (!partnerOnline && !isCallActive) {
-              callBtn.disabled = true;
-              callBtn.innerHTML = '<i class="fas fa-user-slash"></i> Partner Offline';
-              updateCallStatus('offline', `📡 ${user.partner} is offline`);
-            } else if (partnerOnline && !isCallActive) {
-              if (hasMediaPermissions) {
-                callBtn.disabled = false;
-              }
-              callBtn.innerHTML = '<i class="fas fa-phone"></i> Start Call';
-              updateCallStatus('idle', `✅ ${user.partner} is online`);
-            }
           }
         });
     }
 
     // ============ MEDIA PERMISSIONS ============
     async function requestMediaPermissions() {
-      if (hasMediaPermissions) {
-        return true;
-      }
-      
+      if (hasMediaPermissions) return true;
       if (permissionRequested) {
-        showNotification('📹 Camera/microphone access already requested. Please check browser settings.');
+        showNotification('📹 Access already requested. Please check browser settings.');
         return false;
       }
-      
       if (isGettingMedia) {
         showNotification('⏳ Already requesting access...');
         return false;
@@ -1414,11 +1310,12 @@
         isGettingMedia = true;
         document.getElementById('mediaError').style.display = 'none';
         
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio: true,
-          video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }
-        });
+        const constraints = { audio: true };
+        if (selectedMode === 'video') {
+          constraints.video = { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } };
+        }
         
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
         stream.getTracks().forEach(track => track.stop());
         
         hasMediaPermissions = true;
@@ -1426,15 +1323,6 @@
         document.getElementById('mediaPermissionBanner').classList.add('hidden');
         document.getElementById('mediaError').style.display = 'none';
         
-        document.getElementById('cameraToggle').disabled = false;
-        document.getElementById('micToggle').disabled = false;
-        document.getElementById('screenToggle').disabled = false;
-        
-        if (partnerOnline) {
-          document.getElementById('callButton').disabled = false;
-        }
-        
-        await loadCameraDevices();
         showNotification('✅ Camera and microphone access granted!');
         isGettingMedia = false;
         return true;
@@ -1468,145 +1356,6 @@
       }
     }
 
-    async function checkMediaPermissions() {
-      if (hasMediaPermissions) {
-        document.getElementById('mediaPermissionBanner').classList.add('hidden');
-        return true;
-      }
-      
-      if (permissionRequested || isGettingMedia) {
-        return false;
-      }
-      
-      try {
-        isGettingMedia = true;
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio: true,
-          video: true
-        });
-        stream.getTracks().forEach(track => track.stop());
-        hasMediaPermissions = true;
-        permissionRequested = true;
-        document.getElementById('mediaPermissionBanner').classList.add('hidden');
-        document.getElementById('mediaError').style.display = 'none';
-        
-        document.getElementById('cameraToggle').disabled = false;
-        document.getElementById('micToggle').disabled = false;
-        document.getElementById('screenToggle').disabled = false;
-        
-        if (partnerOnline) {
-          document.getElementById('callButton').disabled = false;
-        }
-        
-        await loadCameraDevices();
-        isGettingMedia = false;
-        return true;
-      } catch (e) {
-        isGettingMedia = false;
-        if (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError') {
-          document.getElementById('mediaPermissionBanner').classList.remove('hidden');
-          document.getElementById('mediaPermissionBanner').innerHTML = `
-            <p>🎥 Allow camera and microphone access for video calls.</p>
-            <button onclick="requestMediaPermissions()" class="success"><i class="fas fa-video"></i> Grant Access</button>
-          `;
-        } else {
-          document.getElementById('mediaPermissionBanner').classList.remove('hidden');
-          document.getElementById('mediaPermissionBanner').innerHTML = `
-            <p>📹 ${e.message || 'Camera or microphone not found.'}</p>
-            <button onclick="requestMediaPermissions()" class="success"><i class="fas fa-sync"></i> Try Again</button>
-          `;
-        }
-        return false;
-      }
-    }
-
-    // ============ CAMERA DEVICES ============
-    async function loadCameraDevices() {
-      try {
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        cameraDevices = devices.filter(device => device.kind === 'videoinput');
-        
-        const select = document.getElementById('cameraSelect');
-        select.innerHTML = '';
-        
-        if (cameraDevices.length === 0) {
-          select.innerHTML = '<option value="">No cameras found</option>';
-          return;
-        }
-        
-        cameraDevices.forEach((device, index) => {
-          const option = document.createElement('option');
-          option.value = device.deviceId;
-          option.text = device.label || `Camera ${index + 1}`;
-          select.appendChild(option);
-        });
-        
-        const userFacing = cameraDevices.find(d => 
-          d.label.toLowerCase().includes('front') || 
-          d.label.toLowerCase().includes('user') ||
-          d.label.toLowerCase().includes('face')
-        );
-        if (userFacing) {
-          select.value = userFacing.deviceId;
-        }
-        
-      } catch (e) {
-        console.error('Error loading camera devices:', e);
-      }
-    }
-
-    async function switchCamera() {
-      if (!localStream) {
-        showNotification('Please start a call first to switch cameras');
-        return;
-      }
-      
-      const select = document.getElementById('cameraSelect');
-      const deviceId = select.value;
-      
-      if (!deviceId) {
-        showNotification('No camera selected');
-        return;
-      }
-      
-      try {
-        const newStream = await navigator.mediaDevices.getUserMedia({
-          audio: true,
-          video: { deviceId: { exact: deviceId }, width: { ideal: 640 }, height: { ideal: 480 } }
-        });
-        
-        if (peerConnection) {
-          const senders = peerConnection.getSenders();
-          const videoSender = senders.find(s => s.track && s.track.kind === 'video');
-          const audioSender = senders.find(s => s.track && s.track.kind === 'audio');
-          
-          const newVideoTrack = newStream.getVideoTracks()[0];
-          const newAudioTrack = newStream.getAudioTracks()[0];
-          
-          if (videoSender && newVideoTrack) {
-            await videoSender.replaceTrack(newVideoTrack);
-          }
-          
-          if (audioSender && newAudioTrack) {
-            await audioSender.replaceTrack(newAudioTrack);
-          }
-        }
-        
-        if (localStream) {
-          localStream.getTracks().forEach(track => track.stop());
-        }
-        localStream = newStream;
-        
-        document.getElementById('localVideo').srcObject = localStream;
-        document.getElementById('localPlaceholder').style.display = 'none';
-        
-        showNotification('📷 Camera switched');
-      } catch (e) {
-        console.error('Error switching camera:', e);
-        showNotification('❌ Failed to switch camera: ' + e.message);
-      }
-    }
-
     // ============ WEBRTC FUNCTIONS ============
     async function getLocalStream() {
       if (isGettingMedia) {
@@ -1621,45 +1370,19 @@
 
       try {
         isGettingMedia = true;
-        const deviceId = document.getElementById('cameraSelect').value;
-        const constraints = {
-          audio: true,
-          video: { 
-            facingMode: 'user', 
-            width: { ideal: 640 }, 
-            height: { ideal: 480 } 
-          }
-        };
-        
-        if (deviceId) {
-          constraints.video = { deviceId: { exact: deviceId }, width: { ideal: 640 }, height: { ideal: 480 } };
+        const constraints = { audio: true };
+        if (selectedMode === 'video') {
+          constraints.video = { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } };
         }
         
         localStream = await navigator.mediaDevices.getUserMedia(constraints);
-        const video = document.getElementById('localVideo');
-        video.srcObject = localStream;
-        document.getElementById('localPlaceholder').style.display = 'none';
-        video.style.display = 'block';
         document.getElementById('mediaError').style.display = 'none';
         isGettingMedia = false;
         return localStream;
       } catch (e) {
         console.error('Error getting local stream:', e);
         isGettingMedia = false;
-        
-        let errorMsg = '';
-        if (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError') {
-          errorMsg = 'Please allow camera and microphone access.';
-          document.getElementById('mediaPermissionBanner').classList.remove('hidden');
-        } else if (e.name === 'NotFoundError') {
-          errorMsg = 'No camera or microphone found.';
-        } else {
-          errorMsg = 'Could not access camera/microphone: ' + e.message;
-        }
-        
-        document.getElementById('mediaError').textContent = '❌ ' + errorMsg;
-        document.getElementById('mediaError').style.display = 'block';
-        showNotification('❌ ' + errorMsg);
+        showNotification('❌ Could not access camera/microphone: ' + e.message);
         return null;
       }
     }
@@ -1685,12 +1408,10 @@
       
       peerConnection.ontrack = (event) => {
         remoteStream = event.streams[0];
-        const video = document.getElementById('remoteVideo');
-        video.srcObject = remoteStream;
-        document.getElementById('remotePlaceholder').style.display = 'none';
-        video.style.display = 'block';
-        updateCallStatus('connected', 'Connected');
-        showNotification('📹 Video call connected!');
+        const remoteVideo = document.getElementById('remoteVideoCall');
+        remoteVideo.srcObject = remoteStream;
+        updateCallStatus('connected');
+        showNotification('📹 Call connected!');
       };
       
       peerConnection.onicecandidate = (event) => {
@@ -1703,13 +1424,9 @@
         const state = peerConnection.connectionState;
         console.log('Connection state:', state);
         if (state === 'connected') {
-          updateCallStatus('connected', 'Connected');
           isCallActive = true;
           startCallTimer();
-        } else if (state === 'connecting') {
-          updateCallStatus('connecting', 'Connecting...');
         } else if (state === 'disconnected' || state === 'failed' || state === 'closed') {
-          updateCallStatus('disconnected', 'Disconnected');
           endCall();
         }
       };
@@ -1724,8 +1441,7 @@
       }
       
       if (!partnerOnline) {
-        showNotification(`📡 ${user.partner} is currently offline. Please try again later.`);
-        updateCallStatus('offline', `📡 ${user.partner} is offline`);
+        showNotification(`📡 ${user.partner} is currently offline.`);
         return;
       }
       
@@ -1750,6 +1466,33 @@
           if (!stream) return;
         }
         
+        // Setup fullscreen call UI
+        document.getElementById('callFullscreen').classList.add('active');
+        document.getElementById('container').style.display = 'none';
+        document.getElementById('bottomNav').style.display = 'none';
+        document.getElementById('header').style.display = 'none';
+        
+        // Show/hide video based on mode
+        if (selectedMode === 'audio') {
+          document.getElementById('localVideoWrapper').style.display = 'none';
+          document.getElementById('remoteVideoWrapper').style.display = 'none';
+          document.getElementById('audioModeIndicator').style.display = 'block';
+          document.getElementById('callCamToggle').style.display = 'none';
+        } else {
+          document.getElementById('localVideoWrapper').style.display = 'block';
+          document.getElementById('remoteVideoWrapper').style.display = 'block';
+          document.getElementById('audioModeIndicator').style.display = 'none';
+          document.getElementById('callCamToggle').style.display = 'inline-block';
+        }
+        
+        // Set local video
+        const localVideo = document.getElementById('localVideoCall');
+        localVideo.srcObject = localStream;
+        
+        callPartnerId = user.partnerId;
+        callPartnerName = user.partner;
+        document.getElementById('remoteCallLabel').textContent = callPartnerName;
+        
         createPeerConnection();
         
         const offer = await peerConnection.createOffer();
@@ -1757,17 +1500,13 @@
         
         sendSignalingData({ type: 'offer', offer: offer });
         
-        updateCallStatus('connecting', 'Calling...');
-        document.getElementById('callButton').innerHTML = '<i class="fas fa-phone-slash"></i> End Call';
-        document.getElementById('callButton').classList.add('active');
-        
-        listenForSignaling();
-        
-        showNotification(`📞 Calling ${user.partner}...`);
+        updateCallStatus('connecting');
+        showNotification(`📞 Calling ${callPartnerName}...`);
         
       } catch (e) {
         console.error('Error starting call:', e);
         showNotification('❌ Failed to start call: ' + e.message);
+        endCall();
       }
     }
 
@@ -1805,7 +1544,6 @@
 
     async function handleIncomingCall(offer) {
       if (isGettingMedia) {
-        showNotification('⏳ Please wait for media access...');
         sendSignalingData({ type: 'reject', reason: 'busy' });
         return;
       }
@@ -1833,6 +1571,31 @@
           }
         }
         
+        // Setup fullscreen call UI
+        document.getElementById('callFullscreen').classList.add('active');
+        document.getElementById('container').style.display = 'none';
+        document.getElementById('bottomNav').style.display = 'none';
+        document.getElementById('header').style.display = 'none';
+        
+        if (selectedMode === 'audio') {
+          document.getElementById('localVideoWrapper').style.display = 'none';
+          document.getElementById('remoteVideoWrapper').style.display = 'none';
+          document.getElementById('audioModeIndicator').style.display = 'block';
+          document.getElementById('callCamToggle').style.display = 'none';
+        } else {
+          document.getElementById('localVideoWrapper').style.display = 'block';
+          document.getElementById('remoteVideoWrapper').style.display = 'block';
+          document.getElementById('audioModeIndicator').style.display = 'none';
+          document.getElementById('callCamToggle').style.display = 'inline-block';
+        }
+        
+        const localVideo = document.getElementById('localVideoCall');
+        localVideo.srcObject = localStream;
+        
+        callPartnerId = user.partnerId;
+        callPartnerName = user.partner;
+        document.getElementById('remoteCallLabel').textContent = callPartnerName;
+        
         createPeerConnection();
         
         await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
@@ -1840,9 +1603,7 @@
         await peerConnection.setLocalDescription(answer);
         sendSignalingData({ type: 'answer', answer: answer });
         
-        updateCallStatus('connected', 'Connected');
-        document.getElementById('callButton').innerHTML = '<i class="fas fa-phone-slash"></i> End Call';
-        document.getElementById('callButton').classList.add('active');
+        updateCallStatus('connected');
         isCallActive = true;
         startCallTimer();
         
@@ -1855,11 +1616,10 @@
           iceCandidatesQueue = [];
         }
         
-        listenForSignaling();
-        
       } catch (e) {
         console.error('Error handling incoming call:', e);
         showNotification('❌ Failed to answer call: ' + e.message);
+        endCall();
       }
     }
 
@@ -1926,19 +1686,13 @@
       }
       
       remoteStream = null;
-      const remoteVideo = document.getElementById('remoteVideo');
-      remoteVideo.srcObject = null;
-      remoteVideo.style.display = 'none';
-      document.getElementById('remotePlaceholder').style.display = 'block';
+      document.getElementById('remoteVideoCall').srcObject = null;
+      document.getElementById('localVideoCall').srcObject = null;
       
-      updateCallStatus('idle', partnerOnline ? `✅ ${user.partner} is online` : 'Not connected');
-      document.getElementById('callButton').innerHTML = '<i class="fas fa-phone"></i> Start Call';
-      document.getElementById('callButton').classList.remove('active');
-      
-      if (!partnerOnline) {
-        document.getElementById('callButton').disabled = true;
-        document.getElementById('callButton').innerHTML = '<i class="fas fa-user-slash"></i> Partner Offline';
-      }
+      document.getElementById('callFullscreen').classList.remove('active');
+      document.getElementById('container').style.display = 'block';
+      document.getElementById('bottomNav').style.display = 'flex';
+      document.getElementById('header').style.display = 'block';
       
       if (signalingUnsubscribe) {
         signalingUnsubscribe();
@@ -1950,13 +1704,24 @@
       }
       
       iceCandidatesQueue = [];
+      
+      // Reset audio mode
+      document.getElementById('audioModeIndicator').style.display = 'none';
+      document.getElementById('localVideoWrapper').style.display = 'block';
+      document.getElementById('remoteVideoWrapper').style.display = 'block';
+      document.getElementById('callCamToggle').style.display = 'inline-block';
+      document.getElementById('correctionFlash').classList.remove('active');
+      
       showNotification('📴 Call ended');
     }
 
-    function updateCallStatus(type, text) {
-      const el = document.getElementById('callStatus');
-      el.className = 'call-status ' + type;
-      el.textContent = text;
+    function updateCallStatus(status) {
+      // Status is shown in the call UI via the video labels
+      if (status === 'connected') {
+        document.getElementById('remoteCallLabel').textContent = callPartnerName + ' (Live)';
+      } else if (status === 'connecting') {
+        document.getElementById('remoteCallLabel').textContent = 'Connecting...';
+      }
     }
 
     function startCallTimer() {
@@ -1966,671 +1731,105 @@
         const elapsed = Math.floor((Date.now() - callStartTime) / 1000);
         const mins = Math.floor(elapsed / 60);
         const secs = elapsed % 60;
-        document.getElementById('recitationTimer').innerText = 
-          String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+        // Update call duration in the UI
+        const duration = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+        document.getElementById('remoteCallLabel').textContent = callPartnerName + ' · ' + duration;
       }, 1000);
     }
 
-    async function toggleCamera() {
-      if (!localStream) {
-        const stream = await getLocalStream();
-        if (!stream) return;
-      }
-      isCameraOn = !isCameraOn;
-      const videoTracks = localStream.getVideoTracks();
-      videoTracks.forEach(track => track.enabled = isCameraOn);
-      document.getElementById('cameraToggle').innerHTML = isCameraOn ? '<i class="fas fa-video"></i> Camera' : '<i class="fas fa-video-slash"></i> Camera';
-      
-      if (!isCameraOn) {
-        document.getElementById('localVideoWrapper').classList.add('muted');
-      } else {
-        document.getElementById('localVideoWrapper').classList.remove('muted');
-      }
-    }
-
-    async function toggleMicrophone() {
-      if (!localStream) {
-        const stream = await getLocalStream();
-        if (!stream) return;
-      }
+    // ============ CALL CONTROLS ============
+    function toggleCallMic() {
+      if (!localStream) return;
       isMicOn = !isMicOn;
       const audioTracks = localStream.getAudioTracks();
       audioTracks.forEach(track => track.enabled = isMicOn);
-      document.getElementById('micToggle').innerHTML = isMicOn ? '<i class="fas fa-microphone"></i> Mic' : '<i class="fas fa-microphone-slash"></i> Mic';
+      document.getElementById('callMicToggle').innerHTML = isMicOn ? '<i class="fas fa-microphone"></i> Mic' : '<i class="fas fa-microphone-slash"></i> Mic';
+      document.getElementById('callMicToggle').className = isMicOn ? 'outline' : 'mic-off';
     }
 
-    async function toggleScreenShare() {
-      if (!peerConnection) {
-        showNotification('Start a call first');
+    function toggleCallCam() {
+      if (selectedMode === 'audio' || !localStream) return;
+      isCameraOn = !isCameraOn;
+      const videoTracks = localStream.getVideoTracks();
+      videoTracks.forEach(track => track.enabled = isCameraOn);
+      document.getElementById('callCamToggle').innerHTML = isCameraOn ? '<i class="fas fa-video"></i> Cam' : '<i class="fas fa-video-slash"></i> Cam';
+      document.getElementById('callCamToggle').className = isCameraOn ? 'outline' : 'cam-off';
+    }
+
+    function sendCorrectionAlert() {
+      if (!isCallActive || !user || !user.partnerId) {
+        showNotification('No active call');
         return;
       }
       
-      if (isScreenSharing) {
-        const sender = peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
-        if (sender && localStream) {
-          const newTrack = localStream.getVideoTracks()[0];
-          if (newTrack) {
-            await sender.replaceTrack(newTrack);
-          }
-        }
-        isScreenSharing = false;
-        document.getElementById('screenToggle').innerHTML = '<i class="fas fa-desktop"></i> Share';
-        showNotification('Screen sharing stopped');
-        return;
-      }
-      
-      try {
-        const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-        const sender = peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
-        if (sender) {
-          const screenTrack = screenStream.getVideoTracks()[0];
-          await sender.replaceTrack(screenTrack);
-          isScreenSharing = true;
-          document.getElementById('screenToggle').innerHTML = '<i class="fas fa-desktop"></i> Stop Share';
-          
-          screenTrack.onended = () => {
-            toggleScreenShare();
-          };
-          
-          showNotification('📺 Screen sharing started');
-        }
-      } catch (e) {
-        console.error('Screen sharing error:', e);
-        showNotification('❌ Screen sharing cancelled or not supported');
-      }
-    }
-
-    // ============ FCM / PUSH NOTIFICATIONS ============
-    async function requestFCMToken() {
-      try {
-        const permission = await Notification.requestPermission();
-        if (permission !== 'granted') {
-          showNotification('⚠️ Please allow notifications in your browser settings.');
-          return;
-        }
-
-        const token = await messaging.getToken({
-          vapidKey: 'BMzi3gf0cee-mTdymxXFXbUlhBtu13odvdAPHXdjvpXDid1LmHEssJlz0qmfB6hmOcVWfBe09MKC_uD_-3hQHZU'
-        });
-
-        if (token) {
-          fcmToken = token;
-          console.log('FCM Token:', token);
-          
-          if (user && user.id) {
-            await db.collection('users').doc(user.id).update({
-              fcmToken: token,
-              notificationsEnabled: true
-            });
-            await db.collection('fcmTokens').doc(user.id).set({
-              userId: user.id,
-              token: token,
-              name: user.name || 'Reader',
-              updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-          }
-          
-          document.getElementById('fcmPermissionBanner').classList.add('hidden');
-          document.getElementById('fcmStatus').innerHTML = '✅ Push notifications enabled';
-          showNotification('🔔 Push notifications enabled!');
-          
-          await messaging.subscribeToTopic('quran_reminders');
-          await messaging.subscribeToTopic('user_' + user.id);
-          
-          showNotification('✅ Successfully subscribed to notifications!');
-        } else {
-          showNotification('❌ Failed to get notification token.');
-        }
-      } catch (e) {
-        console.error('FCM Error:', e);
-        showNotification('❌ Error enabling notifications: ' + e.message);
-        document.getElementById('fcmStatus').innerHTML = '❌ Failed to enable notifications';
-      }
-    }
-
-    messaging.onMessage((payload) => {
-      console.log('Message received in foreground:', payload);
-      
-      const notification = payload.notification;
-      if (notification) {
-        showNotification('🔔 ' + (notification.title || 'Quran Reminder') + ': ' + (notification.body || ''));
-        
-        if (payload.data && payload.data.type === 'quran_alarm') {
-          showAlarmNotification(payload.data.message || 'Time for Quran reading');
-          playAlarmSound();
-        }
-      }
-    });
-
-    async function checkFCMPermission() {
-      if ('Notification' in window) {
-        if (Notification.permission === 'granted') {
-          document.getElementById('fcmPermissionBanner').classList.add('hidden');
-          if (!fcmToken && user) {
-            try {
-              const token = await messaging.getToken({
-                vapidKey: 'BMzi3gf0cee-mTdymxXFXbUlhBtu13odvdAPHXdjvpXDid1LmHEssJlz0qmfB6hmOcVWfBe09MKC_uD_-3hQHZU'
-              });
-              if (token) {
-                fcmToken = token;
-                await db.collection('users').doc(user.id).update({
-                  fcmToken: token,
-                  notificationsEnabled: true
-                });
-                document.getElementById('fcmStatus').innerHTML = '✅ Push notifications enabled';
-              }
-            } catch (e) {
-              console.warn('Could not get FCM token:', e);
-            }
-          }
-        } else if (Notification.permission === 'default') {
-          document.getElementById('fcmPermissionBanner').classList.remove('hidden');
-          document.getElementById('fcmStatus').innerHTML = '🔔 Enable notifications for reminders';
-        } else {
-          document.getElementById('fcmPermissionBanner').classList.add('hidden');
-          document.getElementById('fcmStatus').innerHTML = '⚠️ Notifications blocked';
-        }
-      }
-    }
-
-    // ============ ALARM SYSTEM ============
-    function renderAlarms() {
-      const container = document.getElementById('alarmList');
-      const alarms = user.alarms || [];
-      const badge = document.getElementById('alarmBadge');
-      
-      document.getElementById('alarmCount').innerText = alarms.length;
-      
-      if (alarms.length > 0) {
-        badge.classList.remove('hidden');
-        badge.innerText = alarms.length;
-      } else {
-        badge.classList.add('hidden');
-      }
-
-      if (alarms.length === 0) {
-        container.innerHTML = `
-          <div class="empty-state" style="padding:10px;">
-            <p style="font-size:0.8rem;">No alarms set. Add a reminder for your Quran reading!</p>
-          </div>
-        `;
-        return;
-      }
-
-      let html = '';
-      alarms.forEach((alarm, index) => {
-        const timeStr = `${String(alarm.hour).padStart(2, '0')}:${String(alarm.minute).padStart(2, '0')}`;
-        const isActive = alarm.active !== false;
-        html += `
-          <div class="alarm-item">
-            <div class="info">
-              <div class="time">🕐 ${timeStr}</div>
-              <div class="detail">${alarm.message || 'Time for Quran reading'}</div>
-              <div class="status">${isActive ? '✅ Active' : '⏸️ Paused'}</div>
-            </div>
-            <div class="actions">
-              <div class="toggle ${isActive ? 'active' : ''}" onclick="toggleAlarm(${index})">
-                <div class="slider"></div>
-              </div>
-              <button onclick="deleteAlarm(${index})" class="danger" style="padding:4px 10px;font-size:0.7rem;">
-                <i class="fas fa-trash"></i>
-              </button>
-            </div>
-          </div>
-        `;
+      // Send correction alert to partner
+      db.collection('attentionAlerts').add({
+        fromId: user.id,
+        fromName: user.name || 'Reader',
+        toId: user.partnerId,
+        dismissed: false,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
-      container.innerHTML = html;
+      
+      // Flash local screen
+      const flash = document.getElementById('correctionFlash');
+      flash.classList.add('active');
+      setTimeout(() => flash.classList.remove('active'), 1500);
+      
+      showNotification('🔔 Correction alert sent to ' + user.partner);
     }
 
-    async function setAlarm() {
-      const hour = parseInt(document.getElementById('alarmHour').value);
-      const minute = parseInt(document.getElementById('alarmMinute').value);
-      const message = document.getElementById('alarmMessage').value.trim() || 'Time for Quran reading';
-
+    // Listen for correction alerts
+    function listenForCorrectionAlerts() {
       if (!user) return;
-
-      const alarms = user.alarms || [];
-      const duplicate = alarms.some(a => a.hour === hour && a.minute === minute && a.active !== false);
-      if (duplicate) {
-        showNotification('⚠️ Alarm already set for this time');
-        return;
-      }
-
-      const newAlarm = {
-        hour: hour,
-        minute: minute,
-        message: message,
-        active: true,
-        createdAt: new Date().toISOString()
-      };
-
-      alarms.push(newAlarm);
-      await updateAlarms(alarms);
-      document.getElementById('alarmMessage').value = '';
-      showNotification('⏰ Alarm set for ' + String(hour).padStart(2, '0') + ':' + String(minute).padStart(2, '0'));
-    }
-
-    async function toggleAlarm(index) {
-      const alarms = user.alarms || [];
-      if (index >= alarms.length) return;
       
-      alarms[index].active = alarms[index].active === false ? true : false;
-      await updateAlarms(alarms);
-    }
-
-    async function deleteAlarm(index) {
-      const alarms = user.alarms || [];
-      if (index >= alarms.length) return;
-      
-      alarms.splice(index, 1);
-      await updateAlarms(alarms);
-      showNotification('🗑️ Alarm deleted');
-    }
-
-    async function updateAlarms(alarms) {
-      user.alarms = alarms;
-      if (user.id && user.id !== 'local') {
-        try {
-          await db.collection('users').doc(user.id).update({ alarms: alarms });
-        } catch (e) {
-          console.warn('Failed to update alarms in Firestore', e);
-        }
-      }
-      localStorage.setItem('musaffahUser', JSON.stringify(user));
-      renderAlarms();
-      clearAllAlarms();
-      startAlarmChecker();
-    }
-
-    function startAlarmChecker() {
-      clearAllAlarms();
-      
-      if (alarmCheckInterval) {
-        clearInterval(alarmCheckInterval);
-      }
-      
-      checkAlarms();
-      
-      alarmCheckInterval = setInterval(() => {
-        checkAlarms();
-      }, 5000);
-    }
-
-    function checkAlarms() {
-      if (!user || !user.alarms) return;
-      
-      const now = new Date();
-      const currentMinutes = now.getHours() * 60 + now.getMinutes();
-      const currentSeconds = now.getSeconds();
-      
-      user.alarms.forEach((alarm, index) => {
-        if (alarm.active === false) return;
-        if (alarm._triggered) return;
-        
-        const alarmMinutes = alarm.hour * 60 + alarm.minute;
-        const timeDiff = Math.abs(currentMinutes - alarmMinutes);
-        
-        if (timeDiff === 0 && currentSeconds < 30) {
-          triggerAlarm(alarm, index);
-        }
-      });
-    }
-
-    function triggerAlarm(alarm, index) {
-      const alarms = user.alarms || [];
-      const alarmExists = alarms.some((a, i) => 
-        a.hour === alarm.hour && 
-        a.minute === alarm.minute && 
-        a.active !== false &&
-        i === index
-      );
-      
-      if (!alarmExists) return;
-
-      const alarmRef = alarms[index];
-      if (alarmRef) {
-        alarmRef._triggered = true;
-        setTimeout(() => {
-          if (alarmRef) alarmRef._triggered = false;
-        }, 86400000 - (new Date().getHours() * 3600000 + new Date().getMinutes() * 60000 + new Date().getSeconds() * 1000));
-      }
-
-      showAlarmNotification(alarm.message || 'Time for Quran reading');
-      playAlarmSound();
-      sendPushNotification(alarm.message || 'Time for Quran reading');
-      
-      if (Notification.permission === 'granted') {
-        try {
-          const notification = new Notification('📖 Time for Quran!', {
-            body: alarm.message || 'Time for Quran reading',
-            icon: '📖',
-            tag: 'quran-alarm',
-            requireInteraction: true,
-            vibrate: [200, 100, 200, 100, 200]
-          });
-          
-          notification.onclick = function() {
-            window.focus();
-            this.close();
-            dismissAlarm();
-          };
-          
-          setTimeout(() => {
-            notification.close();
-          }, 30000);
-        } catch (e) {}
-      }
-      
-      showNotification('⏰ ' + (alarm.message || 'Time for Quran reading'));
-    }
-
-    async function sendPushNotification(message) {
-      if (!user || !user.id) return;
-      
-      try {
-        const userDoc = await db.collection('users').doc(user.id).get();
-        const userData = userDoc.data();
-        
-        if (userData.fcmToken) {
-          await db.collection('notifications').add({
-            token: userData.fcmToken,
-            title: '📖 Time for Quran!',
-            body: message,
-            type: 'quran_alarm',
-            userId: user.id,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-            sent: false
-          });
-          
-          console.log('Push notification queued for sending');
-          
-          try {
-            const response = await fetch('https://fcm.googleapis.com/fcm/send', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'key=YOUR_SERVER_KEY_HERE'
-              },
-              body: JSON.stringify({
-                to: userData.fcmToken,
-                notification: {
-                  title: '📖 Time for Quran!',
-                  body: message,
-                  sound: 'default'
-                },
-                data: {
-                  type: 'quran_alarm',
-                  message: message
-                },
-                priority: 'high'
-              })
-            });
+      db.collection('attentionAlerts')
+        .where('toId', '==', user.id)
+        .where('dismissed', '==', false)
+        .onSnapshot((snapshot) => {
+          snapshot.forEach(doc => {
+            const alert = doc.data();
             
-            if (response.ok) {
-              console.log('FCM notification sent directly');
+            // Flash screen red
+            const flash = document.getElementById('correctionFlash');
+            flash.classList.add('active');
+            setTimeout(() => flash.classList.remove('active'), 1500);
+            
+            // Show overlay
+            document.getElementById('attentionPartnerName').innerText = alert.fromName || 'Your partner';
+            document.getElementById('attentionOverlay').classList.add('show');
+            
+            if (navigator.vibrate) {
+              navigator.vibrate([200, 100, 200]);
             }
-          } catch (e) {
-            console.warn('Direct FCM send failed:', e);
-          }
-        }
-      } catch (e) {
-        console.error('Error sending push notification:', e);
-      }
-    }
-
-    function showAlarmNotification(message) {
-      const notification = document.getElementById('alarmNotification');
-      document.getElementById('alarmNotificationMessage').innerText = message;
-      notification.classList.add('show');
-      isAlarmRinging = true;
-      
-      if (navigator.vibrate) {
-        navigator.vibrate([200, 100, 200, 100, 200, 100, 200]);
-      }
-      
-      if (attentionTimeout) clearTimeout(attentionTimeout);
-      attentionTimeout = setTimeout(() => {
-        dismissAlarm();
-      }, 60000);
-    }
-
-    function playAlarmSound() {
-      try {
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const notes = [440, 554, 659, 880];
-        let time = audioCtx.currentTime;
-        
-        notes.forEach((freq, i) => {
-          const oscillator = audioCtx.createOscillator();
-          const gainNode = audioCtx.createGain();
-          oscillator.connect(gainNode);
-          gainNode.connect(audioCtx.destination);
-          oscillator.frequency.value = freq;
-          gainNode.gain.value = 0.3;
-          oscillator.start(time);
-          oscillator.stop(time + 0.2);
-          time += 0.25;
-          
-          const osc2 = audioCtx.createOscillator();
-          const gain2 = audioCtx.createGain();
-          osc2.connect(gain2);
-          gain2.connect(audioCtx.destination);
-          osc2.frequency.value = freq * 1.5;
-          gain2.gain.value = 0.1;
-          osc2.start(time - 0.1);
-          osc2.stop(time + 0.1);
+            
+            doc.ref.update({ dismissed: true }).catch(() => {});
+          });
         });
-        
-        setTimeout(() => {
-          if (isAlarmRinging) {
-            notes.forEach((freq, i) => {
-              const oscillator = audioCtx.createOscillator();
-              const gainNode = audioCtx.createGain();
-              oscillator.connect(gainNode);
-              gainNode.connect(audioCtx.destination);
-              oscillator.frequency.value = freq;
-              gainNode.gain.value = 0.2;
-              oscillator.start(time + 0.5);
-              oscillator.stop(time + 0.7);
-              time += 0.25;
-            });
-          }
-        }, 1000);
-        
-        setTimeout(() => {
-          if (isAlarmRinging) {
-            notes.forEach((freq, i) => {
-              const oscillator = audioCtx.createOscillator();
-              const gainNode = audioCtx.createGain();
-              oscillator.connect(gainNode);
-              gainNode.connect(audioCtx.destination);
-              oscillator.frequency.value = freq;
-              gainNode.gain.value = 0.15;
-              oscillator.start(time + 1);
-              oscillator.stop(time + 1.2);
-              time += 0.25;
-            });
-          }
-        }, 2000);
-        
-      } catch (e) {}
     }
 
-    function dismissAlarm() {
-      document.getElementById('alarmNotification').classList.remove('show');
-      isAlarmRinging = false;
-      if (snoozeTimeout) {
-        clearTimeout(snoozeTimeout);
-        snoozeTimeout = null;
-      }
+    function dismissAttention() {
+      document.getElementById('attentionOverlay').classList.remove('show');
       if (attentionTimeout) {
         clearTimeout(attentionTimeout);
         attentionTimeout = null;
       }
     }
 
-    function snoozeAlarm() {
-      document.getElementById('alarmNotification').classList.remove('show');
-      isAlarmRinging = false;
-      showNotification('⏰ Snoozed for 5 minutes');
+    // ============ VIDEO DOMINANT TOGGLE ============
+    function toggleDominantVideo() {
+      const remoteWrapper = document.getElementById('remoteVideoWrapper');
+      const localWrapper = document.getElementById('localVideoWrapper');
       
-      if (snoozeTimeout) clearTimeout(snoozeTimeout);
-      snoozeTimeout = setTimeout(() => {
-        const alarms = user.alarms || [];
-        const activeAlarm = alarms.find(a => a.active !== false);
-        if (activeAlarm) {
-          const index = alarms.indexOf(activeAlarm);
-          if (index !== -1) {
-            triggerAlarm(activeAlarm, index);
-          }
-        }
-        snoozeTimeout = null;
-      }, 5 * 60 * 1000);
-    }
-
-    function clearAllAlarms() {
-      alarmTimeouts.forEach(t => clearTimeout(t));
-      alarmTimeouts = [];
-      if (snoozeTimeout) {
-        clearTimeout(snoozeTimeout);
-        snoozeTimeout = null;
-      }
-      if (attentionTimeout) {
-        clearTimeout(attentionTimeout);
-        attentionTimeout = null;
-      }
-      if (alarmCheckInterval) {
-        clearInterval(alarmCheckInterval);
-        alarmCheckInterval = null;
-      }
-      isAlarmRinging = false;
-    }
-
-    // ============ FEED ============
-    function listenForFeed() {
-      db.collection('posts').orderBy('createdAt', 'desc').onSnapshot((snapshot) => {
-        const container = document.getElementById('feedContainer');
-        if (snapshot.empty) {
-          container.innerHTML = `
-            <div class="empty-state">
-              <i class="fas fa-feather-alt"></i>
-              <p>No posts yet. Be the first to share!</p>
-            </div>
-          `;
-          return;
-        }
-
-        let html = '';
-        snapshot.forEach(doc => {
-          const post = doc.data();
-          const postId = doc.id;
-          const isLiked = post.likes && post.likes.includes(user.id);
-          
-          html += `
-            <div class="post" id="post-${postId}">
-              <div class="post-header">
-                <div class="post-avatar">${(post.authorName || 'U')[0].toUpperCase()}</div>
-                <div>
-                  <div class="post-name">${post.authorName || 'Unknown'}</div>
-                  <div class="post-time">${post.createdAt ? new Date(post.createdAt.seconds * 1000).toLocaleString() : 'Just now'}</div>
-                </div>
-              </div>
-              <div class="post-content">${post.content}</div>
-              <div class="post-actions">
-                <span onclick="toggleLike('${postId}')">
-                  <i class="fas fa-heart" style="color:${isLiked ? '#b91c1c' : '#5b7a76'}"></i> 
-                  <span id="likes-${postId}">${post.likes ? post.likes.length : 0}</span>
-                </span>
-                <span onclick="toggleComments('${postId}')">
-                  <i class="fas fa-comment"></i> 
-                  <span id="comments-${postId}">${post.comments ? post.comments.length : 0}</span>
-                </span>
-              </div>
-              <div class="post-comments hidden" id="comments-${postId}">
-                ${post.comments ? post.comments.map(c => `
-                  <div class="comment">
-                    <div class="comment-avatar">${(c.authorName || 'U')[0].toUpperCase()}</div>
-                    <div>
-                      <strong>${c.authorName || 'Unknown'}</strong> ${c.text}
-                      <div style="font-size:0.55rem;opacity:0.5;">${c.time || 'Just now'}</div>
-                    </div>
-                  </div>
-                `).join('') : ''}
-                <div style="display:flex;gap:4px;margin-top:4px;">
-                  <input placeholder="Write a comment..." id="comment-input-${postId}" style="flex:1;margin:0;font-size:0.75rem;padding:4px 8px;">
-                  <button onclick="addComment('${postId}')" style="width:auto;margin:0;padding:4px 12px;font-size:0.7rem;"><i class="fas fa-paper-plane"></i></button>
-                </div>
-              </div>
-            </div>
-          `;
-        });
-        container.innerHTML = html;
-      });
-    }
-
-    async function createPost() {
-      const input = document.getElementById('postInput');
-      const text = input.value.trim();
-      if (!text) { showNotification('Write something first'); return; }
-
-      try {
-        await db.collection('posts').add({
-          content: text,
-          authorId: user.id,
-          authorName: user.name || 'Reader',
-          likes: [],
-          comments: [],
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        input.value = '';
-        showNotification('📢 Post shared!');
-      } catch (e) {
-        showNotification('Error sharing post: ' + e.message);
-      }
-    }
-
-    async function toggleLike(postId) {
-      const postRef = db.collection('posts').doc(postId);
-      const doc = await postRef.get();
-      if (!doc.exists) return;
-      const post = doc.data();
-      const likes = post.likes || [];
-      const idx = likes.indexOf(user.id);
-      
-      if (idx > -1) {
-        likes.splice(idx, 1);
+      if (dominantVideo === 'remote') {
+        remoteWrapper.classList.remove('dominant');
+        localWrapper.classList.add('dominant');
+        dominantVideo = 'local';
       } else {
-        likes.push(user.id);
+        localWrapper.classList.remove('dominant');
+        remoteWrapper.classList.add('dominant');
+        dominantVideo = 'remote';
       }
-      
-      await postRef.update({ likes: likes });
-    }
-
-    function toggleComments(postId) {
-      const container = document.getElementById(`comments-${postId}`);
-      container.classList.toggle('hidden');
-    }
-
-    async function addComment(postId) {
-      const input = document.getElementById(`comment-input-${postId}`);
-      const text = input.value.trim();
-      if (!text) return;
-      
-      const postRef = db.collection('posts').doc(postId);
-      const doc = await postRef.get();
-      if (!doc.exists) return;
-      const post = doc.data();
-      const comments = post.comments || [];
-      
-      comments.push({
-        authorId: user.id,
-        authorName: user.name || 'Reader',
-        text: text,
-        time: new Date().toLocaleString()
-      });
-      
-      await postRef.update({ comments: comments });
-      input.value = '';
     }
 
     // ============ JUZ ============
@@ -2665,9 +1864,9 @@
       }
       localStorage.setItem('musaffahUser', JSON.stringify(user));
       renderJuz();
-      document.getElementById('miniJuz').innerText = user.juz.length;
-      document.getElementById('miniKhatm').innerText = user.khatm;
-      document.getElementById('miniStreak').innerText = user.streak;
+      document.getElementById('statJuz').innerText = user.juz.length;
+      document.getElementById('statKhatm').innerText = user.khatm;
+      document.getElementById('statStreak').innerText = user.streak;
     }
 
     // ============ PARTNER FUNCTIONS ============
@@ -2679,6 +1878,7 @@
           <h3 style="font-size:0.9rem;" id="partnerNameDisplay">${user.partner}</h3>
           <p style="font-size:0.7rem; opacity:0.6;" id="partnerPlanDisplay">🤝 Connected · ${user.plan} day plan</p>
           <button onclick="disconnectPartner()" class="danger" style="margin-top:6px; font-size:0.8rem;"><i class="fas fa-unlink"></i> Disconnect</button>
+          <button onclick="startCall()" class="success" style="margin-top:6px; font-size:0.8rem;"><i class="fas fa-phone"></i> Start Call</button>
         `;
       } else {
         display.innerHTML = `
@@ -2687,15 +1887,12 @@
           <p style="font-size:0.7rem; opacity:0.6;" id="partnerPlanDisplay">Search for a partner below to start Musaffah</p>
         `;
       }
-      updateAttentionButtonVisibility();
     }
 
-    // FIXED: sendPartnerRequest - properly tracks sent requests
     async function sendPartnerRequest(toId) {
       if (!user) return;
       
       try {
-        // Get target user's data
         const targetDoc = await db.collection('users').doc(toId).get();
         if (!targetDoc.exists) {
           showNotification('User not found');
@@ -2705,14 +1902,12 @@
         const targetData = targetDoc.data();
         const currentPending = targetData.pendingRequests || [];
         
-        // Check if request already exists
         const existingRequest = currentPending.find(req => req.fromId === user.id);
         if (existingRequest) {
           showNotification('Request already sent to this user');
           return;
         }
         
-        // Add new request
         const newRequest = {
           fromId: user.id,
           fromName: user.name || 'Reader',
@@ -2722,12 +1917,10 @@
         
         currentPending.push(newRequest);
         
-        // Update target user's pending requests
         await db.collection('users').doc(toId).update({
           pendingRequests: currentPending
         });
         
-        // Update sender's sent requests
         const sentRequests = user.sentRequests || [];
         if (!sentRequests.includes(toId)) {
           sentRequests.push(toId);
@@ -2739,7 +1932,7 @@
         }
         
         showNotification('✅ Request sent to ' + (targetData.name || 'Reader') + '!');
-        loadAllUsers(); // Refresh search results
+        loadAllUsers();
         
       } catch (e) {
         console.error('Error sending request:', e);
@@ -2787,7 +1980,6 @@
         });
     }
 
-    // FIXED: handlePartnerRequest - properly updates both users
     async function handlePartnerRequest(fromId, action, index) {
       if (!user) return;
       
@@ -2799,21 +1991,17 @@
         }
         const fromData = fromDoc.data();
         
-        // Get current pending requests
         const currentPending = user.pendingRequests || [];
         const requestToRemove = currentPending[index];
         
         if (action === 'accept') {
-          // Check if user already has a partner
           if (user.partner && user.partnerId) {
             showNotification('You already have a partner. Disconnect first.');
             return;
           }
           
-          // Check if sender already has a partner
           if (fromData.partner && fromData.partnerId) {
             showNotification(`${fromData.name} already has a partner.`);
-            // Remove this request
             currentPending.splice(index, 1);
             await db.collection('users').doc(user.id).update({
               pendingRequests: currentPending
@@ -2824,18 +2012,14 @@
           
           const partnerName = fromData.name || 'Reader';
           
-          // Update current user
           await db.collection('users').doc(user.id).update({
             partner: partnerName,
             partnerId: fromId,
             pendingRequests: currentPending.filter((_, i) => i !== index)
           });
           
-          // Update partner user - remove the request from their end too
           const partnerPending = fromData.pendingRequests || [];
           const updatedPartnerPending = partnerPending.filter(req => req.fromId !== user.id);
-          
-          // Also update partner's sentRequests to remove this user
           const partnerSentRequests = fromData.sentRequests || [];
           const updatedPartnerSent = partnerSentRequests.filter(id => id !== user.id);
           
@@ -2846,7 +2030,6 @@
             sentRequests: updatedPartnerSent
           });
           
-          // Update user's sentRequests to remove the partner
           const currentSentRequests = user.sentRequests || [];
           const updatedSentRequests = currentSentRequests.filter(id => id !== fromId);
           await db.collection('users').doc(user.id).update({
@@ -2854,7 +2037,6 @@
           });
           user.sentRequests = updatedSentRequests;
           
-          // Update local user state
           user.partner = partnerName;
           user.partnerId = fromId;
           user.pendingRequests = currentPending.filter((_, i) => i !== index);
@@ -2863,10 +2045,7 @@
           
           showNotification('🎉 You are now connected with ' + partnerName + '!');
           
-          // Refresh everything
           updatePartnerDisplay();
-          listenForPartnerRecitation();
-          renderChats();
           loadAllUsers();
           
           if (user.partnerId) {
@@ -2874,7 +2053,6 @@
           }
           
         } else {
-          // Reject: remove the request from pending
           currentPending.splice(index, 1);
           await db.collection('users').doc(user.id).update({
             pendingRequests: currentPending
@@ -2896,7 +2074,6 @@
       if (!confirm('Disconnect from your partner?')) return;
       
       try {
-        if (isReciting) toggleRecitation();
         if (isCallActive) endCall();
         
         if (partnerStatusUnsubscribe) {
@@ -2907,34 +2084,25 @@
         const partnerId = user.partnerId;
         const partnerName = user.partner;
         
-        // Update current user
         await db.collection('users').doc(user.id).update({ 
           partner: '', 
           partnerId: '', 
           isReciting: false 
         });
         
-        // Update partner user
         await db.collection('users').doc(partnerId).update({ 
           partner: '', 
           partnerId: '', 
           isReciting: false 
         });
         
-        // Reset local state
         user.partner = '';
         user.partnerId = '';
-        user.isReciting = false;
-        partnerIsReciting = false;
         partnerOnline = false;
         
         localStorage.setItem('musaffahUser', JSON.stringify(user));
         
-        // Refresh UI
         updatePartnerDisplay();
-        document.getElementById('partnerListenSection').classList.add('hidden');
-        updateAttentionButtonVisibility();
-        renderChats();
         loadAllUsers();
         
         showNotification('Disconnected from ' + partnerName);
@@ -2945,235 +2113,267 @@
       }
     }
 
-    // ============ RECITATION ============
-    function listenForPartnerRecitation() {
-      if (!user || !user.partnerId) return;
-      db.collection('users').doc(user.partnerId).onSnapshot((doc) => {
-        if (doc.exists) {
+    // ============ FRIEND SYSTEM ============
+    function openAddFriend() {
+      const modal = document.getElementById('addFriendModal');
+      const overlay = document.getElementById('addFriendOverlay');
+      modal.style.display = 'block';
+      overlay.style.display = 'block';
+      loadUserList();
+    }
+
+    function closeAddFriend() {
+      document.getElementById('addFriendModal').style.display = 'none';
+      document.getElementById('addFriendOverlay').style.display = 'none';
+    }
+
+    function loadUserList() {
+      db.collection('users').get().then((snapshot) => {
+        allUsersList = [];
+        snapshot.forEach(doc => {
           const data = doc.data();
-          partnerIsReciting = data.isReciting || false;
-          
-          if (partnerIsReciting) {
-            document.getElementById('partnerListenSection').classList.remove('hidden');
-            document.getElementById('partnerListenName').innerText = user.partner;
-            document.getElementById('recitationStatus').className = 'recitation-status active';
-            document.getElementById('recitationStatus').innerHTML = `<p>🎙️ ${user.partner} is reciting</p>`;
-          } else {
-            document.getElementById('partnerListenSection').classList.add('hidden');
-            if (!isReciting) {
-              document.getElementById('recitationStatus').className = 'recitation-status inactive';
-              document.getElementById('recitationStatus').innerHTML = '<p>🕊️ No active session</p>';
-            }
+          if (doc.id !== user.id && data.name) {
+            const isFriend = (user.friends || []).includes(doc.id);
+            const isRequested = (user.sentRequests || []).includes(doc.id);
+            allUsersList.push({
+              id: doc.id,
+              name: data.name || 'Reader',
+              online: data.online === true,
+              isFriend: isFriend,
+              isRequested: isRequested
+            });
           }
-          updateAttentionButtonVisibility();
-        }
+        });
+        // Shuffle initially
+        shuffleArray(allUsersList);
+        renderUserList();
       });
     }
 
-    function toggleRecitation() {
-      if (!user || !user.partnerId) {
-        showNotification('Please connect with a partner first');
-        return;
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
       }
-
-      isReciting = !isReciting;
-      const btn = document.querySelector('.recording-btn');
-      const label = document.getElementById('recitationLabel');
-      const status = document.getElementById('recitationStatus');
-
-      if (isReciting) {
-        btn.style.background = '#dc2626';
-        btn.innerHTML = '<i class="fas fa-stop"></i>';
-        label.textContent = '🔴 Reciting... tap to stop';
-        status.className = 'recitation-status active';
-        status.innerHTML = `<p>🎙️ You are reciting to ${user.partner}</p>`;
-        db.collection('users').doc(user.id).update({ isReciting: true }).catch(() => {});
-        recitationSeconds = 0;
-        if (recitationTimer) clearInterval(recitationTimer);
-        recitationTimer = setInterval(() => {
-          recitationSeconds++;
-          const mins = Math.floor(recitationSeconds / 60);
-          const secs = recitationSeconds % 60;
-          document.getElementById('recitationTimer').innerText = 
-            String(mins).padStart(2,'0') + ':' + String(secs).padStart(2,'0');
-        }, 1000);
-        showNotification('🔴 Recitation started');
-      } else {
-        btn.style.background = '#0f766e';
-        btn.innerHTML = '<i class="fas fa-microphone"></i>';
-        label.textContent = 'Tap to start reciting';
-        status.className = 'recitation-status inactive';
-        status.innerHTML = '<p>🕊️ No active session</p>';
-        db.collection('users').doc(user.id).update({ isReciting: false }).catch(() => {});
-        if (recitationTimer) {
-          clearInterval(recitationTimer);
-          recitationTimer = null;
-        }
-        const mins = Math.floor(recitationSeconds / 60);
-        if (mins > 0) {
-          user.musaffahSessions = (user.musaffahSessions || 0) + 1;
-          user.musaffahJuz = (user.musaffahJuz || 0) + Math.ceil(mins / 5);
-          user.musaffahStreak = (user.musaffahStreak || 0) + 1;
-          if (user.id && user.id !== 'local') {
-            db.collection('users').doc(user.id).update({
-              musaffahSessions: user.musaffahSessions,
-              musaffahJuz: user.musaffahJuz,
-              musaffahStreak: user.musaffahStreak
-            }).catch(() => {});
-          }
-          localStorage.setItem('musaffahUser', JSON.stringify(user));
-          document.getElementById('musaffahSessions').innerText = user.musaffahSessions;
-          document.getElementById('musaffahJuz').innerText = user.musaffahJuz;
-          document.getElementById('musaffahStreak').innerText = user.musaffahStreak;
-          showNotification(`✅ Recitation ended! ${mins} minutes`);
-        }
-        document.getElementById('recitationTimer').innerText = '00:00';
-        recitationSeconds = 0;
-      }
-      
-      updateAttentionButtonVisibility();
+      return array;
     }
 
-    // ============ ATTENTION ============
-    function listenForAttention() {
-      if (!user) return;
-      
-      db.collection('attentionAlerts')
-        .where('toId', '==', user.id)
-        .where('dismissed', '==', false)
-        .onSnapshot((snapshot) => {
-          snapshot.forEach(doc => {
-            const alert = doc.data();
-            showAttentionOverlay(alert.fromName, alert.correctionText || 'Please check your recitation.');
-            doc.ref.update({ dismissed: true }).catch(() => {});
-          });
-        });
+    function shuffleUserList() {
+      shuffleArray(allUsersList);
+      renderUserList();
+      document.getElementById('userListContainer').classList.add('shuffling');
+      setTimeout(() => {
+        document.getElementById('userListContainer').classList.remove('shuffling');
+      }, 500);
     }
 
-    function callAttention() {
-      if (!user || !user.partnerId) {
-        showNotification('Please connect with a partner first');
+    function searchUsers() {
+      const query = document.getElementById('friendSearchInput').value.toLowerCase().trim();
+      if (!query) {
+        renderUserList();
         return;
       }
+      const filtered = allUsersList.filter(u => u.name.toLowerCase().includes(query));
+      renderUserList(filtered);
+    }
+
+    function renderUserList(list) {
+      const container = document.getElementById('userListContainer');
+      const users = list || allUsersList;
       
-      if (!partnerIsReciting) {
-        showNotification('Your partner is not reciting right now.');
+      if (users.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state" style="padding:20px;">
+            <p style="font-size:0.8rem;">No users found</p>
+          </div>
+        `;
         return;
       }
 
-      const correctionInput = document.getElementById('correctionInput');
-      const correctionText = correctionInput.value.trim() || 'Please check your recitation.';
-      correctionInput.value = '';
-
-      db.collection('attentionAlerts').add({
-        fromId: user.id,
-        fromName: user.name || 'Reader',
-        toId: user.partnerId,
-        correctionText: correctionText,
-        dismissed: false,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      let html = '';
+      users.forEach(u => {
+        const status = u.online ? '🟢 Online' : '⚪ Offline';
+        let actionButton = '';
+        if (u.isFriend) {
+          actionButton = '<button disabled style="opacity:0.5;">✓ Friends</button>';
+        } else if (u.isRequested) {
+          actionButton = '<button disabled style="opacity:0.5;">⏳ Pending</button>';
+        } else {
+          actionButton = `<button onclick="sendFriendRequest('${u.id}')" class="success"><i class="fas fa-user-plus"></i> Add</button>`;
+        }
+        html += `
+          <div class="user-item">
+            <div class="user-avatar">${u.name[0].toUpperCase()}</div>
+            <div class="user-name">${u.name}</div>
+            <div class="user-status">${status}</div>
+            ${actionButton}
+          </div>
+        `;
       });
-
-      showNotification('🔔 Attention alert sent to ' + user.partner + '!');
-      sendCorrectionToPartner(correctionText);
+      container.innerHTML = html;
     }
 
-    function showAttentionOverlay(fromName, correctionText) {
-      const overlay = document.getElementById('attentionOverlay');
-      document.getElementById('attentionPartnerName').innerText = fromName || 'Your partner';
-      document.getElementById('attentionCorrectionMessage').innerHTML = correctionText || 'Please check your recitation.';
-      overlay.classList.add('show');
-      
-      if (attentionTimeout) clearTimeout(attentionTimeout);
-      attentionTimeout = setTimeout(() => {
-        dismissAttention();
-      }, 10000);
-      
-      if (navigator.vibrate) {
-        navigator.vibrate([200, 100, 200]);
-      }
-      
-      showNotification('🔔 ' + (fromName || 'Your partner') + ' called your attention!');
-    }
-
-    function dismissAttention() {
-      document.getElementById('attentionOverlay').classList.remove('show');
-      if (attentionTimeout) {
-        clearTimeout(attentionTimeout);
-        attentionTimeout = null;
-      }
-    }
-
-    function updateAttentionButtonVisibility() {
-      const attentionBtn = document.getElementById('callAttentionBtn');
-      if (partnerIsReciting && !isReciting && user && user.partner) {
-        attentionBtn.style.display = 'flex';
-      } else {
-        attentionBtn.style.display = 'none';
-      }
-    }
-
-    // ============ CORRECTIONS ============
-    function listenForCorrections() {
+    async function sendFriendRequest(toId) {
       if (!user) return;
       
-      db.collection('corrections')
-        .where('toId', '==', user.id)
-        .orderBy('createdAt', 'desc')
-        .onSnapshot((snapshot) => {
-          const container = document.getElementById('correctionsContainer');
-          if (snapshot.empty) {
-            container.innerHTML = `
-              <div class="empty-state" style="padding:15px;">
-                <p style="font-size:0.8rem;">No corrections yet. Help your partner improve!</p>
-              </div>
-            `;
-            return;
-          }
-
-          let html = '';
-          snapshot.forEach(doc => {
-            const correction = doc.data();
-            const isAttention = correction.isAttention || false;
-            html += `
-              <div style="background:${isAttention ? '#fee2e2' : '#fef3c7'};border-radius:10px;padding:8px;margin-bottom:6px;font-size:0.8rem;border-left:3px solid ${isAttention ? '#dc2626' : '#d97706'};">
-                <strong>${correction.fromName || 'Partner'}</strong> ${isAttention ? '⚠️ called attention' : 'corrected'}:
-                <p style="margin-top:2px;font-style:italic;">"${correction.text}"</p>
-                <div style="font-size:0.65rem;opacity:0.5;">${correction.createdAt ? new Date(correction.createdAt.seconds * 1000).toLocaleString() : 'Just now'}</div>
-              </div>
-            `;
-          });
-          container.innerHTML = html;
-        });
-    }
-
-    async function sendCorrection() {
-      const input = document.getElementById('correctionInput');
-      const text = input.value.trim();
-      if (!text) return;
-      
-      await sendCorrectionToPartner(text);
-      input.value = '';
-    }
-
-    async function sendCorrectionToPartner(text) {
-      if (!user || !user.partnerId) {
-        showNotification('Please connect with a partner first');
-        return;
-      }
-
       try {
-        await db.collection('corrections').add({
+        const targetDoc = await db.collection('users').doc(toId).get();
+        if (!targetDoc.exists) {
+          showNotification('User not found');
+          return;
+        }
+        
+        const targetData = targetDoc.data();
+        const friendRequests = targetData.friendRequests || [];
+        
+        const existingRequest = friendRequests.find(req => req.fromId === user.id);
+        if (existingRequest) {
+          showNotification('Friend request already sent');
+          return;
+        }
+        
+        friendRequests.push({
           fromId: user.id,
           fromName: user.name || 'Reader',
-          toId: user.partnerId,
-          text: text,
-          isAttention: true,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          timestamp: new Date().toISOString()
         });
-        showNotification('✅ Correction sent to ' + user.partner);
+        
+        await db.collection('users').doc(toId).update({
+          friendRequests: friendRequests
+        });
+        
+        const sentRequests = user.sentRequests || [];
+        if (!sentRequests.includes(toId)) {
+          sentRequests.push(toId);
+          await db.collection('users').doc(user.id).update({
+            sentRequests: sentRequests
+          });
+          user.sentRequests = sentRequests;
+          localStorage.setItem('musaffahUser', JSON.stringify(user));
+        }
+        
+        showNotification('✅ Friend request sent!');
+        loadUserList();
+        
       } catch (e) {
-        showNotification('Error sending correction: ' + e.message);
+        console.error('Error sending friend request:', e);
+        showNotification('Error: ' + e.message);
+      }
+    }
+
+    function listenForFriendRequests() {
+      if (friendRequestsListener) {
+        friendRequestsListener();
+        friendRequestsListener = null;
+      }
+      
+      if (!user) return;
+      
+      friendRequestsListener = db.collection('users').doc(user.id)
+        .onSnapshot((doc) => {
+          if (doc.exists) {
+            const data = doc.data();
+            const requests = data.friendRequests || [];
+            // Update the friend requests count in UI
+            const requestBtn = document.querySelector('.chat-actions .warning');
+            if (requestBtn) {
+              if (requests.length > 0) {
+                requestBtn.innerHTML = `<i class="fas fa-bell"></i> Requests (${requests.length})`;
+              } else {
+                requestBtn.innerHTML = `<i class="fas fa-bell"></i> Requests`;
+              }
+            }
+          }
+        });
+    }
+
+    function showFriendRequests() {
+      if (!user) return;
+      
+      db.collection('users').doc(user.id).get().then(doc => {
+        if (!doc.exists) return;
+        const data = doc.data();
+        const requests = data.friendRequests || [];
+        
+        if (requests.length === 0) {
+          showNotification('No pending friend requests');
+          return;
+        }
+        
+        let html = '<div style="padding:10px 0;">';
+        requests.forEach((req, index) => {
+          html += `
+            <div class="friend-request-item">
+              <div class="info">
+                <div class="name"><i class="fas fa-user"></i> ${req.fromName || 'Unknown'}</div>
+              </div>
+              <div class="actions">
+                <button onclick="handleFriendRequest('${req.fromId}', 'accept', ${index})" class="success"><i class="fas fa-check"></i> Accept</button>
+                <button onclick="handleFriendRequest('${req.fromId}', 'reject', ${index})" class="danger"><i class="fas fa-times"></i> Reject</button>
+              </div>
+            </div>
+          `;
+        });
+        html += '</div>';
+        
+        // Show in a modal-like way
+        const container = document.getElementById('chatList');
+        const originalContent = container.innerHTML;
+        container.innerHTML = html + `<button onclick="renderChats()" class="outline" style="margin-top:8px;">← Back</button>`;
+      });
+    }
+
+    async function handleFriendRequest(fromId, action, index) {
+      if (!user) return;
+      
+      try {
+        const fromDoc = await db.collection('users').doc(fromId).get();
+        if (!fromDoc.exists) {
+          showNotification('User no longer exists');
+          return;
+        }
+        const fromData = fromDoc.data();
+        
+        const currentRequests = user.friendRequests || [];
+        
+        if (action === 'accept') {
+          // Add to friends list for both users
+          const userFriends = user.friends || [];
+          if (!userFriends.includes(fromId)) {
+            userFriends.push(fromId);
+            await db.collection('users').doc(user.id).update({
+              friends: userFriends,
+              friendRequests: currentRequests.filter((_, i) => i !== index)
+            });
+            user.friends = userFriends;
+          }
+          
+          const fromFriends = fromData.friends || [];
+          if (!fromFriends.includes(user.id)) {
+            fromFriends.push(user.id);
+            await db.collection('users').doc(fromId).update({
+              friends: fromFriends,
+              sentRequests: (fromData.sentRequests || []).filter(id => id !== user.id)
+            });
+          }
+          
+          showNotification('✅ Friend added!');
+        } else {
+          // Reject
+          await db.collection('users').doc(user.id).update({
+            friendRequests: currentRequests.filter((_, i) => i !== index)
+          });
+          user.friendRequests = currentRequests.filter((_, i) => i !== index);
+          showNotification('Request rejected');
+        }
+        
+        localStorage.setItem('musaffahUser', JSON.stringify(user));
+        renderChats();
+        loadUserList();
+        
+      } catch (e) {
+        console.error('Error handling friend request:', e);
+        showNotification('Error: ' + e.message);
       }
     }
 
@@ -3191,65 +2391,67 @@
       if (!user) return;
       const container = document.getElementById('chatList');
       
-      let chats = [];
-      
-      if (activeChatTab === 'groups') {
-        if (user.partner) {
-          chats.push({
-            id: 'group_' + user.partnerId,
-            name: user.partner + ' (Partner)',
-            type: 'group',
-            avatar: user.partner[0].toUpperCase(),
-            lastMessage: '📖 Musaffah group chat',
-            time: 'Now'
-          });
+      if (activeChatTab === 'friends') {
+        // Show friends list
+        const friends = user.friends || [];
+        if (friends.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <i class="fas fa-user-friends"></i>
+              <p>No friends yet. Use "Add Friend" to connect with others!</p>
+            </div>
+          `;
+          return;
         }
-        chats.push({
-          id: 'group_general',
-          name: '🌙 Quran Study Circle',
-          type: 'group',
-          avatar: '👥',
-          lastMessage: '📢 Join our daily recitation!',
-          time: '1h'
-        });
-        chats.push({
-          id: 'group_tafsir',
-          name: '📚 Tafsir Circle',
-          type: 'group',
-          avatar: '📚',
-          lastMessage: '📖 Discussing Surah Al-Baqarah',
-          time: '2h'
-        });
-      } else {
-        if (user.partner) {
-          chats.push({
-            id: 'private_' + user.partnerId,
-            name: user.partner,
-            type: 'private',
-            avatar: user.partner[0].toUpperCase(),
-            lastMessage: 'Assalamu Alaikum!',
-            time: '5m'
+        
+        let html = '';
+        let loaded = 0;
+        friends.forEach(friendId => {
+          db.collection('users').doc(friendId).get().then(doc => {
+            if (doc.exists) {
+              const data = doc.data();
+              const friendName = data.name || 'Unknown';
+              const isOnline = data.online === true;
+              // Update the friend list dynamically
+              const friendItems = document.querySelectorAll('.friend-item');
+              friendItems.forEach(el => {
+                if (el.dataset.id === friendId) {
+                  el.querySelector('.friend-name').textContent = friendName;
+                  el.querySelector('.friend-status').textContent = isOnline ? '🟢 Online' : '⚪ Offline';
+                }
+              });
+            }
+            loaded++;
+            if (loaded === friends.length) {
+              // All loaded
+            }
           });
-        }
-        ['Aisha', 'Yusuf', 'Fatima', 'Omar'].forEach((name, i) => {
-          if (name !== user.name) {
-            chats.push({
-              id: 'private_friend_' + i,
-              name: name,
-              type: 'private',
-              avatar: name[0].toUpperCase(),
-              lastMessage: i === 0 ? '📖 Juz 5 completed!' : 'Assalamu Alaikum',
-              time: i === 0 ? '10m' : '1h'
-            });
-          }
+          
+          html += `
+            <div class="friend-item" data-id="${friendId}">
+              <div class="friend-avatar">${friendId.substring(0, 2).toUpperCase()}</div>
+              <div>
+                <div class="friend-name">Loading...</div>
+                <div class="friend-status">...</div>
+              </div>
+              <button onclick="startPrivateChat('${friendId}')" class="success" style="width:auto; padding:4px 12px; margin:0; font-size:0.65rem;">
+                <i class="fas fa-comment"></i> Chat
+              </button>
+            </div>
+          `;
         });
+        container.innerHTML = html;
+        return;
       }
-
+      
+      // Chats tab - show all chats
+      const chats = user.chats || [];
+      
       if (chats.length === 0) {
         container.innerHTML = `
           <div class="empty-state">
             <i class="fas fa-comments"></i>
-            <p>No chats yet. Connect with a partner or start a conversation!</p>
+            <p>No chats yet. Add friends and start chatting!</p>
           </div>
         `;
         return;
@@ -3259,12 +2461,12 @@
       chats.forEach(chat => {
         html += `
           <div class="chat-item" onclick="openChat('${chat.id}','${chat.name}','${chat.type}')">
-            <div class="chat-avatar" style="${chat.type === 'group' ? 'background:#7c3aed;' : ''}">${chat.avatar}</div>
+            <div class="chat-avatar" style="${chat.type === 'group' ? 'background:#7c3aed;' : ''}">${chat.type === 'group' ? '👥' : chat.name[0].toUpperCase()}</div>
             <div class="chat-info">
               <div class="chat-name">${chat.name}</div>
-              <div class="chat-last">${chat.lastMessage}</div>
+              <div class="chat-last">${chat.lastMessage || 'Tap to chat'}</div>
             </div>
-            <div class="chat-time">${chat.time}</div>
+            <div class="chat-time">${chat.time || 'Now'}</div>
           </div>
         `;
       });
@@ -3371,27 +2573,41 @@
       currentChatId = null;
     }
 
-    function createNewChat() {
-      const name = prompt('Enter person or group name:');
-      if (name) {
-        const type = confirm('Is this a group chat? Click OK for Group, Cancel for Private') ? 'group' : 'private';
-        const chatId = (type === 'group' ? 'group_' : 'private_') + Date.now();
-        openChat(chatId, name, type);
-        
-        const container = document.getElementById('chatList');
-        const chatItem = document.createElement('div');
-        chatItem.className = 'chat-item';
-        chatItem.onclick = () => openChat(chatId, name, type);
-        chatItem.innerHTML = `
-          <div class="chat-avatar" style="${type === 'group' ? 'background:#7c3aed;' : ''}">${type === 'group' ? '👥' : name[0].toUpperCase()}</div>
-          <div class="chat-info">
-            <div class="chat-name">${name}</div>
-            <div class="chat-last">${type === 'group' ? '👥 New group chat' : '🤝 New conversation'}</div>
-          </div>
-          <div class="chat-time">Now</div>
-        `;
-        container.prepend(chatItem);
-      }
+    function startPrivateChat(friendId) {
+      db.collection('users').doc(friendId).get().then(doc => {
+        if (doc.exists) {
+          const friendData = doc.data();
+          const friendName = friendData.name || 'Friend';
+          const chatId = 'private_' + Date.now() + '_' + friendId;
+          
+          // Add to user's chats
+          const chats = user.chats || [];
+          // Check if chat already exists
+          const existing = chats.find(c => c.partnerId === friendId);
+          if (existing) {
+            openChat(existing.id, friendName, 'private');
+            return;
+          }
+          
+          chats.push({
+            id: chatId,
+            name: friendName,
+            type: 'private',
+            partnerId: friendId,
+            lastMessage: 'Start chatting!',
+            time: 'Now'
+          });
+          
+          db.collection('users').doc(user.id).update({
+            chats: chats
+          }).then(() => {
+            user.chats = chats;
+            localStorage.setItem('musaffahUser', JSON.stringify(user));
+            renderChats();
+            openChat(chatId, friendName, 'private');
+          });
+        }
+      });
     }
 
     // ============ NAVIGATION ============
@@ -3406,11 +2622,9 @@
         renderChats();
       }
       if (pageId === 'pageMusaffah') {
-        updateAttentionButtonVisibility();
         loadAllUsers();
         listenForConnectionRequests();
         if (user && user.partner) {
-          checkMediaPermissions();
           listenPartnerStatus();
         }
       }
@@ -3442,6 +2656,52 @@
       document.getElementById('langLabel').innerText = langNames[currentLang] || 'English';
     }
 
+    // ============ FCM ============
+    async function requestFCMToken() {
+      try {
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') {
+          showNotification('⚠️ Please allow notifications in your browser settings.');
+          return;
+        }
+
+        const token = await messaging.getToken({
+          vapidKey: 'BMzi3gf0cee-mTdymxXFXbUlhBtu13odvdAPHXdjvpXDid1LmHEssJlz0qmfB6hmOcVWfBe09MKC_uD_-3hQHZU'
+        });
+
+        if (token) {
+          fcmToken = token;
+          if (user && user.id) {
+            await db.collection('users').doc(user.id).update({
+              fcmToken: token,
+              notificationsEnabled: true
+            });
+          }
+          document.getElementById('fcmPermissionBanner').classList.add('hidden');
+          showNotification('🔔 Push notifications enabled!');
+        }
+      } catch (e) {
+        console.error('FCM Error:', e);
+      }
+    }
+
+    messaging.onMessage((payload) => {
+      const notification = payload.notification;
+      if (notification) {
+        showNotification('🔔 ' + (notification.title || 'Quran Reminder') + ': ' + (notification.body || ''));
+      }
+    });
+
+    async function checkFCMPermission() {
+      if ('Notification' in window) {
+        if (Notification.permission === 'granted') {
+          document.getElementById('fcmPermissionBanner').classList.add('hidden');
+        } else if (Notification.permission === 'default') {
+          document.getElementById('fcmPermissionBanner').classList.remove('hidden');
+        }
+      }
+    }
+
     // ============ NOTIFICATION ============
     function showNotification(msg) {
       const existing = document.querySelector('.notification-toast');
@@ -3452,6 +2712,25 @@
       document.body.appendChild(div);
       setTimeout(() => div.remove(), 3000);
     }
+
+    // ============ EVENT LISTENERS ============
+    // Video dominant toggle
+    document.addEventListener('click', function(e) {
+      const remoteWrapper = document.getElementById('remoteVideoWrapper');
+      const localWrapper = document.getElementById('localVideoWrapper');
+      if (e.target.closest('#remoteVideoWrapper') && remoteWrapper) {
+        if (selectedMode === 'video') toggleDominantVideo();
+      }
+      if (e.target.closest('#localVideoWrapper') && localWrapper) {
+        if (selectedMode === 'video') toggleDominantVideo();
+      }
+    });
+
+    // Listen for correction alerts
+    listenForCorrectionAlerts();
+
+    // Listen for signaling (for WebRTC)
+    // This will be set up when a call starts
   </script>
 </body>
 </html>
