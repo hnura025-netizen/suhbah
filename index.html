@@ -659,6 +659,8 @@
     let userListenerUnsubscribe = null;
     let connectionRequestsUnsubscribe = null;
     let isProcessingCall = false;
+    let callDocumentId = null;
+    let isEndingCall = false;
 
     // ============ UI HELPERS ============
     function showStep(stepId) {
@@ -1097,6 +1099,9 @@
       if (user.partner) {
         listenPartnerStatus();
       }
+      
+      initializeCallState();
+      setupCallCleanup();
     }
 
     // ============ AUTH STATE LISTENER ============
@@ -1644,6 +1649,7 @@
         const fromId = callData.fromId;
         const fromName = callData.fromName || 'Partner';
         const callId = callData.id;
+        callDocumentId = callId;
         
         await db.collection('incomingCalls').doc(callId).update({
           status: 'accepted'
@@ -1660,6 +1666,12 @@
         
         await startCallAfterAccept(fromId, fromName);
         
+        setTimeout(async () => {
+          try {
+            await db.collection('incomingCalls').doc(callId).delete();
+          } catch (e) {}
+        }, 3000);
+        
       } catch (e) {
         console.error('Error accepting call:', e);
         showNotification('Failed to accept call: ' + e.message);
@@ -1670,7 +1682,6 @@
 
     async function startCallAfterAccept(partnerId, partnerName) {
       try {
-        // Get media permissions
         if (!hasMediaPermissions) {
           const granted = await requestMediaPermissions();
           if (!granted) {
@@ -1679,7 +1690,6 @@
           }
         }
         
-        // Get local stream
         if (!localStream) {
           const stream = await getLocalStream();
           if (!stream) {
@@ -1688,7 +1698,6 @@
           }
         }
         
-        // Setup fullscreen call UI
         const callFullscreen = document.getElementById('callFullscreen');
         if (callFullscreen) {
           callFullscreen.classList.add('active');
@@ -1702,29 +1711,41 @@
         
         setupCallUI();
         
-        // Set local video
         const localVideo = document.getElementById('localVideoCall');
         if (localVideo && localStream) {
           localVideo.srcObject = localStream;
           localVideo.style.display = 'block';
         }
         
-        // Set remote label
         const remoteLabel = document.getElementById('remoteCallLabel');
         if (remoteLabel) {
           remoteLabel.textContent = user.partner || 'Partner';
         }
         
-        // Start signaling listener
         startSignalingListener();
         
-        // Create peer connection and send offer
         createPeerConnection();
         
         if (pc) {
-          const offer = await pc.createOffer();
+          const offer = await pc.createOffer({
+            offerToReceiveAudio: true,
+            offerToReceiveVideo: selectedMode === 'video'
+          });
           await pc.setLocalDescription(offer);
-          sendSignalingData({ type: 'offer', offer: offer });
+          
+          await new Promise((resolve) => {
+            if (pc.iceGatheringState === 'complete') {
+              resolve();
+            } else {
+              pc.onicegatheringstatechange = () => {
+                if (pc.iceGatheringState === 'complete') {
+                  resolve();
+                }
+              };
+            }
+          });
+          
+          sendSignalingData({ type: 'offer', offer: pc.localDescription });
           
           showNotification(`📞 Calling ${user.partner || 'Partner'}...`);
           isCaller = true;
@@ -1805,9 +1826,20 @@
 
       try {
         isGettingMedia = true;
-        const constraints = { audio: true };
+        const constraints = { 
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true
+          }
+        };
+        
         if (selectedMode === 'video') {
-          constraints.video = { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } };
+          constraints.video = { 
+            facingMode: 'user', 
+            width: { ideal: 640 }, 
+            height: { ideal: 480 },
+            frameRate: { ideal: 30 }
+          };
         }
         
         localStream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -1816,7 +1848,7 @@
       } catch (e) {
         console.error('Error getting local stream:', e);
         isGettingMedia = false;
-        showNotification('❌ Could not access camera/microphone');
+        showNotification('❌ Could not access camera/microphone: ' + e.message);
         return null;
       }
     }
@@ -1829,7 +1861,8 @@
           { urls: 'stun:stun2.l.google.com:19302' },
           { urls: 'stun:stun3.l.google.com:19302' },
           { urls: 'stun:stun4.l.google.com:19302' }
-        ]
+        ],
+        iceCandidatePoolSize: 10
       };
       
       pc = new RTCPeerConnection(configuration);
@@ -1847,6 +1880,9 @@
         if (remoteVideo) {
           remoteVideo.srcObject = remoteStream;
           remoteVideo.style.display = 'block';
+          remoteVideo.onloadedmetadata = () => {
+            remoteVideo.play().catch(e => console.warn('Remote video play error:', e));
+          };
         }
         showNotification('📹 Partner connected!');
       };
@@ -1863,7 +1899,19 @@
         if (state === 'connected') {
           isCallActive = true;
           startCallTimer();
+          showNotification('🔗 Call connected!');
         } else if (state === 'disconnected' || state === 'failed' || state === 'closed') {
+          if (isCallActive) {
+            endCall();
+          }
+        }
+      };
+      
+      pc.oniceconnectionstatechange = () => {
+        const state = pc.iceConnectionState;
+        console.log('ICE connection state:', state);
+        if (state === 'failed') {
+          showNotification('❌ Connection failed');
           endCall();
         }
       };
@@ -1883,21 +1931,55 @@
         .where('to', '==', user.id)
         .orderBy('timestamp', 'asc')
         .onSnapshot((snapshot) => {
-          snapshot.docChanges().forEach(change => {
+          snapshot.docChanges().forEach(async (change) => {
             if (change.type === 'added') {
               const data = change.doc.data();
               if (data.from === user.id) return;
               
-              change.doc.ref.delete().catch(() => {});
-              
-              if (data.type === 'reject') {
-                showNotification('📞 Call rejected by partner');
-                endCall();
-                return;
-              }
+              try {
+                await change.doc.ref.delete();
+              } catch (e) {}
               
               if (data.type === 'hangup') {
                 showNotification('📴 Call ended by partner');
+                isCallActive = false;
+                if (pc) {
+                  try { pc.close(); } catch (e) {}
+                  pc = null;
+                }
+                const callFullscreen = document.getElementById('callFullscreen');
+                if (callFullscreen) {
+                  callFullscreen.classList.remove('active');
+                }
+                const container = document.getElementById('container');
+                const bottomNav = document.getElementById('bottomNav');
+                const header = document.querySelector('header');
+                if (container) container.style.display = 'block';
+                if (bottomNav) bottomNav.style.display = 'flex';
+                if (header) header.style.display = 'block';
+                
+                const remoteVideo = document.getElementById('remoteVideoCall');
+                if (remoteVideo) {
+                  remoteVideo.srcObject = null;
+                  remoteVideo.style.display = 'none';
+                }
+                const localVideo = document.getElementById('localVideoCall');
+                if (localVideo) {
+                  localVideo.srcObject = null;
+                  localVideo.style.display = 'none';
+                }
+                
+                if (signalingUnsubscribe) {
+                  signalingUnsubscribe();
+                  signalingUnsubscribe = null;
+                }
+                
+                showNotification('Call ended by partner');
+                return;
+              }
+              
+              if (data.type === 'reject') {
+                showNotification('📞 Call rejected by partner');
                 endCall();
                 return;
               }
@@ -1929,15 +2011,21 @@
           return;
         }
         
-        if (!pc) return;
+        if (!pc) {
+          console.warn('No peer connection for signaling data');
+          return;
+        }
         
         if (data.type === 'answer') {
-          await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
+          if (data.answer) {
+            await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
+          }
         } else if (data.type === 'ice-candidate') {
           if (data.candidate) {
             try {
               await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
             } catch (e) {
+              console.warn('Failed to add ICE candidate:', e);
               iceCandidatesQueue.push(data.candidate);
             }
           }
@@ -1965,7 +2053,6 @@
           }
         }
         
-        // Setup fullscreen
         const callFullscreen = document.getElementById('callFullscreen');
         if (callFullscreen) {
           callFullscreen.classList.add('active');
@@ -1993,9 +2080,25 @@
         createPeerConnection();
         
         await pc.setRemoteDescription(new RTCSessionDescription(offer));
-        const answer = await pc.createAnswer();
+        const answer = await pc.createAnswer({
+          offerToReceiveAudio: true,
+          offerToReceiveVideo: selectedMode === 'video'
+        });
         await pc.setLocalDescription(answer);
-        sendSignalingData({ type: 'answer', answer: answer });
+        
+        await new Promise((resolve) => {
+          if (pc.iceGatheringState === 'complete') {
+            resolve();
+          } else {
+            pc.onicegatheringstatechange = () => {
+              if (pc.iceGatheringState === 'complete') {
+                resolve();
+              }
+            };
+          }
+        });
+        
+        sendSignalingData({ type: 'answer', answer: pc.localDescription });
         
         isCallActive = true;
         startCallTimer();
@@ -2004,9 +2107,13 @@
         showNotification('📹 Call connected!');
         
         if (iceCandidatesQueue.length > 0) {
-          iceCandidatesQueue.forEach(candidate => {
-            pc.addIceCandidate(new RTCIceCandidate(candidate));
-          });
+          for (const candidate of iceCandidatesQueue) {
+            try {
+              await pc.addIceCandidate(new RTCIceCandidate(candidate));
+            } catch (e) {
+              console.warn('Failed to add queued ICE candidate:', e);
+            }
+          }
           iceCandidatesQueue = [];
         }
         
@@ -2024,6 +2131,10 @@
     }
 
     function endCall() {
+      if (isEndingCall) return;
+      isEndingCall = true;
+      
+      console.log('Ending call...');
       isCallActive = false;
       isCaller = false;
       isProcessingCall = false;
@@ -2069,16 +2180,39 @@
         signalingUnsubscribe = null;
       }
       
-      if (user && user.partnerId) {
+      if (user && user.partnerId && !isEndingCall) {
         sendSignalingData({ type: 'hangup' });
+      }
+      
+      if (callDocumentId) {
+        db.collection('incomingCalls').doc(callDocumentId).delete().catch(() => {});
+        callDocumentId = null;
+      }
+      
+      if (pendingCallData && pendingCallData.id) {
+        db.collection('incomingCalls').doc(pendingCallData.id).delete().catch(() => {});
+        pendingCallData = null;
       }
       
       iceCandidatesQueue = [];
       
       const localWrapper = document.getElementById('localVideoWrapper');
       const remoteWrapper = document.getElementById('remoteVideoWrapper');
-      if (localWrapper) localWrapper.style.display = 'block';
-      if (remoteWrapper) remoteWrapper.style.display = 'block';
+      if (localWrapper) {
+        localWrapper.style.display = 'block';
+        localWrapper.classList.remove('dominant');
+        localWrapper.style.position = 'relative';
+        localWrapper.style.bottom = 'auto';
+        localWrapper.style.right = 'auto';
+        localWrapper.style.width = 'auto';
+        localWrapper.style.height = 'auto';
+        localWrapper.style.top = 'auto';
+        localWrapper.style.left = 'auto';
+      }
+      if (remoteWrapper) {
+        remoteWrapper.style.display = 'block';
+        remoteWrapper.classList.add('dominant');
+      }
       
       const camToggle = document.getElementById('callCamToggle');
       if (camToggle) camToggle.style.display = 'inline-block';
@@ -2086,10 +2220,10 @@
       const flash = document.getElementById('correctionFlash');
       if (flash) flash.classList.remove('active');
       
-      pendingCallData = null;
       hideIncomingCall();
       
       showNotification('📴 Call ended');
+      isEndingCall = false;
     }
 
     function startCallTimer() {
@@ -2176,7 +2310,7 @@
       try {
         isProcessingCall = true;
         
-        await db.collection('incomingCalls').add({
+        const callDoc = await db.collection('incomingCalls').add({
           fromId: user.id,
           fromName: user.name || 'Reader',
           toId: user.partnerId,
@@ -2184,17 +2318,17 @@
           status: 'ringing',
           timestamp: firebase.firestore.FieldValue.serverTimestamp()
         });
+        callDocumentId = callDoc.id;
         
         showNotification(`📞 Calling ${user.partner}...`);
         
+        await startCallAfterAccept(user.partnerId, user.partner);
+        
         setTimeout(async () => {
           try {
-            await startCallAfterAccept(user.partnerId, user.partner);
-          } catch (e) {
-            console.error('Error starting call:', e);
-          }
-          isProcessingCall = false;
-        }, 1000);
+            await db.collection('incomingCalls').doc(callDoc.id).delete();
+          } catch (e) {}
+        }, 5000);
         
       } catch (e) {
         console.error('Error initiating call:', e);
@@ -2451,6 +2585,7 @@
       }
       
       setupDrag();
+      setupCallCleanup();
     });
 
     // ============ THEME ============
@@ -2471,6 +2606,37 @@
       };
       const label = document.getElementById('langLabel');
       if (label) label.innerText = langNames[currentLang] || 'English';
+    }
+
+    // ============ CALL STATE MANAGEMENT ============
+    function initializeCallState() {
+      isCallActive = false;
+      isCaller = false;
+      isProcessingCall = false;
+      isEndingCall = false;
+      callDocumentId = null;
+      pendingCallData = null;
+      
+      if (user && user.id) {
+        db.collection('incomingCalls')
+          .where('toId', '==', user.id)
+          .where('status', '==', 'ringing')
+          .get()
+          .then((snapshot) => {
+            snapshot.forEach(doc => {
+              doc.ref.delete().catch(() => {});
+            });
+          })
+          .catch(() => {});
+      }
+    }
+
+    function setupCallCleanup() {
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden && isCallActive) {
+          endCall();
+        }
+      });
     }
 
     // ============ EVENT LISTENERS ============
