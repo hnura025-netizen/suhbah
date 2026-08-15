@@ -1415,7 +1415,7 @@
       if (btn) {
         btn.disabled = false;
         btn.innerHTML = isSignUp ? '<i class="fas fa-user-plus"></i> Sign Up' :
-        '<i class="fas fa-sign-in-alt"></i> Sign In';
+          '<i class="fas fa-sign-in-alt"></i> Sign In';
       }
     }
 
@@ -2326,7 +2326,18 @@
           { urls: 'stun:stun1.l.google.com:19302' },
           { urls: 'stun:stun2.l.google.com:19302' },
           { urls: 'stun:stun3.l.google.com:19302' },
-          { urls: 'stun:stun4.l.google.com:19302' }
+          { urls: 'stun:stun4.l.google.com:19302' },
+          // TURN servers for better connectivity
+          {
+            urls: 'turn:openrelay.metered.ca:80',
+            username: 'openrelayproject',
+            credential: 'openrelayproject'
+          },
+          {
+            urls: 'turn:openrelay.metered.ca:443',
+            username: 'openrelayproject',
+            credential: 'openrelayproject'
+          }
         ],
         iceCandidatePoolSize: 10
       };
@@ -2355,19 +2366,21 @@
 
       pc.onicecandidate = (event) => {
         if (event.candidate) {
+          console.log('📤 Sending ICE candidate');
           sendSignalingData({ type: 'ice-candidate', candidate: event.candidate });
         }
       };
 
       pc.onconnectionstatechange = () => {
         const state = pc.connectionState;
-        console.log('Connection state:', state);
+        console.log('📡 Connection state:', state);
         if (state === 'connected') {
           isCallActive = true;
           startCallTimer();
           showNotification('🔗 Call connected!');
         } else if (state === 'disconnected' || state === 'failed' || state === 'closed') {
           if (isCallActive) {
+            console.log('Call ended due to state:', state);
             endCall();
           }
         }
@@ -2375,7 +2388,7 @@
 
       pc.oniceconnectionstatechange = () => {
         const state = pc.iceConnectionState;
-        console.log('ICE connection state:', state);
+        console.log('🧊 ICE connection state:', state);
         if (state === 'failed') {
           showNotification('❌ Connection failed');
           endCall();
@@ -2419,6 +2432,7 @@
                 return;
               }
 
+              console.log('📩 Received signaling data:', data.type);
               handleSignalingData(data);
             }
           });
@@ -2440,35 +2454,58 @@
     async function handleSignalingData(data) {
       try {
         if (data.type === 'offer') {
-          if (isCaller) return;
+          if (isCaller) {
+            console.log('Ignoring offer - we are the caller');
+            return;
+          }
+          if (!pc) {
+            console.log('Creating peer connection for offer');
+            createPeerConnection();
+          }
           await handleIncomingOffer(data.offer);
           return;
         }
 
         if (!pc) {
           console.warn('No peer connection for signaling data');
+          if (data.type === 'answer') {
+            console.error('Received answer but no peer connection!');
+            showNotification('❌ Connection error');
+            endCall();
+          }
           return;
         }
 
         if (data.type === 'answer') {
           if (data.answer && isCaller) {
+            console.log('📥 Setting remote description from answer');
             await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
             for (const c of iceCandidatesQueue) {
-              try { await pc.addIceCandidate(new RTCIceCandidate(c)); } catch (e) {}
+              try {
+                await pc.addIceCandidate(new RTCIceCandidate(c));
+                console.log('✅ Added queued ICE candidate');
+              } catch (e) {
+                console.warn('Failed to add queued ICE candidate:', e);
+              }
             }
             iceCandidatesQueue = [];
+            console.log('Remote description set, call should connect');
           }
         } else if (data.type === 'ice-candidate') {
           if (data.candidate) {
             try {
               if (pc.remoteDescription) {
                 await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+                console.log('✅ Added ICE candidate');
               } else {
+                console.log('📦 Queuing ICE candidate - remote description not set yet');
                 iceCandidatesQueue.push(data.candidate);
               }
             } catch (e) {
               console.warn('Failed to add ICE candidate:', e);
-              iceCandidatesQueue.push(data.candidate);
+              if (!iceCandidatesQueue.includes(data.candidate)) {
+                iceCandidatesQueue.push(data.candidate);
+              }
             }
           }
         }
@@ -2518,38 +2555,51 @@
           remoteLabel.textContent = user.partner || 'Partner';
         }
 
-        if (!pc) createPeerConnection();
+        if (!pc) {
+          console.log('Creating peer connection for incoming offer');
+          createPeerConnection();
+        }
 
+        console.log('📥 Setting remote description from offer');
         await pc.setRemoteDescription(new RTCSessionDescription(offer));
+
         const answer = await pc.createAnswer({
           offerToReceiveAudio: true,
           offerToReceiveVideo: selectedMode === 'video'
         });
         await pc.setLocalDescription(answer);
+        console.log('📤 Local answer set');
 
-        await new Promise(resolve => {
-          if (pc.iceGatheringState === 'complete') resolve();
-          else {
-            const t = setTimeout(resolve, 2000);
+        await new Promise((resolve) => {
+          if (pc.iceGatheringState === 'complete') {
+            resolve();
+          } else {
+            const timeout = setTimeout(resolve, 3000);
             pc.onicegatheringstatechange = () => {
               if (pc.iceGatheringState === 'complete') {
-                clearTimeout(t);
+                clearTimeout(timeout);
                 resolve();
               }
             };
           }
         });
 
+        console.log('📤 Sending answer with local description');
         sendSignalingData({ type: 'answer', answer: pc.localDescription });
 
         isCallActive = true;
         startCallTimer();
         isCaller = false;
 
-        showNotification('📹 Call connected!');
+        showNotification('📹 Call connecting...');
 
         for (const c of iceCandidatesQueue) {
-          try { await pc.addIceCandidate(new RTCIceCandidate(c)); } catch (e) {}
+          try {
+            await pc.addIceCandidate(new RTCIceCandidate(c));
+            console.log('✅ Added queued ICE candidate after answer');
+          } catch (e) {
+            console.warn('Failed to add queued ICE candidate after answer:', e);
+          }
         }
         iceCandidatesQueue = [];
 
@@ -2746,23 +2796,26 @@
           offerToReceiveVideo: selectedMode === 'video'
         });
         await pc.setLocalDescription(offer);
+        console.log('📤 Local offer set');
 
-        await new Promise(resolve => {
-          if (pc.iceGatheringState === 'complete') resolve();
-          else {
-            const t = setTimeout(resolve, 2000);
+        await new Promise((resolve) => {
+          if (pc.iceGatheringState === 'complete') {
+            resolve();
+          } else {
+            const timeout = setTimeout(resolve, 3000);
             pc.onicegatheringstatechange = () => {
               if (pc.iceGatheringState === 'complete') {
-                clearTimeout(t);
+                clearTimeout(timeout);
                 resolve();
               }
             };
           }
         });
 
+        console.log('📤 Sending offer with local description');
         sendSignalingData({ type: 'offer', offer: pc.localDescription });
 
-        showNotification(`📞 Connecting with ${user.partner}...`);
+        showNotification(`📞 Calling ${user.partner}...`);
         isProcessingCall = false;
 
         cleanupRingingDoc();
