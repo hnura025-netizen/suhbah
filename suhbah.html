@@ -1,0 +1,3457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <title>Quran Musaffah · Email Verification</title>
+  <link rel="manifest" href="data:application/json,{}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"></script>
+  <style>
+    /* ... (keep all existing styles) ... */
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+    body { background: #f2f6f5; padding-bottom: 80px; transition: background 0.2s, color 0.2s; }
+    header { background: #0f766e; color: white; padding: 10px 16px 8px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.06); position: sticky; top: 0; z-index: 20; }
+    header h1 { font-size: 1.3rem; letter-spacing: -0.3px; }
+    header p { opacity: 0.9; font-size: 0.7rem; margin-top: 2px; }
+    .container { max-width: 700px; margin: 0 auto; padding: 10px 12px 20px; }
+
+    .page { display: none; animation: fadeUp 0.2s ease; }
+    .page.active { display: block; }
+    @keyframes fadeUp { 0% { opacity: 0.4; transform: translateY(6px); } 100% { opacity: 1; transform: translateY(0); } }
+
+    .card { background: white; border-radius: 20px; padding: 14px 12px; margin-bottom: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); transition: background 0.2s; }
+    .card h2 { font-size: 1rem; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+    .card h3 { font-size: 0.9rem; margin-bottom: 6px; }
+    input, select, button, textarea { width: 100%; padding: 9px 12px; margin-top: 6px; border-radius: 12px; border: 1px solid #dde3e2; font-size: 0.85rem; background: white; transition: 0.15s; }
+    button { background: #0f766e; color: white; font-weight: 600; border: none; cursor: pointer; }
+    button:active { transform: scale(0.97); }
+    button.danger { background: #b91c1c; }
+    button.success { background: #16a34a; }
+    button.purple { background: #7c3aed; }
+    button.warning { background: #d97706; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    button.outline { background: transparent; color: #0f766e; border: 2px solid #0f766e; }
+    button.outline.danger { color: #b91c1c; border-color: #b91c1c; }
+    .hidden { display: none !important; }
+
+    .stats-mini { display: flex; gap: 6px; flex-wrap: wrap; }
+    .stat-mini { background: #eaf9f7; padding: 4px 12px; border-radius: 30px; font-size: 0.7rem; }
+    .dark .stat-mini { background: #1d3a38; color: #d4f4f0; }
+
+    .juz-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 6px; }
+    .juz-item { background: white; border: 1px solid #dde3e2; border-radius: 10px; padding: 8px 0; text-align: center; font-weight: 600; cursor: pointer; transition: all 0.1s; font-size: 0.8rem; }
+    .juz-item.completed { background: #0f766e; color: white; border-color: #0f766e; }
+    .juz-item:active { transform: scale(0.92); }
+
+    nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; justify-content: space-around; padding: 4px 0 10px; box-shadow: 0 -4px 14px rgba(0,0,0,0.04); border-top: 1px solid #eef3f2; z-index: 40; }
+    nav button { width: auto; padding: 2px 4px; background: transparent; color: #5b7a76; border-radius: 40px; margin: 0; font-size: 0.6rem; display: flex; flex-direction: column; align-items: center; gap: 0px; border: none; font-weight: 500; }
+    nav button i { font-size: 1.4rem; color: #5b7a76; }
+    nav button.active i { color: #0f766e; }
+    nav button.active { color: #0f766e; }
+    nav button:active { transform: scale(0.94); }
+
+    .dark { background: #121212; color: #eee; }
+    .dark .card { background: #1e1e1e; }
+    .dark .stat-mini { background: #1d3a38; color: #d4f4f0; }
+    .dark .juz-item { background: #2a2a2a; border-color: #3a3a3a; color: #ddd; }
+    .dark .juz-item.completed { background: #0f766e; color: white; }
+    .dark input, .dark select, .dark textarea { background: #2c2c2c; color: #eee; border-color: #444; }
+    .dark nav { background: #1a1a1a; border-top-color: #2a2a2a; }
+    .dark nav button { color: #8aa8a4; }
+    .dark nav button i { color: #8aa8a4; }
+    .dark nav button.active { color: #7acfc5; }
+    .dark nav button.active i { color: #7acfc5; }
+
+    .notification-toast { position: fixed; top: 60px; right: 12px; background: #0f766e; color: white; padding: 8px 16px; border-radius: 30px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); z-index: 99; max-width: 240px; font-weight: 500; animation: slideIn 0.3s ease; font-size: 0.8rem; }
+    .notification-toast.attention { background: #dc2626; animation: pulse 0.5s ease 3; }
+    @keyframes slideIn { 0% { transform: translateX(100px); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } }
+    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+
+    .post { background: #f8fafc; border-radius: 14px; padding: 10px; margin-bottom: 8px; border-left: 3px solid #0f766e; }
+    .dark .post { background: #1a2625; }
+    .post-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+    .post-avatar { width: 30px; height: 30px; border-radius: 50%; background: #0f766e; color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.8rem; flex-shrink: 0; }
+    .post-name { font-weight: 600; font-size: 0.8rem; }
+    .post-time { font-size: 0.6rem; opacity: 0.5; }
+    .post-content { margin: 4px 0; font-size: 0.85rem; }
+    .post-actions { display: flex; gap: 12px; margin-top: 4px; font-size: 0.7rem; color: #5b7a76; }
+    .post-actions span { cursor: pointer; display: flex; align-items: center; gap: 4px; }
+    .post-actions span:hover { color: #0f766e; }
+    .post-comments { margin-top: 8px; padding-top: 8px; border-top: 1px solid #eef3f2; }
+    .dark .post-comments { border-top-color: #2a3a38; }
+    .comment { display: flex; gap: 8px; margin-bottom: 4px; font-size: 0.75rem; }
+    .comment-avatar { width: 20px; height: 20px; border-radius: 50%; background: #7c3aed; color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.6rem; flex-shrink: 0; }
+
+    .chat-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #eef3f2; cursor: pointer; transition: background 0.1s; }
+    .dark .chat-item { border-bottom-color: #2a3a38; }
+    .chat-item:hover { background: #f0f6f5; }
+    .dark .chat-item:hover { background: #1a2e2c; }
+    .chat-avatar { width: 38px; height: 38px; border-radius: 50%; background: #0f766e; color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.8rem; flex-shrink: 0; }
+    .chat-info { flex: 1; }
+    .chat-name { font-weight: 600; font-size: 0.85rem; }
+    .chat-last { font-size: 0.7rem; opacity: 0.6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .chat-time { font-size: 0.6rem; opacity: 0.4; flex-shrink: 0; }
+
+    .chat-window { max-height: 400px; overflow-y: auto; background: #f8fafc; border-radius: 14px; padding: 10px; margin-top: 6px; display: flex; flex-direction: column; }
+    .dark .chat-window { background: #1a2625; }
+    .msg { padding: 6px 12px; border-radius: 16px; max-width: 80%; word-wrap: break-word; margin-bottom: 3px; font-size: 0.85rem; }
+    .msg.mine { background: #0f766e; color: white; align-self: flex-end; }
+    .msg.other { background: #e5e7eb; color: #1f2937; align-self: flex-start; }
+    .dark .msg.other { background: #2c3a38; color: #eee; }
+    .msg .time { font-size: 0.5rem; opacity: 0.5; margin-left: 4px; }
+
+    .partner-card { background: #e0f2fe; border-radius: 14px; padding: 12px; text-align: center; }
+    .dark .partner-card { background: #1a3340; }
+    .partner-avatar { width: 56px; height: 56px; border-radius: 50%; background: #0f766e; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; font-weight: 600; margin: 0 auto 6px; }
+
+    .auth-toggle { text-align: center; margin-top: 4px; color: #0f766e; cursor: pointer; font-weight: 500; font-size: 0.8rem; }
+    .dark .auth-toggle { color: #7acfc5; }
+
+    .profile-avatar { width: 40px; height: 40px; border-radius: 50%; background: #0f766e; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 600; flex-shrink: 0; }
+
+    .password-wrapper { position: relative; width: 100%; }
+    .password-wrapper input { padding-right: 40px; }
+    .toggle-password { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #6b7280; background: none; border: none; font-size: 1rem; padding: 0; margin: 0; width: auto; }
+    .toggle-password:hover { color: #0f766e; }
+
+    .recitation-status { padding: 10px; border-radius: 14px; text-align: center; margin-top: 6px; transition: all 0.3s; }
+    .recitation-status.active { background: #d1fae5; color: #065f46; }
+    .recitation-status.inactive { background: #fef3c7; color: #92400e; }
+    .recitation-status.attention { background: #fee2e2; color: #991b1b; animation: flashAttention 1s ease 3; }
+    @keyframes flashAttention { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+    .dark .recitation-status.active { background: #064e3b; color: #a7f3d0; }
+    .dark .recitation-status.inactive { background: #78350f; color: #fde68a; }
+    .dark .recitation-status.attention { background: #7f1d1d; color: #fca5a5; }
+
+    .verification-banner { background: #fef3c7; border: 1px solid #d97706; border-radius: 12px; padding: 10px; margin: 8px 0; text-align: center; font-size: 0.85rem; color: #92400e; }
+    .dark .verification-banner { background: #78350f; border-color: #d97706; color: #fde68a; }
+    .verification-banner button { background: #d97706; color: white; border: none; padding: 4px 16px; border-radius: 30px; margin-top: 4px; font-size: 0.8rem; cursor: pointer; }
+
+    .onboarding-step { display: none; }
+    .onboarding-step.active { display: block; }
+
+    .chat-type-tabs { display: flex; gap: 8px; margin-bottom: 10px; }
+    .chat-type-tabs button { flex: 1; padding: 6px; font-size: 0.75rem; border-radius: 30px; background: #eef3f2; color: #5b7a76; border: none; cursor: pointer; }
+    .chat-type-tabs button.active { background: #0f766e; color: white; }
+
+    .empty-state { text-align: center; padding: 30px 10px; opacity: 0.6; }
+    .empty-state i { font-size: 2.5rem; margin-bottom: 10px; display: block; }
+    .empty-state p { font-size: 0.85rem; }
+
+    .attention-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(220, 38, 38, 0.2); z-index: 50; display: none; justify-content: center; align-items: center; pointer-events: none; }
+    .attention-overlay.show { display: flex; animation: fadeInOut 1.5s ease; }
+    @keyframes fadeInOut { 0% { opacity: 0; } 20% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; } }
+    .attention-overlay .content { background: white; padding: 30px 40px; border-radius: 20px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.3); pointer-events: auto; }
+    .dark .attention-overlay .content { background: #1e1e1e; }
+    .attention-overlay h2 { color: #dc2626; font-size: 1.5rem; }
+    .attention-overlay .close-btn { margin-top: 10px; width: auto; padding: 8px 24px; }
+
+    .request-item { background: #f0fdf4; border-radius: 12px; padding: 12px; margin-bottom: 8px; border-left: 4px solid #16a34a; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+    .dark .request-item { background: #052e16; border-left-color: #16a34a; }
+    .request-item .info { flex: 1; }
+    .request-item .info .name { font-weight: 600; font-size: 0.9rem; }
+    .request-item .info .detail { font-size: 0.75rem; opacity: 0.6; }
+    .request-item .actions { display: flex; gap: 6px; }
+    .request-item .actions button { width: auto; padding: 6px 16px; margin: 0; font-size: 0.75rem; }
+
+    .search-item { background: #f0fdf4; border-radius: 12px; padding: 12px; margin-bottom: 8px; border-left: 4px solid #7c3aed; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+    .dark .search-item { background: #052e16; border-left-color: #7c3aed; }
+    .search-item .info { flex: 1; }
+    .search-item .info .name { font-weight: 600; font-size: 0.9rem; }
+    .search-item .info .detail { font-size: 0.75rem; opacity: 0.6; }
+    .search-item .actions { display: flex; gap: 6px; }
+    .search-item .actions button { width: auto; padding: 6px 16px; margin: 0; font-size: 0.75rem; }
+    .search-item .status-badge { font-size: 0.65rem; padding: 2px 10px; border-radius: 30px; }
+    .search-item .status-badge.online { background: #d1fae5; color: #065f46; }
+    .search-item .status-badge.offline { background: #fef3c7; color: #92400e; }
+    .dark .search-item .status-badge.online { background: #064e3b; color: #a7f3d0; }
+    .dark .search-item .status-badge.offline { background: #78350f; color: #fde68a; }
+
+    .alarm-item { background: #f0fdf4; border-radius: 12px; padding: 12px; margin-bottom: 8px; border-left: 4px solid #0f766e; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+    .dark .alarm-item { background: #052e16; border-left-color: #0f766e; }
+    .alarm-item .info { flex: 1; }
+    .alarm-item .info .time { font-weight: 600; font-size: 1.1rem; }
+    .alarm-item .info .detail { font-size: 0.75rem; opacity: 0.6; }
+    .alarm-item .info .status { font-size: 0.65rem; opacity: 0.5; }
+    .alarm-item .actions { display: flex; gap: 6px; align-items: center; }
+    .alarm-item .actions button { width: auto; padding: 6px 12px; margin: 0; font-size: 0.7rem; }
+    .alarm-item .toggle { position: relative; width: 48px; height: 26px; background: #ccc; border-radius: 13px; cursor: pointer; transition: 0.3s; flex-shrink: 0; }
+    .alarm-item .toggle.active { background: #0f766e; }
+    .alarm-item .toggle .slider { position: absolute; top: 2px; left: 2px; width: 22px; height: 22px; background: white; border-radius: 50%; transition: 0.3s; }
+    .alarm-item .toggle.active .slider { left: 24px; }
+
+    .alarm-notification { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 1000; display: none; justify-content: center; align-items: center; }
+    .alarm-notification.show { display: flex; }
+    .alarm-notification .content { background: white; padding: 30px 40px; border-radius: 20px; text-align: center; max-width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.5); animation: bounceIn 0.5s ease; }
+    @keyframes bounceIn { 0% { transform: scale(0.5); opacity: 0; } 60% { transform: scale(1.05); } 100% { transform: scale(1); opacity: 1; } }
+    .dark .alarm-notification .content { background: #1e1e1e; }
+    .alarm-notification .icon { font-size: 4rem; display: block; margin-bottom: 10px; }
+    .alarm-notification h2 { color: #0f766e; font-size: 1.8rem; }
+    .alarm-notification p { margin: 10px 0; opacity: 0.8; font-size: 1.1rem; }
+    .alarm-notification .btn-group { display: flex; gap: 10px; justify-content: center; margin-top: 15px; flex-wrap: wrap; }
+    .alarm-notification .btn-group button { width: auto; padding: 12px 28px; margin: 0; font-size: 0.9rem; }
+
+    .alarm-badge { display: inline-block; background: #dc2626; color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.6rem; margin-left: 4px; }
+
+    .permission-banner { background: #e0f2fe; border-radius: 12px; padding: 10px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .dark .permission-banner { background: #1a3340; }
+    .permission-banner p { font-size: 0.8rem; flex: 1; }
+    .permission-banner button { width: auto; padding: 4px 16px; margin: 0; font-size: 0.75rem; }
+
+    .fcm-status { font-size: 0.7rem; opacity: 0.6; margin-top: 4px; }
+
+    .video-container { 
+      display: grid; 
+      grid-template-columns: 1fr 1fr; 
+      gap: 8px; 
+      margin-top: 8px; 
+      background: #1a1a1a; 
+      border-radius: 14px; 
+      padding: 8px; 
+      min-height: 200px; 
+    }
+    .video-container .video-wrapper { 
+      position: relative; 
+      background: #2a2a2a; 
+      border-radius: 10px; 
+      overflow: hidden; 
+      min-height: 150px; 
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .video-container video { 
+      width: 100%; 
+      height: 100%; 
+      min-height: 150px; 
+      object-fit: cover; 
+      background: #1a1a1a; 
+      border-radius: 10px; 
+      transform: scaleX(-1); 
+    }
+    .video-container .video-placeholder { 
+      color: white; 
+      opacity: 0.6; 
+      font-size: 0.8rem; 
+      text-align: center; 
+    }
+    .video-container .video-label { 
+      position: absolute; 
+      bottom: 8px; 
+      left: 8px; 
+      background: rgba(0,0,0,0.7); 
+      color: white; 
+      padding: 2px 10px; 
+      border-radius: 20px; 
+      font-size: 0.65rem; 
+      font-weight: 500; 
+    }
+    .video-container .video-wrapper.muted::after { 
+      content: '🔇'; 
+      position: absolute; 
+      top: 8px; 
+      right: 8px; 
+      font-size: 1.2rem; 
+      background: rgba(0,0,0,0.5); 
+      border-radius: 50%; 
+      padding: 4px; 
+    }
+    .video-controls { 
+      display: flex; 
+      gap: 6px; 
+      justify-content: center; 
+      margin-top: 8px; 
+      flex-wrap: wrap; 
+    }
+    .video-controls button { 
+      width: auto; 
+      padding: 6px 14px; 
+      margin: 0; 
+      font-size: 0.7rem; 
+      border-radius: 30px; 
+    }
+    .video-controls button.call-btn { background: #16a34a; }
+    .video-controls button.call-btn.active { background: #dc2626; animation: pulseCall 1s ease infinite; }
+    @keyframes pulseCall { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+    .video-controls button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .call-status { text-align: center; font-size: 0.8rem; padding: 4px; margin-top: 4px; border-radius: 10px; }
+    .call-status.connected { background: #d1fae5; color: #065f46; }
+    .call-status.connecting { background: #fef3c7; color: #92400e; }
+    .call-status.disconnected { background: #fee2e2; color: #991b1b; }
+    .call-status.idle { background: #f3f4f6; color: #6b7280; }
+    .call-status.offline { background: #fef3c7; color: #92400e; }
+    .dark .call-status.connected { background: #064e3b; color: #a7f3d0; }
+    .dark .call-status.connecting { background: #78350f; color: #fde68a; }
+    .dark .call-status.disconnected { background: #7f1d1d; color: #fca5a5; }
+    .dark .call-status.idle { background: #1f2937; color: #9ca3af; }
+    .dark .call-status.offline { background: #78350f; color: #fde68a; }
+
+    .media-permission-banner { background: #fef3c7; border: 1px solid #d97706; border-radius: 12px; padding: 10px; margin-bottom: 8px; text-align: center; }
+    .dark .media-permission-banner { background: #78350f; border-color: #d97706; color: #fde68a; }
+    .media-permission-banner button { width: auto; padding: 4px 16px; margin: 4px auto 0; font-size: 0.75rem; }
+
+    .camera-select { 
+      display: flex; 
+      gap: 6px; 
+      align-items: center; 
+      margin-top: 4px; 
+      font-size: 0.75rem; 
+    }
+    .camera-select select { 
+      flex: 1; 
+      padding: 4px 8px; 
+      margin: 0; 
+      font-size: 0.75rem; 
+      border-radius: 8px; 
+      border: 1px solid #dde3e2; 
+    }
+
+    .auth-loading { text-align: center; padding: 20px; }
+    .auth-loading i { font-size: 2rem; animation: spin 1s linear infinite; }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+
+    .search-box { 
+      display: flex; 
+      gap: 6px; 
+      margin-bottom: 8px; 
+      align-items: center; 
+    }
+    .search-box input { 
+      flex: 1; 
+      margin: 0; 
+      padding: 8px 12px; 
+      font-size: 0.85rem; 
+    }
+    .search-box button { 
+      width: auto; 
+      padding: 8px 16px; 
+      margin: 0; 
+      font-size: 0.8rem; 
+    }
+    .search-filters {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+    .search-filters button {
+      width: auto;
+      padding: 4px 14px;
+      margin: 0;
+      font-size: 0.7rem;
+      border-radius: 30px;
+      background: #eef3f2;
+      color: #5b7a76;
+      border: none;
+      cursor: pointer;
+    }
+    .search-filters button.active {
+      background: #0f766e;
+      color: white;
+    }
+    .dark .search-filters button {
+      background: #2a2a2a;
+      color: #aaa;
+    }
+    .dark .search-filters button.active {
+      background: #0f766e;
+      color: white;
+    }
+
+    .media-error { color: #dc2626; font-size: 0.75rem; margin-top: 4px; display: none; }
+    
+    /* Connected partner status in search */
+    .partner-connected { 
+      background: #d1fae5 !important; 
+      border-left-color: #16a34a !important; 
+    }
+    .dark .partner-connected { 
+      background: #064e3b !important; 
+      border-left-color: #16a34a !important; 
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>📖 Quran Musaffah</h1>
+    <p><span id="langLabel">English</span> · <span id="headerMode">🔐 Email Verification</span></p>
+  </header>
+
+  <div class="container">
+    <!-- AUTH CARD -->
+    <div id="authCard" class="card">
+      <h2><i class="fas fa-envelope"></i> <span id="authTitle">Sign Up</span></h2>
+      
+      <div id="authStep1" class="onboarding-step active">
+        <div id="authError" class="verification-banner hidden" style="background:#fee2e2;border-color:#dc2626;color:#991b1b;"></div>
+        
+        <input id="authEmail" type="email" placeholder="Email">
+        <div class="password-wrapper">
+          <input id="authPassword" type="password" placeholder="Password">
+          <button class="toggle-password" onclick="togglePasswordVisibility('authPassword', this)"><i class="fas fa-eye"></i></button>
+        </div>
+        <div class="password-wrapper" id="confirmPasswordWrapper">
+          <input id="confirmPassword" type="password" placeholder="Re-enter Password">
+          <button class="toggle-password" onclick="togglePasswordVisibility('confirmPassword', this)"><i class="fas fa-eye"></i></button>
+        </div>
+        <button id="authButton" onclick="handleAuth()"><i class="fas fa-user-plus"></i> Sign Up</button>
+        <div class="auth-toggle" onclick="toggleAuthMode()">Already have an account? <strong>Sign In</strong></div>
+      </div>
+
+      <div id="authStep2" class="onboarding-step">
+        <div class="verification-banner">
+          <i class="fas fa-envelope" style="font-size:1.5rem;"></i>
+          <p style="margin:4px 0;">📧 Verification email sent to <strong id="verifyEmailDisplay">your@email.com</strong></p>
+          <p style="font-size:0.75rem;">Please check your inbox and click the verification link.</p>
+          <button onclick="resendVerification()"><i class="fas fa-redo"></i> Resend Email</button>
+          <button onclick="checkVerification()" class="success" style="margin-top:4px;"><i class="fas fa-check"></i> I've verified, continue</button>
+        </div>
+        <div class="auth-toggle" onclick="goBackToAuth()">← Back to sign in</div>
+      </div>
+
+      <div id="authStep3" class="onboarding-step">
+        <h3 style="text-align:center;">🌍 Welcome! Choose your preferences</h3>
+        <div style="margin:8px 0;">
+          <label style="font-size:0.8rem; font-weight:500;">Your Name</label>
+          <input id="onboardingName" placeholder="Enter your name" value="Reader">
+        </div>
+        <div style="margin:8px 0;">
+          <label style="font-size:0.8rem; font-weight:500;">Language</label>
+          <select id="onboardingLang" style="margin-top:2px;">
+            <option value="en">English</option>
+            <option value="ar">العربية</option>
+            <option value="ha">Hausa</option>
+            <option value="ur">اردو</option>
+            <option value="tr">Türkçe</option>
+            <option value="fr">Français</option>
+            <option value="id">Bahasa Indonesia</option>
+          </select>
+        </div>
+        <div style="margin:8px 0;">
+          <label style="font-size:0.8rem; font-weight:500;">Region / Timezone</label>
+          <select id="onboardingRegion" style="margin-top:2px;">
+            <option value="mecca">Makkah (GMT+3)</option>
+            <option value="medina">Madinah (GMT+3)</option>
+            <option value="cairo">Cairo (GMT+2)</option>
+            <option value="london">London (GMT+0)</option>
+            <option value="newyork">New York (GMT-4)</option>
+            <option value="lagos">Lagos (GMT+1)</option>
+            <option value="jakarta">Jakarta (GMT+7)</option>
+            <option value="karachi">Karachi (GMT+5)</option>
+            <option value="istanbul">Istanbul (GMT+3)</option>
+            <option value="riyadh">Riyadh (GMT+3)</option>
+          </select>
+        </div>
+        <div style="margin:8px 0;">
+          <label style="font-size:0.8rem; font-weight:500;">Quran Completion Plan</label>
+          <select id="onboardingPlan" style="margin-top:2px;">
+            <option value="30">30 days (1 Juz/day)</option>
+            <option value="15">15 days (2 Juz/day)</option>
+            <option value="7" selected>7 days (4 Juz/day)</option>
+            <option value="3">3 days (10 Juz/day)</option>
+          </select>
+        </div>
+        <button onclick="completeOnboarding()" class="success" style="margin-top:8px;"><i class="fas fa-check-circle"></i> Start Reading</button>
+      </div>
+    </div>
+
+    <!-- MAIN APP -->
+    <div id="appMain" class="hidden">
+      <!-- HOME -->
+      <div id="pageHome" class="page active">
+        <div class="card">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div class="profile-avatar" id="avatarDisplay">A</div>
+            <div><h2 id="welcomeName" style="font-size:0.95rem;">Assalamu Alaikum</h2>
+            <p style="opacity:0.5; font-size:0.65rem;" id="userEmailDisplay">user@example.com</p></div>
+            <div style="margin-left:auto; display:flex; gap:4px;">
+              <button onclick="toggleTheme()" style="width:auto; padding:4px 10px; margin:0; background:#2c7a7a; font-size:0.65rem;"><i class="fas fa-moon"></i></button>
+              <button onclick="signOut()" style="width:auto; padding:4px 10px; margin:0; background:#b91c1c; font-size:0.65rem;"><i class="fas fa-sign-out-alt"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="stats-mini">
+            <span class="stat-mini">📊 <span id="miniJuz">0</span> Juz</span>
+            <span class="stat-mini">🏆 <span id="miniKhatm">0</span> Khatm</span>
+            <span class="stat-mini">🔥 <span id="miniStreak">0</span> Streak</span>
+            <span class="stat-mini">🌍 <span id="userRegion">Mecca</span></span>
+            <span class="stat-mini">⏰ <span id="alarmCount">0</span> Alarms</span>
+          </div>
+          <div class="juz-grid" id="juzGrid"></div>
+        </div>
+
+        <!-- FCM Permission Banner -->
+        <div id="fcmPermissionBanner" class="card permission-banner hidden">
+          <p>🔔 Enable push notifications to receive Quran reminders even when the app is closed.</p>
+          <button onclick="requestFCMToken()" class="success"><i class="fas fa-bell"></i> Enable Notifications</button>
+        </div>
+
+        <div class="card">
+          <h2><i class="fas fa-newspaper"></i> Feed</h2>
+          <div style="display:flex; gap:6px; margin-bottom:8px;">
+            <input id="postInput" placeholder="Share your Quran progress..." style="flex:1; margin:0; font-size:0.8rem;">
+            <button onclick="createPost()" style="width:auto; padding:9px 16px; margin:0; font-size:0.8rem;"><i class="fas fa-paper-plane"></i></button>
+          </div>
+          <div id="feedContainer">
+            <div class="empty-state">
+              <i class="fas fa-feather-alt"></i>
+              <p>No posts yet. Be the first to share!</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ALARMS SECTION -->
+        <div class="card">
+          <h2><i class="fas fa-clock"></i> Quran Reminders <span id="alarmBadge" class="alarm-badge hidden">0</span></h2>
+          <div style="display:flex; gap:6px; margin-bottom:8px; flex-wrap:wrap;">
+            <select id="alarmHour" style="flex:1; min-width:60px; margin:0; font-size:0.8rem; padding:6px;">
+              <option value="0">00</option><option value="1">01</option><option value="2">02</option><option value="3">03</option>
+              <option value="4">04</option><option value="5">05</option><option value="6">06</option><option value="7">07</option>
+              <option value="8">08</option><option value="9">09</option><option value="10">10</option><option value="11">11</option>
+              <option value="12">12</option><option value="13">13</option><option value="14">14</option><option value="15">15</option>
+              <option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19">19</option>
+              <option value="20">20</option><option value="21">21</option><option value="22">22</option><option value="23">23</option>
+            </select>
+            <span style="display:flex;align-items:center;font-size:1.2rem;">:</span>
+            <select id="alarmMinute" style="flex:1; min-width:60px; margin:0; font-size:0.8rem; padding:6px;">
+              <option value="0">00</option><option value="5">05</option><option value="10">10</option><option value="15">15</option>
+              <option value="20">20</option><option value="25">25</option><option value="30">30</option><option value="35">35</option>
+              <option value="40">40</option><option value="45">45</option><option value="50">50</option><option value="55">55</option>
+            </select>
+          </div>
+          <div style="display:flex; gap:6px;">
+            <input id="alarmMessage" placeholder="Reminder message (optional)" style="flex:2; margin:0; font-size:0.8rem; padding:6px;">
+            <button onclick="setAlarm()" class="success" style="width:auto; padding:6px 16px; margin:0; font-size:0.8rem;"><i class="fas fa-plus"></i> Set</button>
+          </div>
+          <div id="alarmList" style="margin-top:8px;">
+            <div class="empty-state" style="padding:10px;">
+              <p style="font-size:0.8rem;">No alarms set. Add a reminder for your Quran reading!</p>
+            </div>
+          </div>
+          <div id="fcmStatus" class="fcm-status"></div>
+        </div>
+      </div>
+
+      <!-- MUSYAFAH -->
+      <div id="pageMusaffah" class="page">
+        <div class="card">
+          <h2><i class="fas fa-handshake"></i> Musāfaḥ</h2>
+          <p style="font-size:0.75rem; opacity:0.6;">Recite together · Live Video/Audio · Correct each other</p>
+        </div>
+
+        <div class="card">
+          <h3><i class="fas fa-user-friends"></i> Your Partner</h3>
+          <div id="partnerDisplay" class="partner-card">
+            <div class="partner-avatar">?</div>
+            <h3 style="font-size:0.9rem;" id="partnerNameDisplay">No partner yet</h3>
+            <p style="font-size:0.7rem; opacity:0.6;" id="partnerPlanDisplay">Search for a partner below to start Musaffah</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3><i class="fas fa-search"></i> Find a Partner</h3>
+          <div class="search-box">
+            <input id="partnerSearchInput" placeholder="Search by name..." onkeyup="searchPartners()">
+            <button onclick="searchPartners()" class="purple"><i class="fas fa-search"></i></button>
+          </div>
+          <div class="search-filters">
+            <button class="active" onclick="filterPartners('all', this)">All</button>
+            <button onclick="filterPartners('online', this)">Online</button>
+            <button onclick="filterPartners('same-plan', this)">Same Plan</button>
+            <button onclick="filterPartners('different-plan', this)">Different Plan</button>
+          </div>
+          <div id="searchResults">
+            <div class="empty-state" style="padding:15px;">
+              <p style="font-size:0.8rem;">🔍 Search for a Quran partner by name</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3><i class="fas fa-bell"></i> Connection Requests</h3>
+          <div id="connectionRequests">
+            <div class="empty-state" style="padding:15px;">
+              <p style="font-size:0.8rem;">No pending requests.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Media Permission Banner -->
+        <div id="mediaPermissionBanner" class="media-permission-banner hidden">
+          <p>🎥 Allow camera and microphone access for video calls.</p>
+          <button onclick="requestMediaPermissions()" class="success"><i class="fas fa-video"></i> Grant Access</button>
+        </div>
+        <div id="mediaError" class="media-error"></div>
+
+        <!-- WebRTC Video Call -->
+        <div class="card">
+          <h3><i class="fas fa-video"></i> Live Session</h3>
+          <div class="video-container" id="videoContainer">
+            <div class="video-wrapper" id="localVideoWrapper">
+              <video id="localVideo" autoplay muted playsinline></video>
+              <div id="localPlaceholder" class="video-placeholder">📹 Camera off</div>
+              <span class="video-label">You</span>
+            </div>
+            <div class="video-wrapper" id="remoteVideoWrapper">
+              <video id="remoteVideo" autoplay playsinline></video>
+              <div id="remotePlaceholder" class="video-placeholder">📹 Waiting for partner...</div>
+              <span class="video-label" id="remoteLabel">Partner</span>
+            </div>
+          </div>
+          <div id="callStatus" class="call-status idle">📡 Not connected</div>
+          
+          <!-- Camera selection -->
+          <div class="camera-select">
+            <i class="fas fa-camera"></i>
+            <select id="cameraSelect" onchange="switchCamera()">
+              <option value="">Loading cameras...</option>
+            </select>
+            <button onclick="switchCamera()" class="outline" style="width:auto; padding:4px 12px; margin:0; font-size:0.7rem;"><i class="fas fa-sync"></i></button>
+          </div>
+          
+          <div class="video-controls">
+            <button onclick="toggleCamera()" id="cameraToggle" class="outline" disabled><i class="fas fa-video"></i> Camera</button>
+            <button onclick="toggleMicrophone()" id="micToggle" class="outline" disabled><i class="fas fa-microphone"></i> Mic</button>
+            <button onclick="toggleScreenShare()" id="screenToggle" class="outline" disabled><i class="fas fa-desktop"></i> Share</button>
+            <button onclick="startCall()" id="callButton" class="call-btn" disabled><i class="fas fa-phone"></i> Start Call</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3><i class="fas fa-microphone-alt"></i> Recitation Status</h3>
+          <div style="text-align:center; padding:8px;">
+            <div id="recitationStatus" class="recitation-status inactive">
+              <p>🕊️ No active session</p>
+            </div>
+            <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:8px;">
+              <button onclick="toggleRecitation()" class="recording-btn" style="width:64px;height:64px;border-radius:50%;font-size:1.5rem;margin:0;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;background:#0f766e;color:white;">
+                <i class="fas fa-microphone"></i>
+              </button>
+              <button id="callAttentionBtn" onclick="callAttention()" style="width:64px;height:64px;border-radius:50%;font-size:1.5rem;margin:0;display:none;align-items:center;justify-content:center;border:none;cursor:pointer;background:#dc2626;color:white;" title="Call partner's attention for correction">
+                <i class="fas fa-exclamation-triangle"></i>
+              </button>
+            </div>
+            <p style="font-size:0.7rem; opacity:0.5; margin-top:4px;" id="recitationLabel">Tap to start reciting</p>
+            <div id="recitationTimer" style="font-size:1.1rem; font-weight:600; margin-top:4px;">00:00</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3><i class="fas fa-exchange-alt"></i> Corrections</h3>
+          <div id="correctionsContainer">
+            <div class="empty-state" style="padding:15px;">
+              <p style="font-size:0.8rem;">No corrections yet. Help your partner improve!</p>
+            </div>
+          </div>
+          <div style="display:flex; gap:6px; margin-top:6px;">
+            <input id="correctionInput" placeholder="Send correction to partner..." style="flex:1; margin:0; font-size:0.8rem;">
+            <button onclick="sendCorrection()" style="width:auto; padding:9px 16px; margin:0; font-size:0.8rem;"><i class="fas fa-pen"></i></button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3><i class="fas fa-trophy"></i> Musaffah Stats</h3>
+          <div class="stats-mini">
+            <span class="stat-mini">🤝 <span id="musaffahSessions">0</span> Sessions</span>
+            <span class="stat-mini">📖 <span id="musaffahJuz">0</span> Juz</span>
+            <span class="stat-mini">🔥 <span id="musaffahStreak">0</span> Streak</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHATS -->
+      <div id="pageChats" class="page">
+        <div class="card">
+          <h2><i class="fas fa-comment-dots"></i> Chats</h2>
+          <div class="chat-type-tabs">
+            <button class="active" onclick="switchChatTab('groups', event)"><i class="fas fa-users"></i> Groups</button>
+            <button onclick="switchChatTab('private', event)"><i class="fas fa-user"></i> Private</button>
+          </div>
+          <div id="chatList">
+            <div class="empty-state">
+              <i class="fas fa-comments"></i>
+              <p>No chats yet. Start a conversation!</p>
+            </div>
+          </div>
+          <button onclick="createNewChat()" class="success" style="margin-top:4px; font-size:0.8rem;"><i class="fas fa-plus"></i> New Chat</button>
+        </div>
+
+        <div id="chatPanel" class="card hidden">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+            <div class="chat-avatar" id="chatAvatar" style="width:32px;height:32px;font-size:0.7rem;">👥</div>
+            <h2 style="font-size:0.9rem; flex:1;" id="chatPartnerName">Chat</h2>
+            <span onclick="closeChatPanel()" style="cursor:pointer;font-size:1.2rem;opacity:0.5;">✕</span>
+          </div>
+          <div class="chat-window" id="chatMessages"></div>
+          <div style="display:flex; gap:4px; margin-top:4px;">
+            <input id="chatInput" placeholder="Type a message..." style="flex:3; margin:0; font-size:0.8rem;">
+            <button onclick="sendChatMessage()" style="flex:1; margin:0; font-size:0.8rem;"><i class="fas fa-paper-plane"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ATTENTION OVERLAY -->
+  <div id="attentionOverlay" class="attention-overlay">
+    <div class="content">
+      <i class="fas fa-exclamation-triangle" style="font-size:3rem;color:#dc2626;display:block;margin-bottom:10px;"></i>
+      <h2>⚠️ Attention!</h2>
+      <p style="margin:10px 0;font-size:1rem;"><span id="attentionPartnerName">Your partner</span> called your attention during recitation.</p>
+      <p style="font-size:0.85rem;opacity:0.6;">Please check the correction message below.</p>
+      <div id="attentionCorrectionMessage" style="background:#fef3c7;padding:10px;border-radius:10px;margin:10px 0;font-style:italic;"></div>
+      <button onclick="dismissAttention()" class="close-btn" style="background:#0f766e;color:white;border:none;padding:8px 24px;border-radius:30px;cursor:pointer;font-size:0.9rem;">✓ Got it</button>
+    </div>
+  </div>
+
+  <!-- ALARM NOTIFICATION -->
+  <div id="alarmNotification" class="alarm-notification">
+    <div class="content">
+      <span class="icon">📖</span>
+      <h2>⏰ Time for Quran!</h2>
+      <p id="alarmNotificationMessage">It's time to read your daily Quran.</p>
+      <div class="btn-group">
+        <button onclick="dismissAlarm()" class="success"><i class="fas fa-check"></i> I'll read</button>
+        <button onclick="snoozeAlarm()" class="warning"><i class="fas fa-hourglass-half"></i> Snooze 5 min</button>
+        <button onclick="dismissAlarm()" class="outline"><i class="fas fa-times"></i> Dismiss</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav id="bottomNav">
+    <button class="active" data-page="pageHome"><i class="fas fa-home"></i><span>Home</span></button>
+    <button data-page="pageMusaffah"><i class="fas fa-handshake"></i><span>Musaffah</span></button>
+    <button data-page="pageChats"><i class="fas fa-comment-dots"></i><span>Chats</span></button>
+  </nav>
+
+  <script>
+    // ============ FIREBASE ============
+    const firebaseConfig = {
+      apiKey: "AIzaSyAoKgIAkZBpMSpzVf6Xj9yGDZAPsHe1ves",
+      authDomain: "suhbah-1260b.firebaseapp.com",
+      projectId: "suhbah-1260b",
+      storageBucket: "suhbah-1260b.firebasestorage.app",
+      messagingSenderId: "808082411012",
+      appId: "1:808082411012:web:e71831dc7f73a699c66f51"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const messaging = firebase.messaging();
+
+    // ============ STATE ============
+    let user = null;
+    let currentUserId = null;
+    let currentLang = 'en';
+    let isSignUp = true;
+    let currentChatId = null;
+    let currentChatType = 'group';
+    let unsubscribeChat = null;
+    let isReciting = false;
+    let recitationTimer = null;
+    let recitationSeconds = 0;
+    let pendingUserData = null;
+    let activeChatTab = 'groups';
+    let partnerIsReciting = false;
+    let attentionTimeout = null;
+    let unsubscribeAvailablePartners = null;
+    let unsubscribeRequests = null;
+    let alarmTimeouts = [];
+    let snoozeTimeout = null;
+    let alarmCheckInterval = null;
+    let isAlarmRinging = false;
+    let fcmToken = null;
+    let authStateChecked = false;
+    let allUsers = [];
+    let currentFilter = 'all';
+    let searchQuery = '';
+
+    // ============ WEBRTC STATE ============
+    let peerConnection = null;
+    let localStream = null;
+    let remoteStream = null;
+    let isCallActive = false;
+    let isCameraOn = true;
+    let isMicOn = true;
+    let isScreenSharing = false;
+    let callStartTime = null;
+    let callTimer = null;
+    let iceCandidatesQueue = [];
+    let signalingUnsubscribe = null;
+    let hasMediaPermissions = false;
+    let permissionRequested = false;
+    let cameraDevices = [];
+    let partnerOnline = false;
+    let partnerStatusUnsubscribe = null;
+    let isGettingMedia = false;
+
+    // ============ UI HELPERS ============
+    function showStep(stepId) {
+      document.querySelectorAll('.onboarding-step').forEach(s => s.classList.remove('active'));
+      document.getElementById(stepId).classList.add('active');
+    }
+
+    function togglePasswordVisibility(inputId, btn) {
+      const input = document.getElementById(inputId);
+      if (input.type === 'password') {
+        input.type = 'text';
+        btn.innerHTML = '<i class="fas fa-eye-slash"></i>';
+      } else {
+        input.type = 'password';
+        btn.innerHTML = '<i class="fas fa-eye"></i>';
+      }
+    }
+
+    function toggleAuthMode() {
+      isSignUp = !isSignUp;
+      document.getElementById('authTitle').innerText = isSignUp ? 'Sign Up' : 'Sign In';
+      document.getElementById('authButton').innerHTML = isSignUp ? '<i class="fas fa-user-plus"></i> Sign Up' : '<i class="fas fa-sign-in-alt"></i> Sign In';
+      document.querySelector('.auth-toggle').innerHTML = isSignUp ? 'Already have an account? <strong>Sign In</strong>' : "Don't have an account? <strong>Sign Up</strong>";
+      document.getElementById('confirmPasswordWrapper').style.display = isSignUp ? 'block' : 'none';
+      document.getElementById('authError').classList.add('hidden');
+      showStep('authStep1');
+    }
+
+    function goBackToAuth() {
+      showStep('authStep1');
+    }
+
+    function showAuthError(message) {
+      const errorEl = document.getElementById('authError');
+      errorEl.textContent = message;
+      errorEl.classList.remove('hidden');
+    }
+
+    // ============ PARTNER SEARCH ============
+    function loadAllUsers() {
+      if (!user) return;
+      
+      db.collection('users')
+        .where('online', '==', true)
+        .get()
+        .then((snapshot) => {
+          const users = [];
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            // Don't show self, users with partners, or users without name
+            if (doc.id !== user.id && !data.partner && !data.partnerId && data.name) {
+              users.push({
+                id: doc.id,
+                name: data.name || 'Reader',
+                plan: data.plan || '7',
+                online: true,
+                regionName: data.regionName || 'Unknown'
+              });
+            }
+          });
+          
+          db.collection('users')
+            .where('online', '==', false)
+            .get()
+            .then((snapshot2) => {
+              snapshot2.forEach(doc => {
+                const data = doc.data();
+                if (doc.id !== user.id && !data.partner && !data.partnerId && data.name) {
+                  if (!users.find(u => u.id === doc.id)) {
+                    users.push({
+                      id: doc.id,
+                      name: data.name || 'Reader',
+                      plan: data.plan || '7',
+                      online: false,
+                      regionName: data.regionName || 'Unknown'
+                    });
+                  }
+                }
+              });
+              allUsers = users;
+              searchPartners();
+            });
+        });
+    }
+
+    function searchPartners() {
+      const input = document.getElementById('partnerSearchInput');
+      searchQuery = input.value.toLowerCase().trim();
+      renderSearchResults();
+    }
+
+    function filterPartners(filter, btn) {
+      currentFilter = filter;
+      document.querySelectorAll('.search-filters button').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      renderSearchResults();
+    }
+
+    function renderSearchResults() {
+      const container = document.getElementById('searchResults');
+      
+      let filtered = [...allUsers];
+      
+      if (searchQuery) {
+        filtered = filtered.filter(u => u.name.toLowerCase().includes(searchQuery));
+      }
+      
+      if (currentFilter === 'online') {
+        filtered = filtered.filter(u => u.online === true);
+      } else if (currentFilter === 'same-plan') {
+        filtered = filtered.filter(u => u.plan === user.plan);
+      } else if (currentFilter === 'different-plan') {
+        filtered = filtered.filter(u => u.plan !== user.plan);
+      }
+      
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state" style="padding:15px;">
+            <p style="font-size:0.8rem;">${searchQuery ? 'No users found matching "' + searchQuery + '"' : 'No available partners found'}</p>
+          </div>
+        `;
+        return;
+      }
+
+      let html = '';
+      filtered.forEach(u => {
+        // Check if request was already sent
+        const alreadySent = (user.sentRequests || []).includes(u.id);
+        html += `
+          <div class="search-item">
+            <div class="info">
+              <div class="name"><i class="fas fa-user-circle"></i> ${u.name}</div>
+              <div class="detail">📖 ${u.plan} day plan · ${u.regionName}</div>
+              <span class="status-badge ${u.online ? 'online' : 'offline'}">${u.online ? '🟢 Online' : '⚪ Offline'}</span>
+            </div>
+            <div class="actions">
+              ${alreadySent ? 
+                '<button disabled style="opacity:0.5;">⏳ Pending</button>' :
+                `<button onclick="sendPartnerRequest('${u.id}')" class="success"><i class="fas fa-paper-plane"></i> Connect</button>`
+              }
+            </div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    // ============ AUTH ============
+    async function handleAuth() {
+      const email = document.getElementById('authEmail').value.trim();
+      const password = document.getElementById('authPassword').value;
+      const confirm = document.getElementById('confirmPassword').value;
+      
+      document.getElementById('authError').classList.add('hidden');
+
+      if (!email || !password) {
+        showAuthError('Please fill all fields');
+        return;
+      }
+
+      if (isSignUp && password !== confirm) {
+        showAuthError('Passwords do not match');
+        return;
+      }
+
+      if (isSignUp && password.length < 6) {
+        showAuthError('Password must be at least 6 characters');
+        return;
+      }
+
+      const btn = document.getElementById('authButton');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+
+      try {
+        if (isSignUp) {
+          const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+          await userCredential.user.sendEmailVerification();
+          
+          pendingUserData = { uid: userCredential.user.uid, email: email };
+          document.getElementById('verifyEmailDisplay').innerText = email;
+          showStep('authStep2');
+          showNotification('📧 Verification email sent! Please check your inbox.');
+        } else {
+          const userCredential = await auth.signInWithEmailAndPassword(email, password);
+          const firebaseUser = userCredential.user;
+          
+          if (!firebaseUser.emailVerified) {
+            showAuthError('⚠️ Please verify your email first. Check your inbox for the verification link.');
+            await auth.signOut();
+            btn.disabled = false;
+            btn.innerHTML = isSignUp ? '<i class="fas fa-user-plus"></i> Sign Up' : '<i class="fas fa-sign-in-alt"></i> Sign In';
+            return;
+          }
+          
+          currentUserId = firebaseUser.uid;
+          const doc = await db.collection('users').doc(currentUserId).get();
+          
+          if (doc.exists) {
+            user = doc.data();
+            user.id = currentUserId;
+            localStorage.setItem('musaffahUser', JSON.stringify(user));
+            await db.collection('users').doc(currentUserId).update({ online: true });
+            loadApp();
+          } else {
+            pendingUserData = { uid: currentUserId, email: firebaseUser.email };
+            showStep('authStep3');
+            showNotification('📝 Please complete your profile setup.');
+          }
+        }
+      } catch (e) {
+        console.error('Auth Error:', e);
+        if (e.code === 'auth/email-already-in-use') {
+          showAuthError('Email already registered. Please sign in instead.');
+        } else if (e.code === 'auth/user-not-found') {
+          showAuthError('No account found with this email. Please sign up.');
+        } else if (e.code === 'auth/wrong-password') {
+          showAuthError('Incorrect password. Please try again.');
+        } else if (e.code === 'auth/too-many-requests') {
+          showAuthError('Too many failed attempts. Please try again later.');
+        } else if (e.code === 'auth/network-request-failed') {
+          showAuthError('Network error. Please check your internet connection.');
+        } else {
+          showAuthError(e.message || 'Authentication failed. Please try again.');
+        }
+      }
+
+      btn.disabled = false;
+      btn.innerHTML = isSignUp ? '<i class="fas fa-user-plus"></i> Sign Up' : '<i class="fas fa-sign-in-alt"></i> Sign In';
+    }
+
+    async function resendVerification() {
+      try {
+        const firebaseUser = auth.currentUser;
+        if (firebaseUser) {
+          await firebaseUser.sendEmailVerification();
+          showNotification('📧 Verification email resent!');
+        } else {
+          showNotification('Please sign in again to resend verification.');
+          goBackToAuth();
+        }
+      } catch (e) {
+        showNotification('Error: ' + e.message);
+      }
+    }
+
+    async function checkVerification() {
+      try {
+        const firebaseUser = auth.currentUser;
+        if (!firebaseUser) {
+          showNotification('Please sign in again');
+          goBackToAuth();
+          return;
+        }
+        
+        await firebaseUser.reload();
+        
+        if (firebaseUser.emailVerified) {
+          showNotification('✅ Email verified! Setting up your account...');
+          
+          const doc = await db.collection('users').doc(firebaseUser.uid).get();
+          if (doc.exists) {
+            user = doc.data();
+            user.id = firebaseUser.uid;
+            localStorage.setItem('musaffahUser', JSON.stringify(user));
+            await db.collection('users').doc(firebaseUser.uid).update({ online: true });
+            loadApp();
+          } else {
+            pendingUserData = { uid: firebaseUser.uid, email: firebaseUser.email };
+            showStep('authStep3');
+            showNotification('📝 Please complete your profile setup.');
+          }
+        } else {
+          showNotification('⚠️ Email not verified yet. Please check your inbox or click "Resend Email".');
+        }
+      } catch (e) {
+        showNotification('Error: ' + e.message);
+      }
+    }
+
+    // ============ ONBOARDING ============
+    async function completeOnboarding() {
+      if (!pendingUserData) {
+        showNotification('Please sign up first');
+        return;
+      }
+
+      const name = document.getElementById('onboardingName').value.trim() || 'Reader';
+      const lang = document.getElementById('onboardingLang').value;
+      const region = document.getElementById('onboardingRegion').value;
+      const plan = document.getElementById('onboardingPlan').value;
+
+      const regionNames = {
+        mecca: 'Makkah', medina: 'Madinah', cairo: 'Cairo',
+        london: 'London', newyork: 'New York', lagos: 'Lagos',
+        jakarta: 'Jakarta', karachi: 'Karachi', istanbul: 'Istanbul',
+        riyadh: 'Riyadh'
+      };
+
+      try {
+        const userData = {
+          name: name,
+          plan: plan,
+          lang: lang,
+          region: region,
+          regionName: regionNames[region] || region,
+          partner: '',
+          partnerId: '',
+          juz: [],
+          khatm: 0,
+          streak: 0,
+          theme: 'light',
+          badges: [],
+          online: true,
+          pendingRequests: [],
+          sentRequests: [],
+          musaffahSessions: 0,
+          musaffahJuz: 0,
+          musaffahStreak: 0,
+          isReciting: false,
+          alarms: [],
+          fcmToken: '',
+          notificationsEnabled: false,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        await db.collection('users').doc(pendingUserData.uid).set(userData);
+        user = { ...userData, id: pendingUserData.uid };
+        currentUserId = pendingUserData.uid;
+        currentLang = lang;
+        localStorage.setItem('musaffahUser', JSON.stringify(user));
+        
+        await db.collection('users').doc(user.id).update({ online: true });
+        
+        updateLanguage();
+        loadApp();
+        showNotification('🎉 Welcome ' + name + '! Your account is ready.');
+      } catch (e) {
+        showNotification('Error saving preferences: ' + e.message);
+      }
+    }
+
+    // ============ SIGN OUT ============
+    async function signOut() {
+      if (isReciting) toggleRecitation();
+      if (isCallActive) endCall();
+      clearAllAlarms();
+      if (alarmCheckInterval) {
+        clearInterval(alarmCheckInterval);
+        alarmCheckInterval = null;
+      }
+      if (partnerStatusUnsubscribe) {
+        partnerStatusUnsubscribe();
+        partnerStatusUnsubscribe = null;
+      }
+      
+      if (user && user.id) {
+        try {
+          await db.collection('users').doc(user.id).update({ online: false });
+        } catch (e) {}
+      }
+      
+      auth.signOut();
+      localStorage.removeItem('musaffahUser');
+      user = null;
+      if (unsubscribeChat) unsubscribeChat();
+      if (unsubscribeAvailablePartners) unsubscribeAvailablePartners();
+      if (unsubscribeRequests) unsubscribeRequests();
+      if (signalingUnsubscribe) signalingUnsubscribe();
+      
+      document.getElementById('authCard').classList.remove('hidden');
+      document.getElementById('appMain').classList.add('hidden');
+      showStep('authStep1');
+      showNotification('👋 Signed out successfully');
+    }
+
+    // ============ LOAD APP ============
+    async function loadApp() {
+      if (!user) {
+        const stored = localStorage.getItem('musaffahUser');
+        if (stored) { 
+          try { 
+            user = JSON.parse(stored); 
+            const doc = await db.collection('users').doc(user.id).get();
+            if (doc.exists) {
+              const data = doc.data();
+              user = { ...data, id: user.id };
+              localStorage.setItem('musaffahUser', JSON.stringify(user));
+            } else {
+              user = null;
+              localStorage.removeItem('musaffahUser');
+              return;
+            }
+          } catch(e) { 
+            user = null; 
+            localStorage.removeItem('musaffahUser');
+          }
+        }
+      }
+      
+      if (!user || !user.id) {
+        document.getElementById('authCard').classList.remove('hidden');
+        document.getElementById('appMain').classList.add('hidden');
+        showStep('authStep1');
+        return;
+      }
+
+      try {
+        const doc = await db.collection('users').doc(user.id).get();
+        if (doc.exists) {
+          const data = doc.data();
+          user = { ...data, id: user.id };
+          localStorage.setItem('musaffahUser', JSON.stringify(user));
+        }
+      } catch (e) { 
+        console.warn('Firestore fetch failed, using cached data', e);
+      }
+
+      document.getElementById('authCard').classList.add('hidden');
+      document.getElementById('appMain').classList.remove('hidden');
+
+      const initial = (user.name || 'Reader')[0].toUpperCase();
+      document.getElementById('avatarDisplay').innerText = initial;
+      document.getElementById('welcomeName').innerText = 'Assalamu Alaikum, ' + (user.name || 'Reader');
+      document.getElementById('userEmailDisplay').innerText = auth.currentUser?.email || '';
+
+      document.getElementById('miniJuz').innerText = user.juz ? user.juz.length : 0;
+      document.getElementById('miniKhatm').innerText = user.khatm || 0;
+      document.getElementById('miniStreak').innerText = user.streak || 0;
+      document.getElementById('userRegion').innerText = user.regionName || 'Mecca';
+
+      document.getElementById('musaffahSessions').innerText = user.musaffahSessions || 0;
+      document.getElementById('musaffahJuz').innerText = user.musaffahJuz || 0;
+      document.getElementById('musaffahStreak').innerText = user.musaffahStreak || 0;
+
+      if (user.theme === 'dark') document.body.classList.add('dark');
+      else document.body.classList.remove('dark');
+
+      currentLang = user.lang || 'en';
+      updateLanguage();
+
+      renderJuz();
+      updatePartnerDisplay();
+      listenForFeed();
+      listenForCorrections();
+      listenForConnectionRequests();
+      renderAlarms();
+      startAlarmChecker();
+      renderChats();
+      switchPage('pageHome');
+      
+      checkFCMPermission();
+      loadAllUsers();
+      
+      if (user.partner) {
+        listenPartnerStatus();
+      }
+    }
+
+    // ============ AUTH STATE LISTENER ============
+    auth.onAuthStateChanged(async (firebaseUser) => {
+      if (authStateChecked) return;
+      
+      if (firebaseUser) {
+        if (!firebaseUser.emailVerified) {
+          document.getElementById('authCard').classList.remove('hidden');
+          document.getElementById('appMain').classList.add('hidden');
+          document.getElementById('verifyEmailDisplay').innerText = firebaseUser.email;
+          showStep('authStep2');
+          authStateChecked = true;
+          return;
+        }
+        
+        const stored = localStorage.getItem('musaffahUser');
+        if (stored) {
+          try { 
+            user = JSON.parse(stored); 
+            if (user && user.id === firebaseUser.uid) {
+              const doc = await db.collection('users').doc(user.id).get();
+              if (doc.exists) {
+                const data = doc.data();
+                user = { ...data, id: user.id };
+                localStorage.setItem('musaffahUser', JSON.stringify(user));
+                await db.collection('users').doc(user.id).update({ online: true });
+                authStateChecked = true;
+                loadApp();
+                listenForPartnerRecitation();
+                listenForAttention();
+                checkFCMPermission();
+                return;
+              }
+            }
+          } catch(e) { 
+            user = null; 
+            localStorage.removeItem('musaffahUser');
+          }
+        }
+        
+        try {
+          const doc = await db.collection('users').doc(firebaseUser.uid).get();
+          if (doc.exists) {
+            user = doc.data();
+            user.id = firebaseUser.uid;
+            localStorage.setItem('musaffahUser', JSON.stringify(user));
+            await db.collection('users').doc(user.id).update({ online: true });
+            authStateChecked = true;
+            loadApp();
+            listenForPartnerRecitation();
+            listenForAttention();
+            checkFCMPermission();
+          } else {
+            pendingUserData = { uid: firebaseUser.uid, email: firebaseUser.email };
+            document.getElementById('authCard').classList.remove('hidden');
+            document.getElementById('appMain').classList.add('hidden');
+            showStep('authStep3');
+            authStateChecked = true;
+          }
+        } catch (e) {
+          console.warn('Error loading user data:', e);
+          authStateChecked = true;
+        }
+      } else {
+        document.getElementById('authCard').classList.remove('hidden');
+        document.getElementById('appMain').classList.add('hidden');
+        showStep('authStep1');
+        authStateChecked = true;
+      }
+    });
+
+    // ============ INIT ============
+    document.getElementById('confirmPasswordWrapper').style.display = 'block';
+    showStep('authStep1');
+
+    document.getElementById('chatInput')?.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') sendChatMessage();
+    });
+
+    const now = new Date();
+    document.getElementById('alarmHour').value = String(now.getHours()).padStart(2, '0');
+    const minuteOptions = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
+    const closestMinute = minuteOptions.reduce((prev, curr) => {
+      return Math.abs(curr - now.getMinutes()) < Math.abs(prev - now.getMinutes()) ? curr : prev;
+    });
+    document.getElementById('alarmMinute').value = String(closestMinute).padStart(2, '0');
+
+    if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+      navigator.mediaDevices.enumerateDevices().then(devices => {
+        const videoDevices = devices.filter(d => d.kind === 'videoinput');
+        if (videoDevices.length > 0) {
+          const select = document.getElementById('cameraSelect');
+          select.innerHTML = '';
+          videoDevices.forEach((device, index) => {
+            const option = document.createElement('option');
+            option.value = device.deviceId;
+            option.text = device.label || `Camera ${index + 1}`;
+            select.appendChild(option);
+          });
+        }
+      }).catch(() => {});
+    }
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('firebase-messaging-sw.js')
+        .then((registration) => {
+          console.log('Service Worker registered for FCM');
+        })
+        .catch((err) => {
+          console.log('Service Worker registration failed:', err);
+        });
+    }
+
+    // ============ PARTNER ONLINE STATUS ============
+    function listenPartnerStatus() {
+      if (partnerStatusUnsubscribe) {
+        partnerStatusUnsubscribe();
+        partnerStatusUnsubscribe = null;
+      }
+      
+      if (!user || !user.partnerId) return;
+      
+      partnerStatusUnsubscribe = db.collection('users').doc(user.partnerId)
+        .onSnapshot((doc) => {
+          if (doc.exists) {
+            const data = doc.data();
+            partnerOnline = data.online === true;
+            
+            const callBtn = document.getElementById('callButton');
+            if (!partnerOnline && !isCallActive) {
+              callBtn.disabled = true;
+              callBtn.innerHTML = '<i class="fas fa-user-slash"></i> Partner Offline';
+              updateCallStatus('offline', `📡 ${user.partner} is offline`);
+            } else if (partnerOnline && !isCallActive) {
+              if (hasMediaPermissions) {
+                callBtn.disabled = false;
+              }
+              callBtn.innerHTML = '<i class="fas fa-phone"></i> Start Call';
+              updateCallStatus('idle', `✅ ${user.partner} is online`);
+            }
+          }
+        });
+    }
+
+    // ============ MEDIA PERMISSIONS ============
+    async function requestMediaPermissions() {
+      if (hasMediaPermissions) {
+        return true;
+      }
+      
+      if (permissionRequested) {
+        showNotification('📹 Camera/microphone access already requested. Please check browser settings.');
+        return false;
+      }
+      
+      if (isGettingMedia) {
+        showNotification('⏳ Already requesting access...');
+        return false;
+      }
+      
+      try {
+        isGettingMedia = true;
+        document.getElementById('mediaError').style.display = 'none';
+        
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+          video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }
+        });
+        
+        stream.getTracks().forEach(track => track.stop());
+        
+        hasMediaPermissions = true;
+        permissionRequested = true;
+        document.getElementById('mediaPermissionBanner').classList.add('hidden');
+        document.getElementById('mediaError').style.display = 'none';
+        
+        document.getElementById('cameraToggle').disabled = false;
+        document.getElementById('micToggle').disabled = false;
+        document.getElementById('screenToggle').disabled = false;
+        
+        if (partnerOnline) {
+          document.getElementById('callButton').disabled = false;
+        }
+        
+        await loadCameraDevices();
+        showNotification('✅ Camera and microphone access granted!');
+        isGettingMedia = false;
+        return true;
+      } catch (e) {
+        console.error('Media permission error:', e);
+        isGettingMedia = false;
+        
+        let errorMsg = '';
+        if (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError') {
+          errorMsg = 'Camera and microphone access denied. Please enable in browser settings.';
+          document.getElementById('mediaPermissionBanner').classList.remove('hidden');
+          document.getElementById('mediaPermissionBanner').innerHTML = `
+            <p>🎥 Camera and microphone access denied. Please enable in browser settings.</p>
+            <button onclick="requestMediaPermissions()" class="success"><i class="fas fa-sync"></i> Try Again</button>
+          `;
+        } else if (e.name === 'NotFoundError' || e.name === 'DevicesNotFoundError') {
+          errorMsg = 'No camera or microphone found on your device.';
+          document.getElementById('mediaPermissionBanner').classList.remove('hidden');
+          document.getElementById('mediaPermissionBanner').innerHTML = `
+            <p>📹 No camera or microphone detected. Please connect a device.</p>
+            <button onclick="requestMediaPermissions()" class="success"><i class="fas fa-sync"></i> Try Again</button>
+          `;
+        } else {
+          errorMsg = 'Could not access camera/microphone: ' + e.message;
+        }
+        
+        document.getElementById('mediaError').textContent = '❌ ' + errorMsg;
+        document.getElementById('mediaError').style.display = 'block';
+        showNotification('❌ ' + errorMsg);
+        return false;
+      }
+    }
+
+    async function checkMediaPermissions() {
+      if (hasMediaPermissions) {
+        document.getElementById('mediaPermissionBanner').classList.add('hidden');
+        return true;
+      }
+      
+      if (permissionRequested || isGettingMedia) {
+        return false;
+      }
+      
+      try {
+        isGettingMedia = true;
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+          video: true
+        });
+        stream.getTracks().forEach(track => track.stop());
+        hasMediaPermissions = true;
+        permissionRequested = true;
+        document.getElementById('mediaPermissionBanner').classList.add('hidden');
+        document.getElementById('mediaError').style.display = 'none';
+        
+        document.getElementById('cameraToggle').disabled = false;
+        document.getElementById('micToggle').disabled = false;
+        document.getElementById('screenToggle').disabled = false;
+        
+        if (partnerOnline) {
+          document.getElementById('callButton').disabled = false;
+        }
+        
+        await loadCameraDevices();
+        isGettingMedia = false;
+        return true;
+      } catch (e) {
+        isGettingMedia = false;
+        if (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError') {
+          document.getElementById('mediaPermissionBanner').classList.remove('hidden');
+          document.getElementById('mediaPermissionBanner').innerHTML = `
+            <p>🎥 Allow camera and microphone access for video calls.</p>
+            <button onclick="requestMediaPermissions()" class="success"><i class="fas fa-video"></i> Grant Access</button>
+          `;
+        } else {
+          document.getElementById('mediaPermissionBanner').classList.remove('hidden');
+          document.getElementById('mediaPermissionBanner').innerHTML = `
+            <p>📹 ${e.message || 'Camera or microphone not found.'}</p>
+            <button onclick="requestMediaPermissions()" class="success"><i class="fas fa-sync"></i> Try Again</button>
+          `;
+        }
+        return false;
+      }
+    }
+
+    // ============ CAMERA DEVICES ============
+    async function loadCameraDevices() {
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        cameraDevices = devices.filter(device => device.kind === 'videoinput');
+        
+        const select = document.getElementById('cameraSelect');
+        select.innerHTML = '';
+        
+        if (cameraDevices.length === 0) {
+          select.innerHTML = '<option value="">No cameras found</option>';
+          return;
+        }
+        
+        cameraDevices.forEach((device, index) => {
+          const option = document.createElement('option');
+          option.value = device.deviceId;
+          option.text = device.label || `Camera ${index + 1}`;
+          select.appendChild(option);
+        });
+        
+        const userFacing = cameraDevices.find(d => 
+          d.label.toLowerCase().includes('front') || 
+          d.label.toLowerCase().includes('user') ||
+          d.label.toLowerCase().includes('face')
+        );
+        if (userFacing) {
+          select.value = userFacing.deviceId;
+        }
+        
+      } catch (e) {
+        console.error('Error loading camera devices:', e);
+      }
+    }
+
+    async function switchCamera() {
+      if (!localStream) {
+        showNotification('Please start a call first to switch cameras');
+        return;
+      }
+      
+      const select = document.getElementById('cameraSelect');
+      const deviceId = select.value;
+      
+      if (!deviceId) {
+        showNotification('No camera selected');
+        return;
+      }
+      
+      try {
+        const newStream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+          video: { deviceId: { exact: deviceId }, width: { ideal: 640 }, height: { ideal: 480 } }
+        });
+        
+        if (peerConnection) {
+          const senders = peerConnection.getSenders();
+          const videoSender = senders.find(s => s.track && s.track.kind === 'video');
+          const audioSender = senders.find(s => s.track && s.track.kind === 'audio');
+          
+          const newVideoTrack = newStream.getVideoTracks()[0];
+          const newAudioTrack = newStream.getAudioTracks()[0];
+          
+          if (videoSender && newVideoTrack) {
+            await videoSender.replaceTrack(newVideoTrack);
+          }
+          
+          if (audioSender && newAudioTrack) {
+            await audioSender.replaceTrack(newAudioTrack);
+          }
+        }
+        
+        if (localStream) {
+          localStream.getTracks().forEach(track => track.stop());
+        }
+        localStream = newStream;
+        
+        document.getElementById('localVideo').srcObject = localStream;
+        document.getElementById('localPlaceholder').style.display = 'none';
+        
+        showNotification('📷 Camera switched');
+      } catch (e) {
+        console.error('Error switching camera:', e);
+        showNotification('❌ Failed to switch camera: ' + e.message);
+      }
+    }
+
+    // ============ WEBRTC FUNCTIONS ============
+    async function getLocalStream() {
+      if (isGettingMedia) {
+        showNotification('⏳ Please wait...');
+        return null;
+      }
+      
+      if (!hasMediaPermissions) {
+        const granted = await requestMediaPermissions();
+        if (!granted) return null;
+      }
+
+      try {
+        isGettingMedia = true;
+        const deviceId = document.getElementById('cameraSelect').value;
+        const constraints = {
+          audio: true,
+          video: { 
+            facingMode: 'user', 
+            width: { ideal: 640 }, 
+            height: { ideal: 480 } 
+          }
+        };
+        
+        if (deviceId) {
+          constraints.video = { deviceId: { exact: deviceId }, width: { ideal: 640 }, height: { ideal: 480 } };
+        }
+        
+        localStream = await navigator.mediaDevices.getUserMedia(constraints);
+        const video = document.getElementById('localVideo');
+        video.srcObject = localStream;
+        document.getElementById('localPlaceholder').style.display = 'none';
+        video.style.display = 'block';
+        document.getElementById('mediaError').style.display = 'none';
+        isGettingMedia = false;
+        return localStream;
+      } catch (e) {
+        console.error('Error getting local stream:', e);
+        isGettingMedia = false;
+        
+        let errorMsg = '';
+        if (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError') {
+          errorMsg = 'Please allow camera and microphone access.';
+          document.getElementById('mediaPermissionBanner').classList.remove('hidden');
+        } else if (e.name === 'NotFoundError') {
+          errorMsg = 'No camera or microphone found.';
+        } else {
+          errorMsg = 'Could not access camera/microphone: ' + e.message;
+        }
+        
+        document.getElementById('mediaError').textContent = '❌ ' + errorMsg;
+        document.getElementById('mediaError').style.display = 'block';
+        showNotification('❌ ' + errorMsg);
+        return null;
+      }
+    }
+
+    function createPeerConnection() {
+      const configuration = {
+        iceServers: [
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:stun1.l.google.com:19302' },
+          { urls: 'stun:stun2.l.google.com:19302' },
+          { urls: 'stun:stun3.l.google.com:19302' },
+          { urls: 'stun:stun4.l.google.com:19302' }
+        ]
+      };
+      
+      peerConnection = new RTCPeerConnection(configuration);
+      
+      if (localStream) {
+        localStream.getTracks().forEach(track => {
+          peerConnection.addTrack(track, localStream);
+        });
+      }
+      
+      peerConnection.ontrack = (event) => {
+        remoteStream = event.streams[0];
+        const video = document.getElementById('remoteVideo');
+        video.srcObject = remoteStream;
+        document.getElementById('remotePlaceholder').style.display = 'none';
+        video.style.display = 'block';
+        updateCallStatus('connected', 'Connected');
+        showNotification('📹 Video call connected!');
+      };
+      
+      peerConnection.onicecandidate = (event) => {
+        if (event.candidate) {
+          sendSignalingData({ type: 'ice-candidate', candidate: event.candidate });
+        }
+      };
+      
+      peerConnection.onconnectionstatechange = () => {
+        const state = peerConnection.connectionState;
+        console.log('Connection state:', state);
+        if (state === 'connected') {
+          updateCallStatus('connected', 'Connected');
+          isCallActive = true;
+          startCallTimer();
+        } else if (state === 'connecting') {
+          updateCallStatus('connecting', 'Connecting...');
+        } else if (state === 'disconnected' || state === 'failed' || state === 'closed') {
+          updateCallStatus('disconnected', 'Disconnected');
+          endCall();
+        }
+      };
+      
+      return peerConnection;
+    }
+
+    async function startCall() {
+      if (!user || !user.partnerId) {
+        showNotification('Please connect with a partner first');
+        return;
+      }
+      
+      if (!partnerOnline) {
+        showNotification(`📡 ${user.partner} is currently offline. Please try again later.`);
+        updateCallStatus('offline', `📡 ${user.partner} is offline`);
+        return;
+      }
+      
+      if (isCallActive) {
+        endCall();
+        return;
+      }
+      
+      if (isGettingMedia) {
+        showNotification('⏳ Please wait for media access...');
+        return;
+      }
+      
+      try {
+        if (!hasMediaPermissions) {
+          const granted = await requestMediaPermissions();
+          if (!granted) return;
+        }
+        
+        if (!localStream) {
+          const stream = await getLocalStream();
+          if (!stream) return;
+        }
+        
+        createPeerConnection();
+        
+        const offer = await peerConnection.createOffer();
+        await peerConnection.setLocalDescription(offer);
+        
+        sendSignalingData({ type: 'offer', offer: offer });
+        
+        updateCallStatus('connecting', 'Calling...');
+        document.getElementById('callButton').innerHTML = '<i class="fas fa-phone-slash"></i> End Call';
+        document.getElementById('callButton').classList.add('active');
+        
+        listenForSignaling();
+        
+        showNotification(`📞 Calling ${user.partner}...`);
+        
+      } catch (e) {
+        console.error('Error starting call:', e);
+        showNotification('❌ Failed to start call: ' + e.message);
+      }
+    }
+
+    async function handleSignalingData(data) {
+      if (!peerConnection) {
+        if (data.type === 'offer') {
+          await handleIncomingCall(data.offer);
+        }
+        return;
+      }
+      
+      try {
+        if (data.type === 'offer') {
+          await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
+          const answer = await peerConnection.createAnswer();
+          await peerConnection.setLocalDescription(answer);
+          sendSignalingData({ type: 'answer', answer: answer });
+          
+        } else if (data.type === 'answer') {
+          await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+          
+        } else if (data.type === 'ice-candidate') {
+          if (data.candidate) {
+            try {
+              await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+            } catch (e) {
+              iceCandidatesQueue.push(data.candidate);
+            }
+          }
+        }
+      } catch (e) {
+        console.error('Error handling signaling:', e);
+      }
+    }
+
+    async function handleIncomingCall(offer) {
+      if (isGettingMedia) {
+        showNotification('⏳ Please wait for media access...');
+        sendSignalingData({ type: 'reject', reason: 'busy' });
+        return;
+      }
+      
+      try {
+        if (!partnerOnline) {
+          sendSignalingData({ type: 'reject', reason: 'offline' });
+          showNotification(`📡 ${user.partner} is offline`);
+          return;
+        }
+        
+        if (!hasMediaPermissions) {
+          const granted = await requestMediaPermissions();
+          if (!granted) {
+            sendSignalingData({ type: 'reject' });
+            return;
+          }
+        }
+        
+        if (!localStream) {
+          const stream = await getLocalStream();
+          if (!stream) {
+            sendSignalingData({ type: 'reject' });
+            return;
+          }
+        }
+        
+        createPeerConnection();
+        
+        await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+        const answer = await peerConnection.createAnswer();
+        await peerConnection.setLocalDescription(answer);
+        sendSignalingData({ type: 'answer', answer: answer });
+        
+        updateCallStatus('connected', 'Connected');
+        document.getElementById('callButton').innerHTML = '<i class="fas fa-phone-slash"></i> End Call';
+        document.getElementById('callButton').classList.add('active');
+        isCallActive = true;
+        startCallTimer();
+        
+        showNotification('📹 Call connected!');
+        
+        if (iceCandidatesQueue.length > 0) {
+          iceCandidatesQueue.forEach(candidate => {
+            peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+          });
+          iceCandidatesQueue = [];
+        }
+        
+        listenForSignaling();
+        
+      } catch (e) {
+        console.error('Error handling incoming call:', e);
+        showNotification('❌ Failed to answer call: ' + e.message);
+      }
+    }
+
+    function sendSignalingData(data) {
+      if (!user || !user.partnerId) return;
+      
+      data.from = user.id;
+      data.to = user.partnerId;
+      data.timestamp = firebase.firestore.FieldValue.serverTimestamp();
+      
+      db.collection('signaling').add(data).catch(e => {
+        console.warn('Failed to send signaling data:', e);
+      });
+    }
+
+    function listenForSignaling() {
+      if (signalingUnsubscribe) {
+        signalingUnsubscribe();
+        signalingUnsubscribe = null;
+      }
+      
+      if (!user || !user.partnerId) return;
+      
+      signalingUnsubscribe = db.collection('signaling')
+        .where('to', '==', user.id)
+        .orderBy('timestamp', 'asc')
+        .onSnapshot((snapshot) => {
+          snapshot.docChanges().forEach(change => {
+            if (change.type === 'added') {
+              const data = change.doc.data();
+              if (data.from === user.id) return;
+              
+              if (data.type === 'reject') {
+                const reason = data.reason || '';
+                if (reason === 'offline') {
+                  showNotification(`📡 ${user.partner} is offline`);
+                } else if (reason === 'busy') {
+                  showNotification(`📞 ${user.partner} is busy`);
+                } else {
+                  showNotification('📞 Call rejected by partner');
+                }
+                endCall();
+                change.doc.ref.delete().catch(() => {});
+                return;
+              }
+              
+              handleSignalingData(data);
+              change.doc.ref.delete().catch(() => {});
+            }
+          });
+        });
+    }
+
+    function endCall() {
+      isCallActive = false;
+      if (callTimer) {
+        clearInterval(callTimer);
+        callTimer = null;
+      }
+      
+      if (peerConnection) {
+        peerConnection.close();
+        peerConnection = null;
+      }
+      
+      remoteStream = null;
+      const remoteVideo = document.getElementById('remoteVideo');
+      remoteVideo.srcObject = null;
+      remoteVideo.style.display = 'none';
+      document.getElementById('remotePlaceholder').style.display = 'block';
+      
+      updateCallStatus('idle', partnerOnline ? `✅ ${user.partner} is online` : 'Not connected');
+      document.getElementById('callButton').innerHTML = '<i class="fas fa-phone"></i> Start Call';
+      document.getElementById('callButton').classList.remove('active');
+      
+      if (!partnerOnline) {
+        document.getElementById('callButton').disabled = true;
+        document.getElementById('callButton').innerHTML = '<i class="fas fa-user-slash"></i> Partner Offline';
+      }
+      
+      if (signalingUnsubscribe) {
+        signalingUnsubscribe();
+        signalingUnsubscribe = null;
+      }
+      
+      if (user && user.partnerId) {
+        sendSignalingData({ type: 'hangup' });
+      }
+      
+      iceCandidatesQueue = [];
+      showNotification('📴 Call ended');
+    }
+
+    function updateCallStatus(type, text) {
+      const el = document.getElementById('callStatus');
+      el.className = 'call-status ' + type;
+      el.textContent = text;
+    }
+
+    function startCallTimer() {
+      callStartTime = Date.now();
+      if (callTimer) clearInterval(callTimer);
+      callTimer = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - callStartTime) / 1000);
+        const mins = Math.floor(elapsed / 60);
+        const secs = elapsed % 60;
+        document.getElementById('recitationTimer').innerText = 
+          String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+      }, 1000);
+    }
+
+    async function toggleCamera() {
+      if (!localStream) {
+        const stream = await getLocalStream();
+        if (!stream) return;
+      }
+      isCameraOn = !isCameraOn;
+      const videoTracks = localStream.getVideoTracks();
+      videoTracks.forEach(track => track.enabled = isCameraOn);
+      document.getElementById('cameraToggle').innerHTML = isCameraOn ? '<i class="fas fa-video"></i> Camera' : '<i class="fas fa-video-slash"></i> Camera';
+      
+      if (!isCameraOn) {
+        document.getElementById('localVideoWrapper').classList.add('muted');
+      } else {
+        document.getElementById('localVideoWrapper').classList.remove('muted');
+      }
+    }
+
+    async function toggleMicrophone() {
+      if (!localStream) {
+        const stream = await getLocalStream();
+        if (!stream) return;
+      }
+      isMicOn = !isMicOn;
+      const audioTracks = localStream.getAudioTracks();
+      audioTracks.forEach(track => track.enabled = isMicOn);
+      document.getElementById('micToggle').innerHTML = isMicOn ? '<i class="fas fa-microphone"></i> Mic' : '<i class="fas fa-microphone-slash"></i> Mic';
+    }
+
+    async function toggleScreenShare() {
+      if (!peerConnection) {
+        showNotification('Start a call first');
+        return;
+      }
+      
+      if (isScreenSharing) {
+        const sender = peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+        if (sender && localStream) {
+          const newTrack = localStream.getVideoTracks()[0];
+          if (newTrack) {
+            await sender.replaceTrack(newTrack);
+          }
+        }
+        isScreenSharing = false;
+        document.getElementById('screenToggle').innerHTML = '<i class="fas fa-desktop"></i> Share';
+        showNotification('Screen sharing stopped');
+        return;
+      }
+      
+      try {
+        const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+        const sender = peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+        if (sender) {
+          const screenTrack = screenStream.getVideoTracks()[0];
+          await sender.replaceTrack(screenTrack);
+          isScreenSharing = true;
+          document.getElementById('screenToggle').innerHTML = '<i class="fas fa-desktop"></i> Stop Share';
+          
+          screenTrack.onended = () => {
+            toggleScreenShare();
+          };
+          
+          showNotification('📺 Screen sharing started');
+        }
+      } catch (e) {
+        console.error('Screen sharing error:', e);
+        showNotification('❌ Screen sharing cancelled or not supported');
+      }
+    }
+
+    // ============ FCM / PUSH NOTIFICATIONS ============
+    async function requestFCMToken() {
+      try {
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') {
+          showNotification('⚠️ Please allow notifications in your browser settings.');
+          return;
+        }
+
+        const token = await messaging.getToken({
+          vapidKey: 'BMzi3gf0cee-mTdymxXFXbUlhBtu13odvdAPHXdjvpXDid1LmHEssJlz0qmfB6hmOcVWfBe09MKC_uD_-3hQHZU'
+        });
+
+        if (token) {
+          fcmToken = token;
+          console.log('FCM Token:', token);
+          
+          if (user && user.id) {
+            await db.collection('users').doc(user.id).update({
+              fcmToken: token,
+              notificationsEnabled: true
+            });
+            await db.collection('fcmTokens').doc(user.id).set({
+              userId: user.id,
+              token: token,
+              name: user.name || 'Reader',
+              updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+          }
+          
+          document.getElementById('fcmPermissionBanner').classList.add('hidden');
+          document.getElementById('fcmStatus').innerHTML = '✅ Push notifications enabled';
+          showNotification('🔔 Push notifications enabled!');
+          
+          await messaging.subscribeToTopic('quran_reminders');
+          await messaging.subscribeToTopic('user_' + user.id);
+          
+          showNotification('✅ Successfully subscribed to notifications!');
+        } else {
+          showNotification('❌ Failed to get notification token.');
+        }
+      } catch (e) {
+        console.error('FCM Error:', e);
+        showNotification('❌ Error enabling notifications: ' + e.message);
+        document.getElementById('fcmStatus').innerHTML = '❌ Failed to enable notifications';
+      }
+    }
+
+    messaging.onMessage((payload) => {
+      console.log('Message received in foreground:', payload);
+      
+      const notification = payload.notification;
+      if (notification) {
+        showNotification('🔔 ' + (notification.title || 'Quran Reminder') + ': ' + (notification.body || ''));
+        
+        if (payload.data && payload.data.type === 'quran_alarm') {
+          showAlarmNotification(payload.data.message || 'Time for Quran reading');
+          playAlarmSound();
+        }
+      }
+    });
+
+    async function checkFCMPermission() {
+      if ('Notification' in window) {
+        if (Notification.permission === 'granted') {
+          document.getElementById('fcmPermissionBanner').classList.add('hidden');
+          if (!fcmToken && user) {
+            try {
+              const token = await messaging.getToken({
+                vapidKey: 'BMzi3gf0cee-mTdymxXFXbUlhBtu13odvdAPHXdjvpXDid1LmHEssJlz0qmfB6hmOcVWfBe09MKC_uD_-3hQHZU'
+              });
+              if (token) {
+                fcmToken = token;
+                await db.collection('users').doc(user.id).update({
+                  fcmToken: token,
+                  notificationsEnabled: true
+                });
+                document.getElementById('fcmStatus').innerHTML = '✅ Push notifications enabled';
+              }
+            } catch (e) {
+              console.warn('Could not get FCM token:', e);
+            }
+          }
+        } else if (Notification.permission === 'default') {
+          document.getElementById('fcmPermissionBanner').classList.remove('hidden');
+          document.getElementById('fcmStatus').innerHTML = '🔔 Enable notifications for reminders';
+        } else {
+          document.getElementById('fcmPermissionBanner').classList.add('hidden');
+          document.getElementById('fcmStatus').innerHTML = '⚠️ Notifications blocked';
+        }
+      }
+    }
+
+    // ============ ALARM SYSTEM ============
+    function renderAlarms() {
+      const container = document.getElementById('alarmList');
+      const alarms = user.alarms || [];
+      const badge = document.getElementById('alarmBadge');
+      
+      document.getElementById('alarmCount').innerText = alarms.length;
+      
+      if (alarms.length > 0) {
+        badge.classList.remove('hidden');
+        badge.innerText = alarms.length;
+      } else {
+        badge.classList.add('hidden');
+      }
+
+      if (alarms.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state" style="padding:10px;">
+            <p style="font-size:0.8rem;">No alarms set. Add a reminder for your Quran reading!</p>
+          </div>
+        `;
+        return;
+      }
+
+      let html = '';
+      alarms.forEach((alarm, index) => {
+        const timeStr = `${String(alarm.hour).padStart(2, '0')}:${String(alarm.minute).padStart(2, '0')}`;
+        const isActive = alarm.active !== false;
+        html += `
+          <div class="alarm-item">
+            <div class="info">
+              <div class="time">🕐 ${timeStr}</div>
+              <div class="detail">${alarm.message || 'Time for Quran reading'}</div>
+              <div class="status">${isActive ? '✅ Active' : '⏸️ Paused'}</div>
+            </div>
+            <div class="actions">
+              <div class="toggle ${isActive ? 'active' : ''}" onclick="toggleAlarm(${index})">
+                <div class="slider"></div>
+              </div>
+              <button onclick="deleteAlarm(${index})" class="danger" style="padding:4px 10px;font-size:0.7rem;">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    async function setAlarm() {
+      const hour = parseInt(document.getElementById('alarmHour').value);
+      const minute = parseInt(document.getElementById('alarmMinute').value);
+      const message = document.getElementById('alarmMessage').value.trim() || 'Time for Quran reading';
+
+      if (!user) return;
+
+      const alarms = user.alarms || [];
+      const duplicate = alarms.some(a => a.hour === hour && a.minute === minute && a.active !== false);
+      if (duplicate) {
+        showNotification('⚠️ Alarm already set for this time');
+        return;
+      }
+
+      const newAlarm = {
+        hour: hour,
+        minute: minute,
+        message: message,
+        active: true,
+        createdAt: new Date().toISOString()
+      };
+
+      alarms.push(newAlarm);
+      await updateAlarms(alarms);
+      document.getElementById('alarmMessage').value = '';
+      showNotification('⏰ Alarm set for ' + String(hour).padStart(2, '0') + ':' + String(minute).padStart(2, '0'));
+    }
+
+    async function toggleAlarm(index) {
+      const alarms = user.alarms || [];
+      if (index >= alarms.length) return;
+      
+      alarms[index].active = alarms[index].active === false ? true : false;
+      await updateAlarms(alarms);
+    }
+
+    async function deleteAlarm(index) {
+      const alarms = user.alarms || [];
+      if (index >= alarms.length) return;
+      
+      alarms.splice(index, 1);
+      await updateAlarms(alarms);
+      showNotification('🗑️ Alarm deleted');
+    }
+
+    async function updateAlarms(alarms) {
+      user.alarms = alarms;
+      if (user.id && user.id !== 'local') {
+        try {
+          await db.collection('users').doc(user.id).update({ alarms: alarms });
+        } catch (e) {
+          console.warn('Failed to update alarms in Firestore', e);
+        }
+      }
+      localStorage.setItem('musaffahUser', JSON.stringify(user));
+      renderAlarms();
+      clearAllAlarms();
+      startAlarmChecker();
+    }
+
+    function startAlarmChecker() {
+      clearAllAlarms();
+      
+      if (alarmCheckInterval) {
+        clearInterval(alarmCheckInterval);
+      }
+      
+      checkAlarms();
+      
+      alarmCheckInterval = setInterval(() => {
+        checkAlarms();
+      }, 5000);
+    }
+
+    function checkAlarms() {
+      if (!user || !user.alarms) return;
+      
+      const now = new Date();
+      const currentMinutes = now.getHours() * 60 + now.getMinutes();
+      const currentSeconds = now.getSeconds();
+      
+      user.alarms.forEach((alarm, index) => {
+        if (alarm.active === false) return;
+        if (alarm._triggered) return;
+        
+        const alarmMinutes = alarm.hour * 60 + alarm.minute;
+        const timeDiff = Math.abs(currentMinutes - alarmMinutes);
+        
+        if (timeDiff === 0 && currentSeconds < 30) {
+          triggerAlarm(alarm, index);
+        }
+      });
+    }
+
+    function triggerAlarm(alarm, index) {
+      const alarms = user.alarms || [];
+      const alarmExists = alarms.some((a, i) => 
+        a.hour === alarm.hour && 
+        a.minute === alarm.minute && 
+        a.active !== false &&
+        i === index
+      );
+      
+      if (!alarmExists) return;
+
+      const alarmRef = alarms[index];
+      if (alarmRef) {
+        alarmRef._triggered = true;
+        setTimeout(() => {
+          if (alarmRef) alarmRef._triggered = false;
+        }, 86400000 - (new Date().getHours() * 3600000 + new Date().getMinutes() * 60000 + new Date().getSeconds() * 1000));
+      }
+
+      showAlarmNotification(alarm.message || 'Time for Quran reading');
+      playAlarmSound();
+      sendPushNotification(alarm.message || 'Time for Quran reading');
+      
+      if (Notification.permission === 'granted') {
+        try {
+          const notification = new Notification('📖 Time for Quran!', {
+            body: alarm.message || 'Time for Quran reading',
+            icon: '📖',
+            tag: 'quran-alarm',
+            requireInteraction: true,
+            vibrate: [200, 100, 200, 100, 200]
+          });
+          
+          notification.onclick = function() {
+            window.focus();
+            this.close();
+            dismissAlarm();
+          };
+          
+          setTimeout(() => {
+            notification.close();
+          }, 30000);
+        } catch (e) {}
+      }
+      
+      showNotification('⏰ ' + (alarm.message || 'Time for Quran reading'));
+    }
+
+    async function sendPushNotification(message) {
+      if (!user || !user.id) return;
+      
+      try {
+        const userDoc = await db.collection('users').doc(user.id).get();
+        const userData = userDoc.data();
+        
+        if (userData.fcmToken) {
+          await db.collection('notifications').add({
+            token: userData.fcmToken,
+            title: '📖 Time for Quran!',
+            body: message,
+            type: 'quran_alarm',
+            userId: user.id,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            sent: false
+          });
+          
+          console.log('Push notification queued for sending');
+          
+          try {
+            const response = await fetch('https://fcm.googleapis.com/fcm/send', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'key=YOUR_SERVER_KEY_HERE'
+              },
+              body: JSON.stringify({
+                to: userData.fcmToken,
+                notification: {
+                  title: '📖 Time for Quran!',
+                  body: message,
+                  sound: 'default'
+                },
+                data: {
+                  type: 'quran_alarm',
+                  message: message
+                },
+                priority: 'high'
+              })
+            });
+            
+            if (response.ok) {
+              console.log('FCM notification sent directly');
+            }
+          } catch (e) {
+            console.warn('Direct FCM send failed:', e);
+          }
+        }
+      } catch (e) {
+        console.error('Error sending push notification:', e);
+      }
+    }
+
+    function showAlarmNotification(message) {
+      const notification = document.getElementById('alarmNotification');
+      document.getElementById('alarmNotificationMessage').innerText = message;
+      notification.classList.add('show');
+      isAlarmRinging = true;
+      
+      if (navigator.vibrate) {
+        navigator.vibrate([200, 100, 200, 100, 200, 100, 200]);
+      }
+      
+      if (attentionTimeout) clearTimeout(attentionTimeout);
+      attentionTimeout = setTimeout(() => {
+        dismissAlarm();
+      }, 60000);
+    }
+
+    function playAlarmSound() {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const notes = [440, 554, 659, 880];
+        let time = audioCtx.currentTime;
+        
+        notes.forEach((freq, i) => {
+          const oscillator = audioCtx.createOscillator();
+          const gainNode = audioCtx.createGain();
+          oscillator.connect(gainNode);
+          gainNode.connect(audioCtx.destination);
+          oscillator.frequency.value = freq;
+          gainNode.gain.value = 0.3;
+          oscillator.start(time);
+          oscillator.stop(time + 0.2);
+          time += 0.25;
+          
+          const osc2 = audioCtx.createOscillator();
+          const gain2 = audioCtx.createGain();
+          osc2.connect(gain2);
+          gain2.connect(audioCtx.destination);
+          osc2.frequency.value = freq * 1.5;
+          gain2.gain.value = 0.1;
+          osc2.start(time - 0.1);
+          osc2.stop(time + 0.1);
+        });
+        
+        setTimeout(() => {
+          if (isAlarmRinging) {
+            notes.forEach((freq, i) => {
+              const oscillator = audioCtx.createOscillator();
+              const gainNode = audioCtx.createGain();
+              oscillator.connect(gainNode);
+              gainNode.connect(audioCtx.destination);
+              oscillator.frequency.value = freq;
+              gainNode.gain.value = 0.2;
+              oscillator.start(time + 0.5);
+              oscillator.stop(time + 0.7);
+              time += 0.25;
+            });
+          }
+        }, 1000);
+        
+        setTimeout(() => {
+          if (isAlarmRinging) {
+            notes.forEach((freq, i) => {
+              const oscillator = audioCtx.createOscillator();
+              const gainNode = audioCtx.createGain();
+              oscillator.connect(gainNode);
+              gainNode.connect(audioCtx.destination);
+              oscillator.frequency.value = freq;
+              gainNode.gain.value = 0.15;
+              oscillator.start(time + 1);
+              oscillator.stop(time + 1.2);
+              time += 0.25;
+            });
+          }
+        }, 2000);
+        
+      } catch (e) {}
+    }
+
+    function dismissAlarm() {
+      document.getElementById('alarmNotification').classList.remove('show');
+      isAlarmRinging = false;
+      if (snoozeTimeout) {
+        clearTimeout(snoozeTimeout);
+        snoozeTimeout = null;
+      }
+      if (attentionTimeout) {
+        clearTimeout(attentionTimeout);
+        attentionTimeout = null;
+      }
+    }
+
+    function snoozeAlarm() {
+      document.getElementById('alarmNotification').classList.remove('show');
+      isAlarmRinging = false;
+      showNotification('⏰ Snoozed for 5 minutes');
+      
+      if (snoozeTimeout) clearTimeout(snoozeTimeout);
+      snoozeTimeout = setTimeout(() => {
+        const alarms = user.alarms || [];
+        const activeAlarm = alarms.find(a => a.active !== false);
+        if (activeAlarm) {
+          const index = alarms.indexOf(activeAlarm);
+          if (index !== -1) {
+            triggerAlarm(activeAlarm, index);
+          }
+        }
+        snoozeTimeout = null;
+      }, 5 * 60 * 1000);
+    }
+
+    function clearAllAlarms() {
+      alarmTimeouts.forEach(t => clearTimeout(t));
+      alarmTimeouts = [];
+      if (snoozeTimeout) {
+        clearTimeout(snoozeTimeout);
+        snoozeTimeout = null;
+      }
+      if (attentionTimeout) {
+        clearTimeout(attentionTimeout);
+        attentionTimeout = null;
+      }
+      if (alarmCheckInterval) {
+        clearInterval(alarmCheckInterval);
+        alarmCheckInterval = null;
+      }
+      isAlarmRinging = false;
+    }
+
+    // ============ FEED ============
+    function listenForFeed() {
+      db.collection('posts').orderBy('createdAt', 'desc').onSnapshot((snapshot) => {
+        const container = document.getElementById('feedContainer');
+        if (snapshot.empty) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <i class="fas fa-feather-alt"></i>
+              <p>No posts yet. Be the first to share!</p>
+            </div>
+          `;
+          return;
+        }
+
+        let html = '';
+        snapshot.forEach(doc => {
+          const post = doc.data();
+          const postId = doc.id;
+          const isLiked = post.likes && post.likes.includes(user.id);
+          
+          html += `
+            <div class="post" id="post-${postId}">
+              <div class="post-header">
+                <div class="post-avatar">${(post.authorName || 'U')[0].toUpperCase()}</div>
+                <div>
+                  <div class="post-name">${post.authorName || 'Unknown'}</div>
+                  <div class="post-time">${post.createdAt ? new Date(post.createdAt.seconds * 1000).toLocaleString() : 'Just now'}</div>
+                </div>
+              </div>
+              <div class="post-content">${post.content}</div>
+              <div class="post-actions">
+                <span onclick="toggleLike('${postId}')">
+                  <i class="fas fa-heart" style="color:${isLiked ? '#b91c1c' : '#5b7a76'}"></i> 
+                  <span id="likes-${postId}">${post.likes ? post.likes.length : 0}</span>
+                </span>
+                <span onclick="toggleComments('${postId}')">
+                  <i class="fas fa-comment"></i> 
+                  <span id="comments-${postId}">${post.comments ? post.comments.length : 0}</span>
+                </span>
+              </div>
+              <div class="post-comments hidden" id="comments-${postId}">
+                ${post.comments ? post.comments.map(c => `
+                  <div class="comment">
+                    <div class="comment-avatar">${(c.authorName || 'U')[0].toUpperCase()}</div>
+                    <div>
+                      <strong>${c.authorName || 'Unknown'}</strong> ${c.text}
+                      <div style="font-size:0.55rem;opacity:0.5;">${c.time || 'Just now'}</div>
+                    </div>
+                  </div>
+                `).join('') : ''}
+                <div style="display:flex;gap:4px;margin-top:4px;">
+                  <input placeholder="Write a comment..." id="comment-input-${postId}" style="flex:1;margin:0;font-size:0.75rem;padding:4px 8px;">
+                  <button onclick="addComment('${postId}')" style="width:auto;margin:0;padding:4px 12px;font-size:0.7rem;"><i class="fas fa-paper-plane"></i></button>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+        container.innerHTML = html;
+      });
+    }
+
+    async function createPost() {
+      const input = document.getElementById('postInput');
+      const text = input.value.trim();
+      if (!text) { showNotification('Write something first'); return; }
+
+      try {
+        await db.collection('posts').add({
+          content: text,
+          authorId: user.id,
+          authorName: user.name || 'Reader',
+          likes: [],
+          comments: [],
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        input.value = '';
+        showNotification('📢 Post shared!');
+      } catch (e) {
+        showNotification('Error sharing post: ' + e.message);
+      }
+    }
+
+    async function toggleLike(postId) {
+      const postRef = db.collection('posts').doc(postId);
+      const doc = await postRef.get();
+      if (!doc.exists) return;
+      const post = doc.data();
+      const likes = post.likes || [];
+      const idx = likes.indexOf(user.id);
+      
+      if (idx > -1) {
+        likes.splice(idx, 1);
+      } else {
+        likes.push(user.id);
+      }
+      
+      await postRef.update({ likes: likes });
+    }
+
+    function toggleComments(postId) {
+      const container = document.getElementById(`comments-${postId}`);
+      container.classList.toggle('hidden');
+    }
+
+    async function addComment(postId) {
+      const input = document.getElementById(`comment-input-${postId}`);
+      const text = input.value.trim();
+      if (!text) return;
+      
+      const postRef = db.collection('posts').doc(postId);
+      const doc = await postRef.get();
+      if (!doc.exists) return;
+      const post = doc.data();
+      const comments = post.comments || [];
+      
+      comments.push({
+        authorId: user.id,
+        authorName: user.name || 'Reader',
+        text: text,
+        time: new Date().toLocaleString()
+      });
+      
+      await postRef.update({ comments: comments });
+      input.value = '';
+    }
+
+    // ============ JUZ ============
+    function renderJuz() {
+      const grid = document.getElementById('juzGrid');
+      grid.innerHTML = '';
+      const juzList = user.juz || [];
+      for (let i = 1; i <= 30; i++) {
+        const el = document.createElement('div');
+        el.className = 'juz-item' + (juzList.includes(i) ? ' completed' : '');
+        el.innerText = i;
+        el.onclick = () => toggleJuz(i);
+        grid.appendChild(el);
+      }
+    }
+
+    async function toggleJuz(i) {
+      if (!user) return;
+      const juzList = user.juz || [];
+      const idx = juzList.indexOf(i);
+      if (idx > -1) juzList.splice(idx, 1);
+      else juzList.push(i);
+
+      if (juzList.length === 30) {
+        user.khatm = (user.khatm || 0) + 1;
+        user.streak = (user.streak || 0) + 1;
+        showNotification('🎉 Masha\'Allah! Full Khatm completed!');
+      }
+      user.juz = juzList;
+      if (user.id && user.id !== 'local') {
+        try { await db.collection('users').doc(user.id).update({ juz: user.juz, khatm: user.khatm, streak: user.streak }); } catch (e) {}
+      }
+      localStorage.setItem('musaffahUser', JSON.stringify(user));
+      renderJuz();
+      document.getElementById('miniJuz').innerText = user.juz.length;
+      document.getElementById('miniKhatm').innerText = user.khatm;
+      document.getElementById('miniStreak').innerText = user.streak;
+    }
+
+    // ============ PARTNER FUNCTIONS ============
+    function updatePartnerDisplay() {
+      const display = document.getElementById('partnerDisplay');
+      if (user.partner && user.partnerId) {
+        display.innerHTML = `
+          <div class="partner-avatar">${user.partner[0].toUpperCase()}</div>
+          <h3 style="font-size:0.9rem;" id="partnerNameDisplay">${user.partner}</h3>
+          <p style="font-size:0.7rem; opacity:0.6;" id="partnerPlanDisplay">🤝 Connected · ${user.plan} day plan</p>
+          <button onclick="disconnectPartner()" class="danger" style="margin-top:6px; font-size:0.8rem;"><i class="fas fa-unlink"></i> Disconnect</button>
+        `;
+      } else {
+        display.innerHTML = `
+          <div class="partner-avatar">?</div>
+          <h3 style="font-size:0.9rem;" id="partnerNameDisplay">No partner yet</h3>
+          <p style="font-size:0.7rem; opacity:0.6;" id="partnerPlanDisplay">Search for a partner below to start Musaffah</p>
+        `;
+      }
+      updateAttentionButtonVisibility();
+    }
+
+    // FIXED: sendPartnerRequest - properly tracks sent requests
+    async function sendPartnerRequest(toId) {
+      if (!user) return;
+      
+      try {
+        // Get target user's data
+        const targetDoc = await db.collection('users').doc(toId).get();
+        if (!targetDoc.exists) {
+          showNotification('User not found');
+          return;
+        }
+        
+        const targetData = targetDoc.data();
+        const currentPending = targetData.pendingRequests || [];
+        
+        // Check if request already exists
+        const existingRequest = currentPending.find(req => req.fromId === user.id);
+        if (existingRequest) {
+          showNotification('Request already sent to this user');
+          return;
+        }
+        
+        // Add new request
+        const newRequest = {
+          fromId: user.id,
+          fromName: user.name || 'Reader',
+          fromPlan: user.plan || '7',
+          timestamp: new Date().toISOString()
+        };
+        
+        currentPending.push(newRequest);
+        
+        // Update target user's pending requests
+        await db.collection('users').doc(toId).update({
+          pendingRequests: currentPending
+        });
+        
+        // Update sender's sent requests
+        const sentRequests = user.sentRequests || [];
+        if (!sentRequests.includes(toId)) {
+          sentRequests.push(toId);
+          await db.collection('users').doc(user.id).update({
+            sentRequests: sentRequests
+          });
+          user.sentRequests = sentRequests;
+          localStorage.setItem('musaffahUser', JSON.stringify(user));
+        }
+        
+        showNotification('✅ Request sent to ' + (targetData.name || 'Reader') + '!');
+        loadAllUsers(); // Refresh search results
+        
+      } catch (e) {
+        console.error('Error sending request:', e);
+        showNotification('Error sending request: ' + e.message);
+      }
+    }
+
+    function listenForConnectionRequests() {
+      if (unsubscribeRequests) unsubscribeRequests();
+      
+      if (!user) return;
+      
+      unsubscribeRequests = db.collection('users').doc(user.id)
+        .onSnapshot((doc) => {
+          if (!doc.exists) return;
+          const data = doc.data();
+          const requests = data.pendingRequests || [];
+          const container = document.getElementById('connectionRequests');
+          
+          if (requests.length === 0) {
+            container.innerHTML = `
+              <div class="empty-state" style="padding:15px;">
+                <p style="font-size:0.8rem;">No pending requests.</p>
+              </div>
+            `;
+            return;
+          }
+
+          let html = '';
+          requests.forEach((req, index) => {
+            html += `
+              <div class="request-item" style="border-left-color: #d97706; background: #fef3c7;">
+                <div class="info">
+                  <div class="name"><i class="fas fa-user-circle"></i> ${req.fromName || 'Reader'}</div>
+                  <div class="detail">📖 ${req.fromPlan || '7'} day plan wants to connect</div>
+                </div>
+                <div class="actions">
+                  <button onclick="handlePartnerRequest('${req.fromId}', 'accept', ${index})" class="success"><i class="fas fa-check"></i> Accept</button>
+                  <button onclick="handlePartnerRequest('${req.fromId}', 'reject', ${index})" class="outline danger"><i class="fas fa-times"></i> Reject</button>
+                </div>
+              </div>
+            `;
+          });
+          container.innerHTML = html;
+        });
+    }
+
+    // FIXED: handlePartnerRequest - properly updates both users
+    async function handlePartnerRequest(fromId, action, index) {
+      if (!user) return;
+      
+      try {
+        const fromDoc = await db.collection('users').doc(fromId).get();
+        if (!fromDoc.exists) {
+          showNotification('User no longer exists');
+          return;
+        }
+        const fromData = fromDoc.data();
+        
+        // Get current pending requests
+        const currentPending = user.pendingRequests || [];
+        const requestToRemove = currentPending[index];
+        
+        if (action === 'accept') {
+          // Check if user already has a partner
+          if (user.partner && user.partnerId) {
+            showNotification('You already have a partner. Disconnect first.');
+            return;
+          }
+          
+          // Check if sender already has a partner
+          if (fromData.partner && fromData.partnerId) {
+            showNotification(`${fromData.name} already has a partner.`);
+            // Remove this request
+            currentPending.splice(index, 1);
+            await db.collection('users').doc(user.id).update({
+              pendingRequests: currentPending
+            });
+            user.pendingRequests = currentPending;
+            return;
+          }
+          
+          const partnerName = fromData.name || 'Reader';
+          
+          // Update current user
+          await db.collection('users').doc(user.id).update({
+            partner: partnerName,
+            partnerId: fromId,
+            pendingRequests: currentPending.filter((_, i) => i !== index)
+          });
+          
+          // Update partner user - remove the request from their end too
+          const partnerPending = fromData.pendingRequests || [];
+          const updatedPartnerPending = partnerPending.filter(req => req.fromId !== user.id);
+          
+          // Also update partner's sentRequests to remove this user
+          const partnerSentRequests = fromData.sentRequests || [];
+          const updatedPartnerSent = partnerSentRequests.filter(id => id !== user.id);
+          
+          await db.collection('users').doc(fromId).update({
+            partner: user.name || 'Reader',
+            partnerId: user.id,
+            pendingRequests: updatedPartnerPending,
+            sentRequests: updatedPartnerSent
+          });
+          
+          // Update user's sentRequests to remove the partner
+          const currentSentRequests = user.sentRequests || [];
+          const updatedSentRequests = currentSentRequests.filter(id => id !== fromId);
+          await db.collection('users').doc(user.id).update({
+            sentRequests: updatedSentRequests
+          });
+          user.sentRequests = updatedSentRequests;
+          
+          // Update local user state
+          user.partner = partnerName;
+          user.partnerId = fromId;
+          user.pendingRequests = currentPending.filter((_, i) => i !== index);
+          
+          localStorage.setItem('musaffahUser', JSON.stringify(user));
+          
+          showNotification('🎉 You are now connected with ' + partnerName + '!');
+          
+          // Refresh everything
+          updatePartnerDisplay();
+          listenForPartnerRecitation();
+          renderChats();
+          loadAllUsers();
+          
+          if (user.partnerId) {
+            listenPartnerStatus();
+          }
+          
+        } else {
+          // Reject: remove the request from pending
+          currentPending.splice(index, 1);
+          await db.collection('users').doc(user.id).update({
+            pendingRequests: currentPending
+          });
+          user.pendingRequests = currentPending;
+          localStorage.setItem('musaffahUser', JSON.stringify(user));
+          showNotification('Request rejected');
+          loadAllUsers();
+        }
+        
+      } catch (e) {
+        console.error('Error handling request:', e);
+        showNotification('Error: ' + e.message);
+      }
+    }
+
+    async function disconnectPartner() {
+      if (!user || !user.partnerId) return;
+      if (!confirm('Disconnect from your partner?')) return;
+      
+      try {
+        if (isReciting) toggleRecitation();
+        if (isCallActive) endCall();
+        
+        if (partnerStatusUnsubscribe) {
+          partnerStatusUnsubscribe();
+          partnerStatusUnsubscribe = null;
+        }
+        
+        const partnerId = user.partnerId;
+        const partnerName = user.partner;
+        
+        // Update current user
+        await db.collection('users').doc(user.id).update({ 
+          partner: '', 
+          partnerId: '', 
+          isReciting: false 
+        });
+        
+        // Update partner user
+        await db.collection('users').doc(partnerId).update({ 
+          partner: '', 
+          partnerId: '', 
+          isReciting: false 
+        });
+        
+        // Reset local state
+        user.partner = '';
+        user.partnerId = '';
+        user.isReciting = false;
+        partnerIsReciting = false;
+        partnerOnline = false;
+        
+        localStorage.setItem('musaffahUser', JSON.stringify(user));
+        
+        // Refresh UI
+        updatePartnerDisplay();
+        document.getElementById('partnerListenSection').classList.add('hidden');
+        updateAttentionButtonVisibility();
+        renderChats();
+        loadAllUsers();
+        
+        showNotification('Disconnected from ' + partnerName);
+        
+      } catch (e) {
+        console.error('Error disconnecting:', e);
+        showNotification('Error disconnecting: ' + e.message);
+      }
+    }
+
+    // ============ RECITATION ============
+    function listenForPartnerRecitation() {
+      if (!user || !user.partnerId) return;
+      db.collection('users').doc(user.partnerId).onSnapshot((doc) => {
+        if (doc.exists) {
+          const data = doc.data();
+          partnerIsReciting = data.isReciting || false;
+          
+          if (partnerIsReciting) {
+            document.getElementById('partnerListenSection').classList.remove('hidden');
+            document.getElementById('partnerListenName').innerText = user.partner;
+            document.getElementById('recitationStatus').className = 'recitation-status active';
+            document.getElementById('recitationStatus').innerHTML = `<p>🎙️ ${user.partner} is reciting</p>`;
+          } else {
+            document.getElementById('partnerListenSection').classList.add('hidden');
+            if (!isReciting) {
+              document.getElementById('recitationStatus').className = 'recitation-status inactive';
+              document.getElementById('recitationStatus').innerHTML = '<p>🕊️ No active session</p>';
+            }
+          }
+          updateAttentionButtonVisibility();
+        }
+      });
+    }
+
+    function toggleRecitation() {
+      if (!user || !user.partnerId) {
+        showNotification('Please connect with a partner first');
+        return;
+      }
+
+      isReciting = !isReciting;
+      const btn = document.querySelector('.recording-btn');
+      const label = document.getElementById('recitationLabel');
+      const status = document.getElementById('recitationStatus');
+
+      if (isReciting) {
+        btn.style.background = '#dc2626';
+        btn.innerHTML = '<i class="fas fa-stop"></i>';
+        label.textContent = '🔴 Reciting... tap to stop';
+        status.className = 'recitation-status active';
+        status.innerHTML = `<p>🎙️ You are reciting to ${user.partner}</p>`;
+        db.collection('users').doc(user.id).update({ isReciting: true }).catch(() => {});
+        recitationSeconds = 0;
+        if (recitationTimer) clearInterval(recitationTimer);
+        recitationTimer = setInterval(() => {
+          recitationSeconds++;
+          const mins = Math.floor(recitationSeconds / 60);
+          const secs = recitationSeconds % 60;
+          document.getElementById('recitationTimer').innerText = 
+            String(mins).padStart(2,'0') + ':' + String(secs).padStart(2,'0');
+        }, 1000);
+        showNotification('🔴 Recitation started');
+      } else {
+        btn.style.background = '#0f766e';
+        btn.innerHTML = '<i class="fas fa-microphone"></i>';
+        label.textContent = 'Tap to start reciting';
+        status.className = 'recitation-status inactive';
+        status.innerHTML = '<p>🕊️ No active session</p>';
+        db.collection('users').doc(user.id).update({ isReciting: false }).catch(() => {});
+        if (recitationTimer) {
+          clearInterval(recitationTimer);
+          recitationTimer = null;
+        }
+        const mins = Math.floor(recitationSeconds / 60);
+        if (mins > 0) {
+          user.musaffahSessions = (user.musaffahSessions || 0) + 1;
+          user.musaffahJuz = (user.musaffahJuz || 0) + Math.ceil(mins / 5);
+          user.musaffahStreak = (user.musaffahStreak || 0) + 1;
+          if (user.id && user.id !== 'local') {
+            db.collection('users').doc(user.id).update({
+              musaffahSessions: user.musaffahSessions,
+              musaffahJuz: user.musaffahJuz,
+              musaffahStreak: user.musaffahStreak
+            }).catch(() => {});
+          }
+          localStorage.setItem('musaffahUser', JSON.stringify(user));
+          document.getElementById('musaffahSessions').innerText = user.musaffahSessions;
+          document.getElementById('musaffahJuz').innerText = user.musaffahJuz;
+          document.getElementById('musaffahStreak').innerText = user.musaffahStreak;
+          showNotification(`✅ Recitation ended! ${mins} minutes`);
+        }
+        document.getElementById('recitationTimer').innerText = '00:00';
+        recitationSeconds = 0;
+      }
+      
+      updateAttentionButtonVisibility();
+    }
+
+    // ============ ATTENTION ============
+    function listenForAttention() {
+      if (!user) return;
+      
+      db.collection('attentionAlerts')
+        .where('toId', '==', user.id)
+        .where('dismissed', '==', false)
+        .onSnapshot((snapshot) => {
+          snapshot.forEach(doc => {
+            const alert = doc.data();
+            showAttentionOverlay(alert.fromName, alert.correctionText || 'Please check your recitation.');
+            doc.ref.update({ dismissed: true }).catch(() => {});
+          });
+        });
+    }
+
+    function callAttention() {
+      if (!user || !user.partnerId) {
+        showNotification('Please connect with a partner first');
+        return;
+      }
+      
+      if (!partnerIsReciting) {
+        showNotification('Your partner is not reciting right now.');
+        return;
+      }
+
+      const correctionInput = document.getElementById('correctionInput');
+      const correctionText = correctionInput.value.trim() || 'Please check your recitation.';
+      correctionInput.value = '';
+
+      db.collection('attentionAlerts').add({
+        fromId: user.id,
+        fromName: user.name || 'Reader',
+        toId: user.partnerId,
+        correctionText: correctionText,
+        dismissed: false,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      showNotification('🔔 Attention alert sent to ' + user.partner + '!');
+      sendCorrectionToPartner(correctionText);
+    }
+
+    function showAttentionOverlay(fromName, correctionText) {
+      const overlay = document.getElementById('attentionOverlay');
+      document.getElementById('attentionPartnerName').innerText = fromName || 'Your partner';
+      document.getElementById('attentionCorrectionMessage').innerHTML = correctionText || 'Please check your recitation.';
+      overlay.classList.add('show');
+      
+      if (attentionTimeout) clearTimeout(attentionTimeout);
+      attentionTimeout = setTimeout(() => {
+        dismissAttention();
+      }, 10000);
+      
+      if (navigator.vibrate) {
+        navigator.vibrate([200, 100, 200]);
+      }
+      
+      showNotification('🔔 ' + (fromName || 'Your partner') + ' called your attention!');
+    }
+
+    function dismissAttention() {
+      document.getElementById('attentionOverlay').classList.remove('show');
+      if (attentionTimeout) {
+        clearTimeout(attentionTimeout);
+        attentionTimeout = null;
+      }
+    }
+
+    function updateAttentionButtonVisibility() {
+      const attentionBtn = document.getElementById('callAttentionBtn');
+      if (partnerIsReciting && !isReciting && user && user.partner) {
+        attentionBtn.style.display = 'flex';
+      } else {
+        attentionBtn.style.display = 'none';
+      }
+    }
+
+    // ============ CORRECTIONS ============
+    function listenForCorrections() {
+      if (!user) return;
+      
+      db.collection('corrections')
+        .where('toId', '==', user.id)
+        .orderBy('createdAt', 'desc')
+        .onSnapshot((snapshot) => {
+          const container = document.getElementById('correctionsContainer');
+          if (snapshot.empty) {
+            container.innerHTML = `
+              <div class="empty-state" style="padding:15px;">
+                <p style="font-size:0.8rem;">No corrections yet. Help your partner improve!</p>
+              </div>
+            `;
+            return;
+          }
+
+          let html = '';
+          snapshot.forEach(doc => {
+            const correction = doc.data();
+            const isAttention = correction.isAttention || false;
+            html += `
+              <div style="background:${isAttention ? '#fee2e2' : '#fef3c7'};border-radius:10px;padding:8px;margin-bottom:6px;font-size:0.8rem;border-left:3px solid ${isAttention ? '#dc2626' : '#d97706'};">
+                <strong>${correction.fromName || 'Partner'}</strong> ${isAttention ? '⚠️ called attention' : 'corrected'}:
+                <p style="margin-top:2px;font-style:italic;">"${correction.text}"</p>
+                <div style="font-size:0.65rem;opacity:0.5;">${correction.createdAt ? new Date(correction.createdAt.seconds * 1000).toLocaleString() : 'Just now'}</div>
+              </div>
+            `;
+          });
+          container.innerHTML = html;
+        });
+    }
+
+    async function sendCorrection() {
+      const input = document.getElementById('correctionInput');
+      const text = input.value.trim();
+      if (!text) return;
+      
+      await sendCorrectionToPartner(text);
+      input.value = '';
+    }
+
+    async function sendCorrectionToPartner(text) {
+      if (!user || !user.partnerId) {
+        showNotification('Please connect with a partner first');
+        return;
+      }
+
+      try {
+        await db.collection('corrections').add({
+          fromId: user.id,
+          fromName: user.name || 'Reader',
+          toId: user.partnerId,
+          text: text,
+          isAttention: true,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        showNotification('✅ Correction sent to ' + user.partner);
+      } catch (e) {
+        showNotification('Error sending correction: ' + e.message);
+      }
+    }
+
+    // ============ CHATS ============
+    function switchChatTab(tab, event) {
+      activeChatTab = tab;
+      document.querySelectorAll('.chat-type-tabs button').forEach(btn => btn.classList.remove('active'));
+      if (event && event.target) {
+        event.target.classList.add('active');
+      }
+      renderChats();
+    }
+
+    function renderChats() {
+      if (!user) return;
+      const container = document.getElementById('chatList');
+      
+      let chats = [];
+      
+      if (activeChatTab === 'groups') {
+        if (user.partner) {
+          chats.push({
+            id: 'group_' + user.partnerId,
+            name: user.partner + ' (Partner)',
+            type: 'group',
+            avatar: user.partner[0].toUpperCase(),
+            lastMessage: '📖 Musaffah group chat',
+            time: 'Now'
+          });
+        }
+        chats.push({
+          id: 'group_general',
+          name: '🌙 Quran Study Circle',
+          type: 'group',
+          avatar: '👥',
+          lastMessage: '📢 Join our daily recitation!',
+          time: '1h'
+        });
+        chats.push({
+          id: 'group_tafsir',
+          name: '📚 Tafsir Circle',
+          type: 'group',
+          avatar: '📚',
+          lastMessage: '📖 Discussing Surah Al-Baqarah',
+          time: '2h'
+        });
+      } else {
+        if (user.partner) {
+          chats.push({
+            id: 'private_' + user.partnerId,
+            name: user.partner,
+            type: 'private',
+            avatar: user.partner[0].toUpperCase(),
+            lastMessage: 'Assalamu Alaikum!',
+            time: '5m'
+          });
+        }
+        ['Aisha', 'Yusuf', 'Fatima', 'Omar'].forEach((name, i) => {
+          if (name !== user.name) {
+            chats.push({
+              id: 'private_friend_' + i,
+              name: name,
+              type: 'private',
+              avatar: name[0].toUpperCase(),
+              lastMessage: i === 0 ? '📖 Juz 5 completed!' : 'Assalamu Alaikum',
+              time: i === 0 ? '10m' : '1h'
+            });
+          }
+        });
+      }
+
+      if (chats.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-comments"></i>
+            <p>No chats yet. Connect with a partner or start a conversation!</p>
+          </div>
+        `;
+        return;
+      }
+
+      let html = '';
+      chats.forEach(chat => {
+        html += `
+          <div class="chat-item" onclick="openChat('${chat.id}','${chat.name}','${chat.type}')">
+            <div class="chat-avatar" style="${chat.type === 'group' ? 'background:#7c3aed;' : ''}">${chat.avatar}</div>
+            <div class="chat-info">
+              <div class="chat-name">${chat.name}</div>
+              <div class="chat-last">${chat.lastMessage}</div>
+            </div>
+            <div class="chat-time">${chat.time}</div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    function openChat(chatId, name, type) {
+      currentChatId = chatId;
+      currentChatType = type;
+      
+      document.getElementById('chatPanel').classList.remove('hidden');
+      document.getElementById('chatPartnerName').innerText = name;
+      
+      const avatarEl = document.getElementById('chatAvatar');
+      if (type === 'group') {
+        avatarEl.style.background = '#7c3aed';
+        avatarEl.innerText = '👥';
+      } else {
+        avatarEl.style.background = '#0f766e';
+        avatarEl.innerText = name[0].toUpperCase();
+      }
+      
+      loadChatMessages(chatId);
+    }
+
+    function loadChatMessages(chatId) {
+      const container = document.getElementById('chatMessages');
+      container.innerHTML = `
+        <div style="text-align:center;opacity:0.4;padding:20px;font-size:0.8rem;">
+          💬 Welcome to the chat!
+        </div>
+      `;
+      
+      if (unsubscribeChat) unsubscribeChat();
+      
+      try {
+        unsubscribeChat = db.collection('messages')
+          .where('chatId', '==', chatId)
+          .orderBy('createdAt', 'asc')
+          .onSnapshot((snapshot) => {
+            if (snapshot.empty) {
+              container.innerHTML = `
+                <div style="text-align:center;opacity:0.4;padding:20px;font-size:0.8rem;">
+                  💬 No messages yet. Start the conversation!
+                </div>
+              `;
+              return;
+            }
+            
+            let html = '';
+            snapshot.forEach(doc => {
+              const msg = doc.data();
+              const isMine = msg.fromId === user.id;
+              html += `
+                <div class="msg ${isMine ? 'mine' : 'other'}">
+                  ${msg.text}
+                  <span class="time">${msg.createdAt ? new Date(msg.createdAt.seconds * 1000).toLocaleTimeString() : 'Now'}</span>
+                </div>
+              `;
+            });
+            container.innerHTML = html;
+            container.scrollTop = container.scrollHeight;
+          });
+      } catch (e) {
+        setTimeout(() => {
+          container.innerHTML = `
+            <div class="msg other">Assalamu Alaikum! 👋<span class="time">Just now</span></div>
+            <div class="msg mine">Wa Alaikum Assalam! 📖<span class="time">Just now</span></div>
+          `;
+        }, 500);
+      }
+    }
+
+    function sendChatMessage() {
+      const input = document.getElementById('chatInput');
+      const text = input.value.trim();
+      if (!text || !currentChatId) return;
+      input.value = '';
+
+      try {
+        db.collection('messages').add({
+          chatId: currentChatId,
+          fromId: user.id,
+          fromName: user.name || 'Reader',
+          text: text,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      } catch (e) {
+        const container = document.getElementById('chatMessages');
+        const div = document.createElement('div');
+        div.className = 'msg mine';
+        div.innerHTML = text + '<span class="time">Now</span>';
+        container.appendChild(div);
+        container.scrollTop = container.scrollHeight;
+      }
+    }
+
+    function closeChatPanel() {
+      document.getElementById('chatPanel').classList.add('hidden');
+      if (unsubscribeChat) {
+        unsubscribeChat();
+        unsubscribeChat = null;
+      }
+      currentChatId = null;
+    }
+
+    function createNewChat() {
+      const name = prompt('Enter person or group name:');
+      if (name) {
+        const type = confirm('Is this a group chat? Click OK for Group, Cancel for Private') ? 'group' : 'private';
+        const chatId = (type === 'group' ? 'group_' : 'private_') + Date.now();
+        openChat(chatId, name, type);
+        
+        const container = document.getElementById('chatList');
+        const chatItem = document.createElement('div');
+        chatItem.className = 'chat-item';
+        chatItem.onclick = () => openChat(chatId, name, type);
+        chatItem.innerHTML = `
+          <div class="chat-avatar" style="${type === 'group' ? 'background:#7c3aed;' : ''}">${type === 'group' ? '👥' : name[0].toUpperCase()}</div>
+          <div class="chat-info">
+            <div class="chat-name">${name}</div>
+            <div class="chat-last">${type === 'group' ? '👥 New group chat' : '🤝 New conversation'}</div>
+          </div>
+          <div class="chat-time">Now</div>
+        `;
+        container.prepend(chatItem);
+      }
+    }
+
+    // ============ NAVIGATION ============
+    function switchPage(pageId) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById(pageId).classList.add('active');
+      document.querySelectorAll('#bottomNav button').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.page === pageId);
+      });
+      
+      if (pageId === 'pageChats') {
+        renderChats();
+      }
+      if (pageId === 'pageMusaffah') {
+        updateAttentionButtonVisibility();
+        loadAllUsers();
+        listenForConnectionRequests();
+        if (user && user.partner) {
+          checkMediaPermissions();
+          listenPartnerStatus();
+        }
+      }
+    }
+
+    document.getElementById('bottomNav').addEventListener('click', (e) => {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+      const page = btn.dataset.page;
+      if (page) switchPage(page);
+    });
+
+    // ============ THEME ============
+    async function toggleTheme() {
+      if (!user) return;
+      const isDark = document.body.classList.toggle('dark');
+      user.theme = isDark ? 'dark' : 'light';
+      if (user.id && user.id !== 'local') {
+        try { await db.collection('users').doc(user.id).update({ theme: user.theme }); } catch (e) {}
+      }
+      localStorage.setItem('musaffahUser', JSON.stringify(user));
+    }
+
+    // ============ LANGUAGE ============
+    function updateLanguage() {
+      const langNames = {
+        en: 'English', ar: 'العربية', ha: 'Hausa', ur: 'اردو', tr: 'Türkçe', fr: 'Français', id: 'Bahasa Indonesia'
+      };
+      document.getElementById('langLabel').innerText = langNames[currentLang] || 'English';
+    }
+
+    // ============ NOTIFICATION ============
+    function showNotification(msg) {
+      const existing = document.querySelector('.notification-toast');
+      if (existing) existing.remove();
+      const div = document.createElement('div');
+      div.className = 'notification-toast';
+      div.innerText = msg;
+      document.body.appendChild(div);
+      setTimeout(() => div.remove(), 3000);
+    }
+  </script>
+</body>
+</html>
