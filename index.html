@@ -171,7 +171,7 @@
       grid-row: 1 / -1;
       min-height: 70vh;
     }
-    .call-fullscreen .video-grid .video-wrapper.dominant ~ .video-wrapper {
+    .call-fullscreen .video-grid .video-wrapper.dominant \~ .video-wrapper {
       position: absolute;
       bottom: 20px;
       right: 20px;
@@ -185,13 +185,13 @@
       user-select: none;
       -webkit-user-select: none;
     }
-    .call-fullscreen .video-grid .video-wrapper.dominant ~ .video-wrapper.dragging {
+    .call-fullscreen .video-grid .video-wrapper.dominant \~ .video-wrapper.dragging {
       cursor: grabbing;
       border-color: #dc2626;
       box-shadow: 0 0 20px rgba(220, 38, 38, 0.5);
       transition: none;
     }
-    .call-fullscreen .video-grid .video-wrapper.dominant ~ .video-wrapper .drag-handle {
+    .call-fullscreen .video-grid .video-wrapper.dominant \~ .video-wrapper .drag-handle {
       position: absolute;
       top: 4px;
       right: 4px;
@@ -661,6 +661,7 @@
     let isProcessingCall = false;
     let callDocumentId = null;
     let isEndingCall = false;
+    let callStatusListener = null;
 
     // ============ UI HELPERS ============
     function showStep(stepId) {
@@ -948,6 +949,10 @@
       if (connectionRequestsUnsubscribe) {
         connectionRequestsUnsubscribe();
         connectionRequestsUnsubscribe = null;
+      }
+      if (callStatusListener) {
+        callStatusListener();
+        callStatusListener = null;
       }
       
       if (user && user.id) {
@@ -1300,7 +1305,7 @@
             <div class="info">
               <div class="name"><i class="fas fa-user-circle"></i> ${u.name}</div>
               <div class="detail">📖 ${u.plan} day plan · ${u.regionName}</div>
-              <span class="status-badge ${u.online ? 'online' : 'offline'}">${u.online ? '🟢 Online' : '⚪ Offline'}</span>
+              <span class="status-badge \( {u.online ? 'online' : 'offline'}"> \){u.online ? '🟢 Online' : '⚪ Offline'}</span>
             </div>
             <div class="actions">
               ${alreadySent ? 
@@ -1629,154 +1634,7 @@
       if (overlay) overlay.classList.remove('show');
     }
 
-    // ============ CALL FUNCTIONS ============
-    
-    async function acceptCall() {
-      if (!pendingCallData) {
-        showNotification('No incoming call found');
-        return;
-      }
-      
-      if (isProcessingCall) {
-        showNotification('Already processing...');
-        return;
-      }
-      
-      isProcessingCall = true;
-      
-      try {
-        const callData = pendingCallData;
-        const fromId = callData.fromId;
-        const fromName = callData.fromName || 'Partner';
-        const callId = callData.id;
-        callDocumentId = callId;
-        
-        await db.collection('incomingCalls').doc(callId).update({
-          status: 'accepted'
-        });
-        
-        hideIncomingCall();
-        
-        if (!user.partnerId) {
-          user.partner = fromName;
-          user.partnerId = fromId;
-          localStorage.setItem('musaffahUser', JSON.stringify(user));
-          updatePartnerDisplay();
-        }
-        
-        await startCallAfterAccept(fromId, fromName);
-        
-        setTimeout(async () => {
-          try {
-            await db.collection('incomingCalls').doc(callId).delete();
-          } catch (e) {}
-        }, 3000);
-        
-      } catch (e) {
-        console.error('Error accepting call:', e);
-        showNotification('Failed to accept call: ' + e.message);
-      }
-      
-      isProcessingCall = false;
-    }
-
-    async function startCallAfterAccept(partnerId, partnerName) {
-      try {
-        if (!hasMediaPermissions) {
-          const granted = await requestMediaPermissions();
-          if (!granted) {
-            showNotification('Media permissions required');
-            return;
-          }
-        }
-        
-        if (!localStream) {
-          const stream = await getLocalStream();
-          if (!stream) {
-            showNotification('Could not access camera/microphone');
-            return;
-          }
-        }
-        
-        const callFullscreen = document.getElementById('callFullscreen');
-        if (callFullscreen) {
-          callFullscreen.classList.add('active');
-        }
-        const container = document.getElementById('container');
-        const bottomNav = document.getElementById('bottomNav');
-        const header = document.querySelector('header');
-        if (container) container.style.display = 'none';
-        if (bottomNav) bottomNav.style.display = 'none';
-        if (header) header.style.display = 'none';
-        
-        setupCallUI();
-        
-        const localVideo = document.getElementById('localVideoCall');
-        if (localVideo && localStream) {
-          localVideo.srcObject = localStream;
-          localVideo.style.display = 'block';
-        }
-        
-        const remoteLabel = document.getElementById('remoteCallLabel');
-        if (remoteLabel) {
-          remoteLabel.textContent = user.partner || 'Partner';
-        }
-        
-        startSignalingListener();
-        
-        createPeerConnection();
-        
-        if (pc) {
-          const offer = await pc.createOffer({
-            offerToReceiveAudio: true,
-            offerToReceiveVideo: selectedMode === 'video'
-          });
-          await pc.setLocalDescription(offer);
-          
-          await new Promise((resolve) => {
-            if (pc.iceGatheringState === 'complete') {
-              resolve();
-            } else {
-              pc.onicegatheringstatechange = () => {
-                if (pc.iceGatheringState === 'complete') {
-                  resolve();
-                }
-              };
-            }
-          });
-          
-          sendSignalingData({ type: 'offer', offer: pc.localDescription });
-          
-          showNotification(`📞 Calling ${user.partner || 'Partner'}...`);
-          isCaller = true;
-        }
-        
-      } catch (e) {
-        console.error('Error in startCallAfterAccept:', e);
-        showNotification('Failed to start call: ' + e.message);
-        endCall();
-      }
-    }
-
-    async function rejectCall() {
-      if (!pendingCallData) {
-        showNotification('No incoming call found');
-        return;
-      }
-      
-      try {
-        await db.collection('incomingCalls').doc(pendingCallData.id).update({
-          status: 'rejected'
-        });
-        hideIncomingCall();
-        pendingCallData = null;
-        showNotification('Call rejected');
-      } catch (e) {
-        console.error('Error rejecting call:', e);
-      }
-    }
-
-    // ============ REQUEST MEDIA PERMISSIONS ============
+    // ============ MEDIA HELPERS ============
     async function requestMediaPermissions() {
       if (hasMediaPermissions) return true;
       if (permissionRequested) {
@@ -1812,7 +1670,6 @@
       }
     }
 
-    // ============ WEBRTC ============
     async function getLocalStream() {
       if (isGettingMedia) {
         showNotification('⏳ Please wait...');
@@ -1853,6 +1710,14 @@
       }
     }
 
+    function stopLocalStream() {
+      if (localStream) {
+        localStream.getTracks().forEach(t => t.stop());
+        localStream = null;
+      }
+    }
+
+    // ============ PEER CONNECTION ============
     function createPeerConnection() {
       const configuration = {
         iceServers: [
@@ -1919,6 +1784,7 @@
       return pc;
     }
 
+    // ============ SIGNALING ============
     function startSignalingListener() {
       if (signalingUnsubscribe) {
         signalingUnsubscribe();
@@ -1942,45 +1808,13 @@
               
               if (data.type === 'hangup') {
                 showNotification('📴 Call ended by partner');
-                isCallActive = false;
-                if (pc) {
-                  try { pc.close(); } catch (e) {}
-                  pc = null;
-                }
-                const callFullscreen = document.getElementById('callFullscreen');
-                if (callFullscreen) {
-                  callFullscreen.classList.remove('active');
-                }
-                const container = document.getElementById('container');
-                const bottomNav = document.getElementById('bottomNav');
-                const header = document.querySelector('header');
-                if (container) container.style.display = 'block';
-                if (bottomNav) bottomNav.style.display = 'flex';
-                if (header) header.style.display = 'block';
-                
-                const remoteVideo = document.getElementById('remoteVideoCall');
-                if (remoteVideo) {
-                  remoteVideo.srcObject = null;
-                  remoteVideo.style.display = 'none';
-                }
-                const localVideo = document.getElementById('localVideoCall');
-                if (localVideo) {
-                  localVideo.srcObject = null;
-                  localVideo.style.display = 'none';
-                }
-                
-                if (signalingUnsubscribe) {
-                  signalingUnsubscribe();
-                  signalingUnsubscribe = null;
-                }
-                
-                showNotification('Call ended by partner');
+                endCall(true); // silent
                 return;
               }
               
               if (data.type === 'reject') {
                 showNotification('📞 Call rejected by partner');
-                endCall();
+                endCall(true);
                 return;
               }
               
@@ -2005,9 +1839,9 @@
     async function handleSignalingData(data) {
       try {
         if (data.type === 'offer') {
-          if (!isCallActive) {
-            await handleIncomingCall(data.offer);
-          }
+          // Only the callee should process offers
+          if (isCaller) return;
+          await handleIncomingOffer(data.offer);
           return;
         }
         
@@ -2017,13 +1851,22 @@
         }
         
         if (data.type === 'answer') {
-          if (data.answer) {
+          if (data.answer && isCaller) {
             await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
+            // drain any queued ICE
+            for (const c of iceCandidatesQueue) {
+              try { await pc.addIceCandidate(new RTCIceCandidate(c)); } catch (e) {}
+            }
+            iceCandidatesQueue = [];
           }
         } else if (data.type === 'ice-candidate') {
           if (data.candidate) {
             try {
-              await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+              if (pc.remoteDescription) {
+                await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+              } else {
+                iceCandidatesQueue.push(data.candidate);
+              }
             } catch (e) {
               console.warn('Failed to add ICE candidate:', e);
               iceCandidatesQueue.push(data.candidate);
@@ -2035,7 +1878,7 @@
       }
     }
 
-    async function handleIncomingCall(offer) {
+    async function handleIncomingOffer(offer) {
       try {
         if (!hasMediaPermissions) {
           const granted = await requestMediaPermissions();
@@ -2053,18 +1896,18 @@
           }
         }
         
+        // Show UI if not already shown
         const callFullscreen = document.getElementById('callFullscreen');
-        if (callFullscreen) {
+        if (callFullscreen && !callFullscreen.classList.contains('active')) {
           callFullscreen.classList.add('active');
+          const container = document.getElementById('container');
+          const bottomNav = document.getElementById('bottomNav');
+          const header = document.querySelector('header');
+          if (container) container.style.display = 'none';
+          if (bottomNav) bottomNav.style.display = 'none';
+          if (header) header.style.display = 'none';
+          setupCallUI();
         }
-        const container = document.getElementById('container');
-        const bottomNav = document.getElementById('bottomNav');
-        const header = document.querySelector('header');
-        if (container) container.style.display = 'none';
-        if (bottomNav) bottomNav.style.display = 'none';
-        if (header) header.style.display = 'none';
-        
-        setupCallUI();
         
         const localVideo = document.getElementById('localVideoCall');
         if (localVideo && localStream) {
@@ -2077,7 +1920,7 @@
           remoteLabel.textContent = user.partner || 'Partner';
         }
         
-        createPeerConnection();
+        if (!pc) createPeerConnection();
         
         await pc.setRemoteDescription(new RTCSessionDescription(offer));
         const answer = await pc.createAnswer({
@@ -2086,12 +1929,14 @@
         });
         await pc.setLocalDescription(answer);
         
-        await new Promise((resolve) => {
-          if (pc.iceGatheringState === 'complete') {
-            resolve();
-          } else {
+        // Wait a short moment for ICE gathering (or use a timeout)
+        await new Promise(resolve => {
+          if (pc.iceGatheringState === 'complete') resolve();
+          else {
+            const t = setTimeout(resolve, 2000);
             pc.onicegatheringstatechange = () => {
               if (pc.iceGatheringState === 'complete') {
+                clearTimeout(t);
                 resolve();
               }
             };
@@ -2106,16 +1951,11 @@
         
         showNotification('📹 Call connected!');
         
-        if (iceCandidatesQueue.length > 0) {
-          for (const candidate of iceCandidatesQueue) {
-            try {
-              await pc.addIceCandidate(new RTCIceCandidate(candidate));
-            } catch (e) {
-              console.warn('Failed to add queued ICE candidate:', e);
-            }
-          }
-          iceCandidatesQueue = [];
+        // Drain queued ICE
+        for (const c of iceCandidatesQueue) {
+          try { await pc.addIceCandidate(new RTCIceCandidate(c)); } catch (e) {}
         }
+        iceCandidatesQueue = [];
         
         if (pendingCallData && pendingCallData.id) {
           await db.collection('incomingCalls').doc(pendingCallData.id).delete().catch(() => {});
@@ -2124,123 +1964,13 @@
         }
         
       } catch (e) {
-        console.error('Error handling incoming call:', e);
+        console.error('Error handling incoming offer:', e);
         showNotification('❌ Failed to answer call: ' + e.message);
         endCall();
       }
     }
 
-    function endCall() {
-      if (isEndingCall) return;
-      isEndingCall = true;
-      
-      console.log('Ending call...');
-      isCallActive = false;
-      isCaller = false;
-      isProcessingCall = false;
-      
-      if (callTimer) {
-        clearInterval(callTimer);
-        callTimer = null;
-      }
-      
-      if (pc) {
-        try {
-          pc.close();
-        } catch (e) {}
-        pc = null;
-      }
-      
-      remoteStream = null;
-      const remoteVideo = document.getElementById('remoteVideoCall');
-      if (remoteVideo) {
-        remoteVideo.srcObject = null;
-        remoteVideo.style.display = 'none';
-      }
-      
-      const localVideo = document.getElementById('localVideoCall');
-      if (localVideo) {
-        localVideo.srcObject = null;
-        localVideo.style.display = 'none';
-      }
-      
-      const callFullscreen = document.getElementById('callFullscreen');
-      if (callFullscreen) {
-        callFullscreen.classList.remove('active');
-      }
-      const container = document.getElementById('container');
-      const bottomNav = document.getElementById('bottomNav');
-      const header = document.querySelector('header');
-      if (container) container.style.display = 'block';
-      if (bottomNav) bottomNav.style.display = 'flex';
-      if (header) header.style.display = 'block';
-      
-      if (signalingUnsubscribe) {
-        signalingUnsubscribe();
-        signalingUnsubscribe = null;
-      }
-      
-      if (user && user.partnerId && !isEndingCall) {
-        sendSignalingData({ type: 'hangup' });
-      }
-      
-      if (callDocumentId) {
-        db.collection('incomingCalls').doc(callDocumentId).delete().catch(() => {});
-        callDocumentId = null;
-      }
-      
-      if (pendingCallData && pendingCallData.id) {
-        db.collection('incomingCalls').doc(pendingCallData.id).delete().catch(() => {});
-        pendingCallData = null;
-      }
-      
-      iceCandidatesQueue = [];
-      
-      const localWrapper = document.getElementById('localVideoWrapper');
-      const remoteWrapper = document.getElementById('remoteVideoWrapper');
-      if (localWrapper) {
-        localWrapper.style.display = 'block';
-        localWrapper.classList.remove('dominant');
-        localWrapper.style.position = 'relative';
-        localWrapper.style.bottom = 'auto';
-        localWrapper.style.right = 'auto';
-        localWrapper.style.width = 'auto';
-        localWrapper.style.height = 'auto';
-        localWrapper.style.top = 'auto';
-        localWrapper.style.left = 'auto';
-      }
-      if (remoteWrapper) {
-        remoteWrapper.style.display = 'block';
-        remoteWrapper.classList.add('dominant');
-      }
-      
-      const camToggle = document.getElementById('callCamToggle');
-      if (camToggle) camToggle.style.display = 'inline-block';
-      
-      const flash = document.getElementById('correctionFlash');
-      if (flash) flash.classList.remove('active');
-      
-      hideIncomingCall();
-      
-      showNotification('📴 Call ended');
-      isEndingCall = false;
-    }
-
-    function startCallTimer() {
-      callStartTime = Date.now();
-      if (callTimer) clearInterval(callTimer);
-      callTimer = setInterval(() => {
-        const elapsed = Math.floor((Date.now() - callStartTime) / 1000);
-        const mins = Math.floor(elapsed / 60);
-        const secs = elapsed % 60;
-        const remoteLabel = document.getElementById('remoteCallLabel');
-        if (remoteLabel) {
-          remoteLabel.textContent = (user.partner || 'Partner') + ' · ' + 
-            String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
-        }
-      }, 1000);
-    }
-
+    // ============ CALL UI HELPERS ============
     function setupCallUI() {
       if (selectedMode === 'audio') {
         const localWrapper = document.getElementById('localVideoWrapper');
@@ -2269,23 +1999,35 @@
         const camToggle = document.getElementById('callCamToggle');
         if (camToggle) camToggle.style.display = 'inline-block';
         
-        const videoGrid = document.getElementById('videoGrid');
-        if (videoGrid) {
-          const localWrapper2 = document.getElementById('localVideoWrapper');
-          if (localWrapper2) {
-            localWrapper2.style.position = 'absolute';
-            localWrapper2.style.bottom = '20px';
-            localWrapper2.style.right = '20px';
-            localWrapper2.style.width = '180px';
-            localWrapper2.style.height = '120px';
-            localWrapper2.style.top = 'auto';
-            localWrapper2.style.left = 'auto';
-          }
+        const localWrapper2 = document.getElementById('localVideoWrapper');
+        if (localWrapper2) {
+          localWrapper2.style.position = 'absolute';
+          localWrapper2.style.bottom = '20px';
+          localWrapper2.style.right = '20px';
+          localWrapper2.style.width = '180px';
+          localWrapper2.style.height = '120px';
+          localWrapper2.style.top = 'auto';
+          localWrapper2.style.left = 'auto';
         }
       }
     }
 
-    // ============ START CALL FROM BUTTON ============
+    function startCallTimer() {
+      callStartTime = Date.now();
+      if (callTimer) clearInterval(callTimer);
+      callTimer = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - callStartTime) / 1000);
+        const mins = Math.floor(elapsed / 60);
+        const secs = elapsed % 60;
+        const remoteLabel = document.getElementById('remoteCallLabel');
+        if (remoteLabel) {
+          remoteLabel.textContent = (user.partner || 'Partner') + ' · ' + 
+            String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+        }
+      }, 1000);
+    }
+
+    // ============ START / ACCEPT / REJECT / END ============
     async function startCallFromButton() {
       if (!user || !user.partnerId) {
         showNotification('Please connect with a partner first');
@@ -2297,19 +2039,16 @@
         return;
       }
       
-      if (isCallActive) {
-        showNotification('Call already active');
-        return;
-      }
-      
-      if (isProcessingCall) {
-        showNotification('⏳ Already processing a call...');
+      if (isCallActive || isProcessingCall) {
+        showNotification('Call already in progress');
         return;
       }
       
       try {
         isProcessingCall = true;
+        isCaller = true;
         
+        // 1. Create ringing document
         const callDoc = await db.collection('incomingCalls').add({
           fromId: user.id,
           fromName: user.name || 'Reader',
@@ -2322,19 +2061,342 @@
         
         showNotification(`📞 Calling ${user.partner}...`);
         
-        await startCallAfterAccept(user.partnerId, user.partner);
+        // 2. Listen for accept / reject / timeout
+        callStatusListener = db.collection('incomingCalls').doc(callDoc.id)
+          .onSnapshot(async (snap) => {
+            if (!snap.exists) return;
+            const data = snap.data();
+            
+            if (data.status === 'accepted') {
+              if (callStatusListener) {
+                callStatusListener();
+                callStatusListener = null;
+              }
+              await proceedAsCaller();
+            } else if (data.status === 'rejected') {
+              if (callStatusListener) {
+                callStatusListener();
+                callStatusListener = null;
+              }
+              showNotification('Call rejected');
+              cleanupRingingDoc();
+              isProcessingCall = false;
+              isCaller = false;
+            }
+          });
         
-        setTimeout(async () => {
-          try {
-            await db.collection('incomingCalls').doc(callDoc.id).delete();
-          } catch (e) {}
-        }, 5000);
+        // Auto-timeout after 30s
+        setTimeout(() => {
+          if (isProcessingCall && !isCallActive) {
+            showNotification('No answer');
+            cleanupRingingDoc();
+            isProcessingCall = false;
+            isCaller = false;
+            if (callStatusListener) {
+              callStatusListener();
+              callStatusListener = null;
+            }
+          }
+        }, 30000);
         
       } catch (e) {
         console.error('Error initiating call:', e);
         showNotification('Failed to call: ' + e.message);
         isProcessingCall = false;
+        isCaller = false;
       }
+    }
+
+    async function proceedAsCaller() {
+      try {
+        if (!hasMediaPermissions) {
+          const granted = await requestMediaPermissions();
+          if (!granted) {
+            endCall();
+            return;
+          }
+        }
+        
+        if (!localStream) {
+          const stream = await getLocalStream();
+          if (!stream) {
+            endCall();
+            return;
+          }
+        }
+        
+        // Show UI
+        const callFullscreen = document.getElementById('callFullscreen');
+        if (callFullscreen) callFullscreen.classList.add('active');
+        const container = document.getElementById('container');
+        const bottomNav = document.getElementById('bottomNav');
+        const header = document.querySelector('header');
+        if (container) container.style.display = 'none';
+        if (bottomNav) bottomNav.style.display = 'none';
+        if (header) header.style.display = 'none';
+        
+        setupCallUI();
+        
+        const localVideo = document.getElementById('localVideoCall');
+        if (localVideo && localStream) {
+          localVideo.srcObject = localStream;
+          localVideo.style.display = 'block';
+        }
+        
+        const remoteLabel = document.getElementById('remoteCallLabel');
+        if (remoteLabel) remoteLabel.textContent = user.partner || 'Partner';
+        
+        startSignalingListener();
+        createPeerConnection();
+        
+        const offer = await pc.createOffer({
+          offerToReceiveAudio: true,
+          offerToReceiveVideo: selectedMode === 'video'
+        });
+        await pc.setLocalDescription(offer);
+        
+        // Short wait for ICE
+        await new Promise(resolve => {
+          if (pc.iceGatheringState === 'complete') resolve();
+          else {
+            const t = setTimeout(resolve, 2000);
+            pc.onicegatheringstatechange = () => {
+              if (pc.iceGatheringState === 'complete') {
+                clearTimeout(t);
+                resolve();
+              }
+            };
+          }
+        });
+        
+        sendSignalingData({ type: 'offer', offer: pc.localDescription });
+        
+        showNotification(`📞 Connecting with ${user.partner}...`);
+        isProcessingCall = false;
+        
+        // Clean up ringing doc
+        cleanupRingingDoc();
+        
+      } catch (e) {
+        console.error('Error in proceedAsCaller:', e);
+        showNotification('Failed to start call: ' + e.message);
+        endCall();
+      }
+    }
+
+    async function acceptCall() {
+      if (!pendingCallData) {
+        showNotification('No incoming call found');
+        return;
+      }
+      
+      if (isProcessingCall || isCallActive) {
+        showNotification('Already processing...');
+        return;
+      }
+      
+      isProcessingCall = true;
+      isCaller = false;
+      
+      try {
+        const callData = pendingCallData;
+        const callId = callData.id;
+        callDocumentId = callId;
+        
+        // Mark as accepted so caller can proceed
+        await db.collection('incomingCalls').doc(callId).update({
+          status: 'accepted'
+        });
+        
+        hideIncomingCall();
+        
+        // Ensure partner info is set (should already be)
+        if (!user.partnerId) {
+          user.partner = callData.fromName || 'Partner';
+          user.partnerId = callData.fromId;
+          localStorage.setItem('musaffahUser', JSON.stringify(user));
+          updatePartnerDisplay();
+        }
+        
+        // Get media + prepare UI, then wait for the offer via signaling
+        if (!hasMediaPermissions) {
+          const granted = await requestMediaPermissions();
+          if (!granted) {
+            sendSignalingData({ type: 'reject' });
+            endCall();
+            return;
+          }
+        }
+        
+        if (!localStream) {
+          const stream = await getLocalStream();
+          if (!stream) {
+            sendSignalingData({ type: 'reject' });
+            endCall();
+            return;
+          }
+        }
+        
+        // Show UI early
+        const callFullscreen = document.getElementById('callFullscreen');
+        if (callFullscreen) callFullscreen.classList.add('active');
+        const container = document.getElementById('container');
+        const bottomNav = document.getElementById('bottomNav');
+        const header = document.querySelector('header');
+        if (container) container.style.display = 'none';
+        if (bottomNav) bottomNav.style.display = 'none';
+        if (header) header.style.display = 'none';
+        
+        setupCallUI();
+        
+        const localVideo = document.getElementById('localVideoCall');
+        if (localVideo && localStream) {
+          localVideo.srcObject = localStream;
+          localVideo.style.display = 'block';
+        }
+        
+        const remoteLabel = document.getElementById('remoteCallLabel');
+        if (remoteLabel) remoteLabel.textContent = user.partner || 'Partner';
+        
+        startSignalingListener(); // will receive the offer from caller
+        // Peer connection will be created inside handleIncomingOffer
+        
+        isProcessingCall = false;
+        
+        // Clean up the ringing doc after a short delay
+        setTimeout(() => {
+          db.collection('incomingCalls').doc(callId).delete().catch(() => {});
+        }, 4000);
+        
+      } catch (e) {
+        console.error('Error accepting call:', e);
+        showNotification('Failed to accept call: ' + e.message);
+        endCall();
+      }
+    }
+
+    async function rejectCall() {
+      if (!pendingCallData) {
+        showNotification('No incoming call found');
+        return;
+      }
+      
+      try {
+        await db.collection('incomingCalls').doc(pendingCallData.id).update({
+          status: 'rejected'
+        });
+        hideIncomingCall();
+        pendingCallData = null;
+        showNotification('Call rejected');
+      } catch (e) {
+        console.error('Error rejecting call:', e);
+      }
+    }
+
+    function cleanupRingingDoc() {
+      if (callDocumentId) {
+        db.collection('incomingCalls').doc(callDocumentId).delete().catch(() => {});
+        callDocumentId = null;
+      }
+    }
+
+    function endCall(silent = false) {
+      if (isEndingCall) return;
+      isEndingCall = true;
+      
+      console.log('Ending call...');
+      isCallActive = false;
+      isCaller = false;
+      isProcessingCall = false;
+      
+      if (callTimer) {
+        clearInterval(callTimer);
+        callTimer = null;
+      }
+      
+      if (pc) {
+        try { pc.close(); } catch (e) {}
+        pc = null;
+      }
+      
+      stopLocalStream();
+      
+      remoteStream = null;
+      const remoteVideo = document.getElementById('remoteVideoCall');
+      if (remoteVideo) {
+        remoteVideo.srcObject = null;
+        remoteVideo.style.display = 'none';
+      }
+      
+      const localVideo = document.getElementById('localVideoCall');
+      if (localVideo) {
+        localVideo.srcObject = null;
+        localVideo.style.display = 'none';
+      }
+      
+      const callFullscreen = document.getElementById('callFullscreen');
+      if (callFullscreen) callFullscreen.classList.remove('active');
+      
+      const container = document.getElementById('container');
+      const bottomNav = document.getElementById('bottomNav');
+      const header = document.querySelector('header');
+      if (container) container.style.display = 'block';
+      if (bottomNav) bottomNav.style.display = 'flex';
+      if (header) header.style.display = 'block';
+      
+      if (signalingUnsubscribe) {
+        signalingUnsubscribe();
+        signalingUnsubscribe = null;
+      }
+      
+      if (callStatusListener) {
+        callStatusListener();
+        callStatusListener = null;
+      }
+      
+      // Notify partner only if we are actively ending
+      if (user && user.partnerId && !silent) {
+        sendSignalingData({ type: 'hangup' });
+      }
+      
+      cleanupRingingDoc();
+      
+      if (pendingCallData && pendingCallData.id) {
+        db.collection('incomingCalls').doc(pendingCallData.id).delete().catch(() => {});
+        pendingCallData = null;
+      }
+      
+      iceCandidatesQueue = [];
+      
+      // Reset video layout
+      const localWrapper = document.getElementById('localVideoWrapper');
+      const remoteWrapper = document.getElementById('remoteVideoWrapper');
+      if (localWrapper) {
+        localWrapper.style.display = 'block';
+        localWrapper.classList.remove('dominant');
+        localWrapper.style.position = 'relative';
+        localWrapper.style.bottom = 'auto';
+        localWrapper.style.right = 'auto';
+        localWrapper.style.width = 'auto';
+        localWrapper.style.height = 'auto';
+        localWrapper.style.top = 'auto';
+        localWrapper.style.left = 'auto';
+      }
+      if (remoteWrapper) {
+        remoteWrapper.style.display = 'block';
+        remoteWrapper.classList.add('dominant');
+      }
+      
+      const camToggle = document.getElementById('callCamToggle');
+      if (camToggle) camToggle.style.display = 'inline-block';
+      
+      const flash = document.getElementById('correctionFlash');
+      if (flash) flash.classList.remove('active');
+      
+      hideIncomingCall();
+      
+      if (!silent) showNotification('📴 Call ended');
+      isEndingCall = false;
     }
 
     // ============ CALL CONTROLS ============
@@ -2436,7 +2498,7 @@
       }
     }
 
-    // ============ VIDEO DOMINANT TOGGLE ============
+    // ============ VIDEO DOMINANT TOGGLE + DRAG ============
     function toggleDominantVideo() {
       const remoteWrapper = document.getElementById('remoteVideoWrapper');
       const localWrapper = document.getElementById('localVideoWrapper');
@@ -2469,7 +2531,6 @@
       }
     }
 
-    // ============ DRAG FUNCTIONALITY ============
     function setupDrag() {
       const localWrapper = document.getElementById('localVideoWrapper');
       if (!localWrapper) return;
@@ -2636,6 +2697,10 @@
         if (document.hidden && isCallActive) {
           endCall();
         }
+      });
+      
+      window.addEventListener('beforeunload', () => {
+        if (isCallActive) endCall(true);
       });
     }
 
