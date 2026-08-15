@@ -9,7 +9,6 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
   <style>
-    /* ... (keep all existing styles) ... */
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
     body { background: #f2f6f5; padding-bottom: 80px; transition: background 0.2s, color 0.2s; }
     header { background: #0f766e; color: white; padding: 10px 16px 8px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.06); position: sticky; top: 0; z-index: 20; }
@@ -655,7 +654,7 @@
     let iceCandidatesQueue = [];
     let attentionTimeout = null;
     let isCaller = false;
-    let pendingCallData = null; // Store incoming call data here
+    let pendingCallData = null;
     let incomingCallUnsubscribe = null;
     let userListenerUnsubscribe = null;
     let connectionRequestsUnsubscribe = null;
@@ -1590,7 +1589,6 @@
             if (change.type === 'added') {
               const data = change.doc.data();
               if (data.status === 'ringing') {
-                // Store the call data globally
                 pendingCallData = { 
                   id: change.doc.id, 
                   fromId: data.fromId, 
@@ -1629,7 +1627,6 @@
     // ============ CALL FUNCTIONS ============
     
     async function acceptCall() {
-      // Use the stored pendingCallData
       if (!pendingCallData) {
         showNotification('No incoming call found');
         return;
@@ -1643,20 +1640,17 @@
       isProcessingCall = true;
       
       try {
-        // Get the call data
         const callData = pendingCallData;
         const fromId = callData.fromId;
         const fromName = callData.fromName || 'Partner';
         const callId = callData.id;
         
-        // Update the call status to accepted
         await db.collection('incomingCalls').doc(callId).update({
           status: 'accepted'
         });
         
         hideIncomingCall();
         
-        // Ensure we have a partner set
         if (!user.partnerId) {
           user.partner = fromName;
           user.partnerId = fromId;
@@ -1664,7 +1658,6 @@
           updatePartnerDisplay();
         }
         
-        // Start the call
         await startCallAfterAccept(fromId, fromName);
         
       } catch (e) {
@@ -1677,7 +1670,6 @@
 
     async function startCallAfterAccept(partnerId, partnerName) {
       try {
-        // 1. Get media permissions
         if (!hasMediaPermissions) {
           const granted = await requestMediaPermissions();
           if (!granted) {
@@ -1686,7 +1678,6 @@
           }
         }
         
-        // 2. Get local stream
         if (!localStream) {
           const stream = await getLocalStream();
           if (!stream) {
@@ -1695,7 +1686,7 @@
           }
         }
         
-        // 3. Setup fullscreen call UI
+        // Setup fullscreen call UI
         const callFullscreen = document.getElementById('callFullscreen');
         if (callFullscreen) {
           callFullscreen.classList.add('active');
@@ -1707,25 +1698,25 @@
         if (bottomNav) bottomNav.style.display = 'none';
         if (header) header.style.display = 'none';
         
-        // 4. Setup video/audio UI
         setupCallUI();
         
-        // 5. Set local video
+        // Set local video
         const localVideo = document.getElementById('localVideoCall');
         if (localVideo && localStream) {
           localVideo.srcObject = localStream;
+          localVideo.style.display = 'block';
         }
         
-        // 6. Set remote label
+        // Set remote label
         const remoteLabel = document.getElementById('remoteCallLabel');
         if (remoteLabel) {
           remoteLabel.textContent = user.partner || 'Partner';
         }
         
-        // 7. Start signaling listener
+        // Start signaling listener
         startSignalingListener();
         
-        // 8. Create peer connection and send offer
+        // Create peer connection and send offer
         createPeerConnection();
         
         if (pc) {
@@ -1848,12 +1839,15 @@
       }
       
       pc.ontrack = (event) => {
+        console.log('✅ Remote track received!');
         remoteStream = event.streams[0];
         const remoteVideo = document.getElementById('remoteVideoCall');
         if (remoteVideo) {
           remoteVideo.srcObject = remoteStream;
+          remoteVideo.style.display = 'block';
+          document.getElementById('remotePlaceholder').style.display = 'none';
         }
-        showNotification('📹 Call connected!');
+        showNotification('📹 Partner connected!');
       };
       
       pc.onicecandidate = (event) => {
@@ -1864,6 +1858,7 @@
       
       pc.onconnectionstatechange = () => {
         const state = pc.connectionState;
+        console.log('Connection state:', state);
         if (state === 'connected') {
           isCallActive = true;
           startCallTimer();
@@ -1953,7 +1948,6 @@
 
     async function handleIncomingCall(offer) {
       try {
-        // Get media permissions
         if (!hasMediaPermissions) {
           const granted = await requestMediaPermissions();
           if (!granted) {
@@ -1962,7 +1956,6 @@
           }
         }
         
-        // Get local stream
         if (!localStream) {
           const stream = await getLocalStream();
           if (!stream) {
@@ -1988,6 +1981,7 @@
         const localVideo = document.getElementById('localVideoCall');
         if (localVideo && localStream) {
           localVideo.srcObject = localStream;
+          localVideo.style.display = 'block';
         }
         
         const remoteLabel = document.getElementById('remoteCallLabel');
@@ -1995,10 +1989,8 @@
           remoteLabel.textContent = user.partner || 'Partner';
         }
         
-        // Create peer connection
         createPeerConnection();
         
-        // Set remote description and create answer
         await pc.setRemoteDescription(new RTCSessionDescription(offer));
         const answer = await pc.createAnswer();
         await pc.setLocalDescription(answer);
@@ -2010,7 +2002,6 @@
         
         showNotification('📹 Call connected!');
         
-        // Process queued ICE candidates
         if (iceCandidatesQueue.length > 0) {
           iceCandidatesQueue.forEach(candidate => {
             pc.addIceCandidate(new RTCIceCandidate(candidate));
@@ -2018,7 +2009,6 @@
           iceCandidatesQueue = [];
         }
         
-        // Remove incoming call from Firestore
         if (pendingCallData && pendingCallData.id) {
           await db.collection('incomingCalls').doc(pendingCallData.id).delete().catch(() => {});
           pendingCallData = null;
@@ -2051,10 +2041,16 @@
       
       remoteStream = null;
       const remoteVideo = document.getElementById('remoteVideoCall');
-      if (remoteVideo) remoteVideo.srcObject = null;
+      if (remoteVideo) {
+        remoteVideo.srcObject = null;
+        remoteVideo.style.display = 'none';
+      }
       
       const localVideo = document.getElementById('localVideoCall');
-      if (localVideo) localVideo.srcObject = null;
+      if (localVideo) {
+        localVideo.srcObject = null;
+        localVideo.style.display = 'none';
+      }
       
       const callFullscreen = document.getElementById('callFullscreen');
       if (callFullscreen) {
@@ -2176,7 +2172,6 @@
         return;
       }
       
-      // Send incoming call notification to partner
       try {
         isProcessingCall = true;
         
@@ -2191,7 +2186,6 @@
         
         showNotification(`📞 Calling ${user.partner}...`);
         
-        // Start the actual call after a delay
         setTimeout(async () => {
           try {
             await startCallAfterAccept(user.partnerId, user.partner);
